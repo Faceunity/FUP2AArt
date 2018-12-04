@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina5_5" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="FUHistoryViewController">
+            <connections>
+                <outlet property="collection" destination="Nx1-GA-V6o" id="gkX-dl-S6T"/>
+                <outlet property="deleteBottom" destination="nhi-vc-11j" id="RHk-3Y-uoj"/>
+                <outlet property="deleteBtn" destination="8Rv-Jb-Slc" id="zNa-oe-INT"/>
+                <outlet property="noitemLabel" destination="zPS-Pw-Xwr" id="BRs-hl-7x3"/>
+                <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="i5M-Pr-FkT">
+            <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XKN-ps-Voz">
+                    <rect key="frame" x="12" y="27" width="38" height="38"/>
+                    <state key="normal" image="history-back"/>
+                    <state key="highlighted" image="history-back-hightlighted"/>
+                    <connections>
+                        <action selector="closeAction:" destination="-1" eventType="touchUpInside" id="jLr-cg-fNe"/>
+                    </connections>
+                </button>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="删除模型" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2ot-ss-bCi">
+                    <rect key="frame" x="172" y="36" width="70" height="21"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="o77-M3-Q6v" userLabel="bottom">
+                    <rect key="frame" x="0.0" y="684" width="414" height="42"/>
+                    <subviews>
+                        <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8Rv-Jb-Slc">
+                            <rect key="frame" x="32" y="2" width="350" height="38"/>
+                            <state key="normal" title="删除">
+                                <color key="titleColor" red="0.29803921568627451" green="0.58823529411764708" blue="1" alpha="0.8204195205479452" colorSpace="custom" customColorSpace="sRGB"/>
+                            </state>
+                            <state key="disabled">
+                                <color key="titleColor" red="0.40000000000000002" green="0.40000000000000002" blue="0.40000000000000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </state>
+                            <connections>
+                                <action selector="deleteAction:" destination="-1" eventType="touchUpInside" id="N9W-YS-SrN"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="trailing" secondItem="8Rv-Jb-Slc" secondAttribute="trailing" constant="32" id="AeO-Fb-OLY"/>
+                        <constraint firstItem="8Rv-Jb-Slc" firstAttribute="leading" secondItem="o77-M3-Q6v" secondAttribute="leading" constant="32" id="FlW-ac-JZZ"/>
+                        <constraint firstAttribute="bottom" secondItem="8Rv-Jb-Slc" secondAttribute="bottom" constant="2" id="Ynb-8d-KgO"/>
+                        <constraint firstItem="8Rv-Jb-Slc" firstAttribute="top" secondItem="o77-M3-Q6v" secondAttribute="top" constant="2" id="gGk-4m-zm4"/>
+                        <constraint firstAttribute="height" constant="42" id="xBi-Cr-byH"/>
+                    </constraints>
+                </view>
+                <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="none" translatesAutoresizingMaskIntoConstraints="NO" id="Nx1-GA-V6o">
+                    <rect key="frame" x="0.0" y="89" width="414" height="595"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="16" minimumInteritemSpacing="16" id="mNu-jF-pRz">
+                        <size key="itemSize" width="50" height="50"/>
+                        <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                        <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                        <inset key="sectionInset" minX="16" minY="10" maxX="16" maxY="10"/>
+                    </collectionViewFlowLayout>
+                </collectionView>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="暂未有历史模型" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zPS-Pw-Xwr">
+                    <rect key="frame" x="146.33333333333334" y="357.66666666666669" width="121.33333333333334" height="21"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="o77-M3-Q6v" firstAttribute="top" secondItem="Nx1-GA-V6o" secondAttribute="bottom" id="4Cp-gn-jdT"/>
+                <constraint firstItem="XKN-ps-Voz" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" constant="12" id="Bag-CH-xUX"/>
+                <constraint firstItem="zPS-Pw-Xwr" firstAttribute="centerX" secondItem="i5M-Pr-FkT" secondAttribute="centerX" id="Bqo-L7-4Ky"/>
+                <constraint firstAttribute="trailing" secondItem="o77-M3-Q6v" secondAttribute="trailing" id="KX0-j8-Jlf"/>
+                <constraint firstItem="XKN-ps-Voz" firstAttribute="centerY" secondItem="2ot-ss-bCi" secondAttribute="centerY" id="TOE-AW-6R0"/>
+                <constraint firstItem="zPS-Pw-Xwr" firstAttribute="centerY" secondItem="i5M-Pr-FkT" secondAttribute="centerY" id="cJo-01-47b"/>
+                <constraint firstItem="o77-M3-Q6v" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="cVa-bq-HtW"/>
+                <constraint firstAttribute="trailing" secondItem="Nx1-GA-V6o" secondAttribute="trailing" id="jds-4O-bBn"/>
+                <constraint firstItem="Nx1-GA-V6o" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="lUq-TZ-EYb"/>
+                <constraint firstAttribute="bottom" secondItem="o77-M3-Q6v" secondAttribute="bottom" constant="10" id="nhi-vc-11j"/>
+                <constraint firstItem="2ot-ss-bCi" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" constant="36" id="uEE-QE-u8t"/>
+                <constraint firstItem="Nx1-GA-V6o" firstAttribute="top" secondItem="2ot-ss-bCi" secondAttribute="bottom" constant="32" id="vnG-L7-EJd"/>
+                <constraint firstItem="2ot-ss-bCi" firstAttribute="centerX" secondItem="i5M-Pr-FkT" secondAttribute="centerX" id="zuq-n5-a86"/>
+            </constraints>
+            <point key="canvasLocation" x="33" y="53"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="history-back" width="38" height="38"/>
+        <image name="history-back-hightlighted" width="38" height="38"/>
+    </resources>
+</document>

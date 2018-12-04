@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>itemName</key>
+		<string>1</string>
+		<key>isMale</key>
+		<true/>
+		<key>hair</key>
+		<string>male_hair_1</string>
+	</dict>
+	<dict>
+		<key>itemName</key>
+		<string>2</string>
+		<key>isMale</key>
+		<false/>
+		<key>hair</key>
+		<string>female_hair_16</string>
+	</dict>
+</array>
+</plist>
