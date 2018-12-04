@@ -8,7 +8,7 @@
 
 * authpack.h：Nama SDK鉴权证书，用于在客户端，使用Nama SDK 绘制的鉴权。
 
-* p2a_demo.p12：https 网络请求的鉴权证书，工程中提供的域名为测试域名，该证书仅用于连接测试服务器的鉴权。真实对接中，需要客户自己搭建服务端，并设计自己的鉴权机制，关于服务端的搭建请参考[P2A Server API 说明文档](P2A Server API.pdf)。
+* p2a_demo.p12：https 网络请求的鉴权证书，工程中提供的域名为测试域名，该证书仅用于连接测试服务器的鉴权。真实对接中，需要客户自己搭建服务端，并设计自己的鉴权机制，关于服务端的搭建请参考[P2A Server API 说明文档](P2A%20Server%20API.pdf)。
 
 下载证书后，将证书拷贝到[Faceunity](FUP2A/Faceunity)文件夹下，直接运行工程即可。
 
@@ -21,7 +21,7 @@
 
 ### 道具
 
-- **controller.bundle**：风格化形象的控制中心，负责绑定头、身体、衣服、胡子、头发、AR滤镜、眼镜、帽子等配饰。并负责捏脸、发色修改、胡子颜色修改、肤色修改、唇色修改、配饰颜色修改、缩放、旋转、身体动画、AR模式、人脸跟踪、表情裁剪等诸多功能的控制。实际绘制时只需要将controller道具的句柄传入Nama的render接口进行绘制即可，关于controller参数使用方法，请查看[controller说明文档](Contorller 说明文档)。
+- **controller.bundle**：风格化形象的控制中心，负责绑定头、身体、衣服、胡子、头发、AR滤镜、眼镜、帽子等配饰。并负责捏脸、发色修改、胡子颜色修改、肤色修改、唇色修改、配饰颜色修改、缩放、旋转、身体动画、AR模式、人脸跟踪、表情裁剪等诸多功能的控制。实际绘制时只需要将controller道具的句柄传入Nama的render接口进行绘制即可，关于controller参数使用方法，请查看[controller说明文档](Contorller%20%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3.md)。
 
 - **head.bundle**：头道具，不同的人生成的头不一样，需要绑定到controller道具上才能使用。
 - **body.bundle**：身体道具，男女各一个身体，需要绑定到controller道具上才能使用。
