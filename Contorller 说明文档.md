@@ -1,4 +1,4 @@
-# Contorller 说明文档
+# Contorller 参数文档
 ## 捏脸  
 ##### 进入捏脸模式  
 ```C
@@ -34,56 +34,56 @@ console.log("ret1:",ret1);
 
 ##### 参数表：
 __脸型__：  
-| param |含义 |
-| ------ | ------ |
-|"cheek_narrow"|控制脸颊宽度，瘦|
-|"Head_fat"|控制脸颊宽度，胖|
-|"Head_shrink"|控制人脸整体的长度，缩短|
-|"Head_stretch"|控制人脸整体的长度,伸长|
-|"HeadBone_shrink"|控制额头区域高低，低|
-|"HeadBone_stretch"|控制额头区域高低，高|
-|"jaw_lower"|控制下巴尖/平，尖|
-|"jaw_up"|控制下巴尖/平，平|
-|"jawbone_Narrow"|控制下颚宽度，窄|
-|"jawbone_Wide"|控制下颚宽度，宽|
+| param              | 含义           |
+| ------------------ | ------------ |
+| "cheek_narrow"     | 控制脸颊宽度，瘦     |
+| "Head_fat"         | 控制脸颊宽度，胖     |
+| "Head_shrink"      | 控制人脸整体的长度，缩短 |
+| "Head_stretch"     | 控制人脸整体的长度,伸长 |
+| "HeadBone_shrink"  | 控制额头区域高低，低   |
+| "HeadBone_stretch" | 控制额头区域高低，高   |
+| "jaw_lower"        | 控制下巴尖/平，尖    |
+| "jaw_up"           | 控制下巴尖/平，平    |
+| "jawbone_Narrow"   | 控制下颚宽度，窄     |
+| "jawbone_Wide"     | 控制下颚宽度，宽     |
 
 __眼睛__：  
-| param |含义 |
-| ------ | ------ |
-|"Eye_both_in"| 眼睛型宽窄,窄|
-|"Eye_both_out"| 眼睛型宽窄,宽|
-|"Eye_close"| 眼睛型高低,闭眼|
-|"Eye_down"|眼睛整体在脸部区域的位置高低,低|
-|"Eye_inner_down"|眼角上翘/下翘，内眼角向下|
-|"Eye_inner_up"|眼角上翘/下翘，内眼角向上 |
-|"Eye_open"|眼睛型高低,睁眼|
-|"Eye_outter_down"|眼角上翘/下翘，外眼角向下|
-|"Eye_outter_up"|眼角上翘/下翘，外眼角向上|
-|"Eye_up"|眼睛整体在脸部区域的位置高低,高|
+| param             | 含义               |
+| ----------------- | ---------------- |
+| "Eye_both_in"     | 眼睛型宽窄,窄          |
+| "Eye_both_out"    | 眼睛型宽窄,宽          |
+| "Eye_close"       | 眼睛型高低,闭眼         |
+| "Eye_down"        | 眼睛整体在脸部区域的位置高低,低 |
+| "Eye_inner_down"  | 眼角上翘/下翘，内眼角向下    |
+| "Eye_inner_up"    | 眼角上翘/下翘，内眼角向上    |
+| "Eye_open"        | 眼睛型高低,睁眼         |
+| "Eye_outter_down" | 眼角上翘/下翘，外眼角向下    |
+| "Eye_outter_up"   | 眼角上翘/下翘，外眼角向上    |
+| "Eye_up"          | 眼睛整体在脸部区域的位置高低,高 |
 
 __嘴巴__：
-| param |含义 |
-| ------ | ------ |
-|"lipCorner_In"|嘴唇宽度,窄|
-|"lipCorner_Out"|嘴唇宽度,宽|
-|"lowerLip_Thick"|下嘴唇厚度，下嘴唇厚|
-|"lowerLip_Thin"|下嘴唇厚度,下嘴唇薄|
-|"lowerLipSide_Thick"|下嘴唇厚度,下嘴角厚|
-|"mouth_Down"|嘴部位置高低，低|
-|"mouth_Up"|嘴部位置高低，高|
-|"upperLip_Thick"|上嘴唇厚度，上嘴唇厚|
-|"upperLip_Thin"|上嘴唇厚度，上嘴唇薄|
-|"upperLipSide_Thick"|上嘴唇厚度，上嘴角厚|
+| param                | 含义         |
+| -------------------- | ---------- |
+| "lipCorner_In"       | 嘴唇宽度,窄     |
+| "lipCorner_Out"      | 嘴唇宽度,宽     |
+| "lowerLip_Thick"     | 下嘴唇厚度，下嘴唇厚 |
+| "lowerLip_Thin"      | 下嘴唇厚度,下嘴唇薄 |
+| "lowerLipSide_Thick" | 下嘴唇厚度,下嘴角厚 |
+| "mouth_Down"         | 嘴部位置高低，低   |
+| "mouth_Up"           | 嘴部位置高低，高   |
+| "upperLip_Thick"     | 上嘴唇厚度，上嘴唇厚 |
+| "upperLip_Thin"      | 上嘴唇厚度，上嘴唇薄 |
+| "upperLipSide_Thick" | 上嘴唇厚度，上嘴角厚 |
 
 __鼻子__：
-| param |含义 |
-| ------ | ------ |
-|"nose_Down"|鼻子位置高低,低|
-|"nose_UP"|鼻子位置高低，高|
-|"noseTip_Down"|鼻头高低，低|
-|"noseTip_Up"|鼻头高低，高|
-|"nostril_In"|鼻翼宽窄，窄|
-|"nostril_Out"|鼻翼宽窄，宽|
+| param          | 含义       |
+| -------------- | -------- |
+| "nose_Down"    | 鼻子位置高低,低 |
+| "nose_UP"      | 鼻子位置高低，高 |
+| "noseTip_Down" | 鼻头高低，低   |
+| "noseTip_Up"   | 鼻头高低，高   |
+| "nostril_In"   | 鼻翼宽窄，窄   |
+| "nostril_Out"  | 鼻翼宽窄，宽   |
 
 ---
 ## FOV
@@ -201,7 +201,7 @@ fuItemSetParamd(1,'translation_y',1.0);
 
 ##### 设置前后位置
 ```C
-//第三个值为前后世界坐标 设置范围一般在[1,100] 数值越大离屏幕越远 超过范围可能超出屏幕
+//第三个值为前后世界坐标 设置范围一般在[1,10] 数值越大离屏幕越远 超过范围可能超出屏幕
 fuItemSetParamd(1,'translation_z',1.0);
 ```
 
