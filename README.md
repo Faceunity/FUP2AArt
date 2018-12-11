@@ -1,6 +1,6 @@
 ## P2A 技术对接综述
 
-&emsp;&emsp;P2A 技术对接文档分为：《[P2A Server API](P2A%20Server%20API.pdf)》，《[P2A 对接说明文档](P2A%20%E5%AF%B9%E6%8E%A5%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3.md)》，以及《[Controller 说明文档](Controller%20%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3.md)》3大部分。
+&emsp;&emsp;P2A 技术对接文档分为：《[P2A Server API](P2A%20Server%20API.pdf)》，《[P2A Client SDK](P2A%20Client%20SDK.md)》，以及《[Controller 说明文档](Controller%20%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3.md)》3大部分。
 
 ### 1. 内容说明
 
