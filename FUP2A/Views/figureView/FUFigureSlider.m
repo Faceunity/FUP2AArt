@@ -74,7 +74,7 @@
         }
         break;
         case FUFigureSliderTypeOther:{
-            [self setMaximumValue:1.0];
+            [self setMaximumValue:0.99];
             [self setMinimumValue:0];
 //            line.hidden = YES ;
         }

@@ -239,7 +239,7 @@
         }];
     }else {
         [self.camera stopCapture];
-//        [self resetPupParams];
+        [self resetPupParams];
         [[FUManager shareInstance] quitFacepupMode];
         [self.navigationController popViewControllerAnimated:NO];
     }
@@ -334,6 +334,7 @@
             avatar.defaultHat = self.figureView.currentHat ;
             
             avatar.skinColor = self.figureView.skinColor ;
+            avatar.skinLevel = self.figureView.skinLevel ;
             avatar.lipColor = self.figureView.lipColor ;
             avatar.irisColor = self.figureView.irisColor ;
             avatar.hairColor = self.figureView.hairColor ;
@@ -423,6 +424,7 @@
         avatar.defaultHat = self.figureView.currentHat ;
         
         avatar.skinColor = self.figureView.skinColor ;
+        avatar.skinLevel = self.figureView.skinLevel ;
         avatar.lipColor = self.figureView.lipColor ;
         avatar.irisColor = self.figureView.irisColor ;
         avatar.hairColor = self.figureView.hairColor ;
@@ -484,10 +486,6 @@
 #pragma mark --- FUEditViewDelegate
 - (BOOL)isModeChanged  {
     
-    if (self.figureView.skinLevel != (float)self.figureView.defaultSkinLevel) {
-        return YES ;
-    }
-
     FUAvatar *avatar = [FUManager shareInstance].currentAvatar;
     if (self.figureView.currentHair != avatar.defaultHair
         || self.figureView.currentCloth != avatar.defaultClothes
@@ -507,11 +505,11 @@
         return YES ;
     }
     
-    if ((avatar.hairColor != nil && [self.figureView.hairColor colorIsEqualTo: avatar.hairColor])
-        || (avatar.beardColor != nil && [self.figureView.beardColor colorIsEqualTo: avatar.beardColor])
-        || (avatar.glassColor != nil && [self.figureView.glassesColor colorIsEqualTo: avatar.glassColor])
-        || (avatar.glassFrameColor != nil && [self.figureView.glassesFrameColor colorIsEqualTo: avatar.glassFrameColor])
-        || (avatar.hatColor != nil && [self.figureView.hatColor colorIsEqualTo: avatar.hatColor])) {
+    if ((avatar.hairColor != nil && ![self.figureView.hairColor colorIsEqualTo: avatar.hairColor])
+        || (avatar.beardColor != nil && ![self.figureView.beardColor colorIsEqualTo: avatar.beardColor])
+        || (avatar.glassColor != nil && ![self.figureView.glassesColor colorIsEqualTo: avatar.glassColor])
+        || (avatar.glassFrameColor != nil && ![self.figureView.glassesFrameColor colorIsEqualTo: avatar.glassFrameColor])
+        || (avatar.hatColor != nil && ![self.figureView.hatColor colorIsEqualTo: avatar.hatColor])) {
         return YES ;
     }
     
@@ -572,13 +570,10 @@
 
 
 #pragma mark ---- FUFigureViewDelegate
-
 - (void)figureViewShapeParamsDidChangedWithKey:(NSString *)key level:(double)level {
-    
     [[FUManager shareInstance] facepopSetShapParam:key level:level];
     self.downloadBtn.enabled = YES ;
 }
-
 
 - (void)figureViewSkinColorDidChangedCurrentColor:(FUFigureColor *)curColor nextColor:(FUFigureColor *)nextColor scale:(double)scale {
     double c[3] ;

@@ -33,26 +33,26 @@ static FURequestManager *sharedInstance;
 -(instancetype)init
 {
     self = [super init];
-
+    
     if (self) {
-
+        
         AFSecurityPolicy *policy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeNone];
         policy.allowInvalidCertificates = YES;
         policy.validatesDomainName = NO;
-
+        
         _requestManager=[AFHTTPSessionManager manager];
         _requestManager.securityPolicy = policy;
         _requestManager.requestSerializer = [AFHTTPRequestSerializer serializer];
         _requestManager.requestSerializer.timeoutInterval = 60.0;
         _requestManager.responseSerializer = [AFHTTPResponseSerializer serializer];
-
+        
         NSMutableSet *mset=[[_requestManager.responseSerializer acceptableContentTypes] mutableCopy];
         [mset addObject:@"text/html"];
-
+        
         [_requestManager.responseSerializer setAcceptableContentTypes:mset];
-
+        
         __weak typeof(self)weakSelf = self;
-
+        
         //https客户端证书设置
         [_requestManager setSessionDidReceiveAuthenticationChallengeBlock:^NSURLSessionAuthChallengeDisposition(NSURLSession*session, NSURLAuthenticationChallenge *challenge, NSURLCredential *__autoreleasing*_credential) {
             NSURLSessionAuthChallengeDisposition disposition = NSURLSessionAuthChallengePerformDefaultHandling;
@@ -74,7 +74,7 @@ static FURequestManager *sharedInstance;
                 SecTrustRef trust = NULL;
                 NSString *p12 = [[NSBundle mainBundle] pathForResource:@"p2a_demo" ofType:@"p12"];
                 NSFileManager *fileManager =[NSFileManager defaultManager];
-
+                
                 if(![fileManager fileExistsAtPath:p12])
                 {
                     NSLog(@"client.p12:not exist");
@@ -82,7 +82,7 @@ static FURequestManager *sharedInstance;
                 else
                 {
                     NSData *PKCS12Data = [NSData dataWithContentsOfFile:p12];
-
+                    
                     if ([[weakSelf class] extractIdentity:&identity andTrust:&trust fromPKCS12Data:PKCS12Data])
                     {
                         SecCertificateRef certificate = NULL;
@@ -98,8 +98,11 @@ static FURequestManager *sharedInstance;
             return disposition;
         }];
         
+        
+        _servicerString = URL ;
+        
     }
-
+    
     return self;
 }
 
@@ -108,10 +111,10 @@ static FURequestManager *sharedInstance;
     //client certificate password
     NSDictionary*optionsDictionary = [NSDictionary dictionaryWithObject:@""
                                                                  forKey:(__bridge id)kSecImportExportPassphrase];
-
+    
     CFArrayRef items = CFArrayCreate(NULL, 0, 0, NULL);
     securityError = SecPKCS12Import((__bridge CFDataRef)inPKCS12Data,(__bridge CFDictionaryRef)optionsDictionary,&items);
-
+    
     if(securityError == 0) {
         CFDictionaryRef myIdentityAndTrust =CFArrayGetValueAtIndex(items,0);
         const void*tempIdentity =NULL;
@@ -127,23 +130,6 @@ static FURequestManager *sharedInstance;
     return YES;
 }
 
-
--(NSString *)serverShortString {
-    
-    return @"URL";
-//    NSString *server ;
-//    if ([_servicerString isEqualToString:Server6820181]) {
-//        server = @"68:1" ;
-//    }else if ([_servicerString isEqualToString:Server6820182]){
-//        server = @"68:2" ;
-//    }else if ([_servicerString isEqualToString:Server8620181]){
-//        server = @"86:1" ;
-//    }else if ([_servicerString isEqualToString:Server8620182]){
-//        server = @"86:2" ;
-//    }
-//    _serverShortString = [@"URL:" stringByAppendingString:server];
-//    return _serverShortString ;
-}
 
 - (void)createQAvatarWithImage:(UIImage *)image Params:(NSDictionary *)params CompletionWithData:(void (^)(NSData *data, NSError *error))handle {
     

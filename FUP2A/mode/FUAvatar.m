@@ -74,6 +74,7 @@
     [aCoder encodeInt:_matchLabel forKey:@"matchLabel"];
     
     [aCoder encodeObject:_skinColor forKey:@"skinColor"];
+    [aCoder encodeDouble:_skinLevel forKey:@"skinLevel"];
     [aCoder encodeObject:_lipColor forKey:@"lipColor"];
     [aCoder encodeObject:_serverSkinColor forKey:@"serverSkinColor"];
     [aCoder encodeObject:_serverLipColor forKey:@"serverLipColor"];
@@ -101,6 +102,7 @@
         self.matchLabel = [aDecoder decodeIntForKey:@"matchLabel"];
         
         self.skinColor = [aDecoder decodeObjectForKey:@"skinColor"];
+        self.skinLevel = [aDecoder decodeDoubleForKey:@"skinLevel"];
         self.lipColor = [aDecoder decodeObjectForKey:@"lipColor"];
         self.serverSkinColor = [aDecoder decodeObjectForKey:@"serverSkinColor"];
         self.serverLipColor = [aDecoder decodeObjectForKey:@"serverLipColor"];

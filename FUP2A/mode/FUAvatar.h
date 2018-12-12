@@ -40,6 +40,7 @@
 @property (nonatomic, strong) FUFigureColor *mobileLipColor ;
 
 @property (nonatomic, strong) FUFigureColor *skinColor ;
+@property (nonatomic, assign) double skinLevel ;
 @property (nonatomic, strong) FUFigureColor *lipColor ;
 @property (nonatomic, strong) FUFigureColor *irisColor ;
 @property (nonatomic, strong) FUFigureColor *hairColor ;

@@ -58,7 +58,9 @@ typedef enum : NSInteger {
     }
     
     [self.collection reloadData];
-    [self.collection scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:modelIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self.collection scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:self->modelIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:NO];
+    });
 }
 
 - (void)reloadData {
@@ -88,6 +90,10 @@ typedef enum : NSInteger {
     self.filterBtn.selected = sender == self.filterBtn ;
     
     self.collectionType = self.modelBtn.selected ? FUARCollectionTypeModel : FUARCollectionTypeFilter ;
+    
+    NSIndexPath *indexPath = self.modelBtn.selected ? [NSIndexPath indexPathForRow:modelIndex inSection:0] : [NSIndexPath indexPathForRow:filterIndex inSection:0] ;
+    [self.collection scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:NO];
+    
     
     if (self.collection.hidden) {
         
@@ -149,8 +155,8 @@ typedef enum : NSInteger {
 
             if (indexPath.row == 0) {
                 cell.imageView.image = modelIndex == 0 ? [UIImage imageNamed:@"noitem-pressed"] : [UIImage imageNamed:@"noitem"] ;
-                cell.imageView.layer.borderColor =  [UIColor clearColor].CGColor;
-                cell.imageView.layer.borderWidth =  0.0 ;
+                cell.layer.borderColor =  [UIColor clearColor].CGColor;
+                cell.layer.borderWidth =  0.0 ;
             }else {
                 FUAvatar *avatar = self.modelsArray[indexPath.row - 1] ;
                 cell.imageView.image = [UIImage imageWithContentsOfFile:avatar.imagePath];
@@ -164,8 +170,8 @@ typedef enum : NSInteger {
 
             if (indexPath.row == 0) {
                 cell.imageView.image = filterIndex == 0 ? [UIImage imageNamed:@"noitem-pressed"] : [UIImage imageNamed:@"noitem"] ;
-                cell.imageView.layer.borderColor =  [UIColor clearColor].CGColor;
-                cell.imageView.layer.borderWidth =  0.0 ;
+                cell.layer.borderColor =  [UIColor clearColor].CGColor;
+                cell.layer.borderWidth =  0.0 ;
             }else {
 
                 NSString *filter = self.filtersArray[indexPath.row - 1] ;

@@ -2,11 +2,11 @@
   "images" : [
     {
       "idiom" : "universal",
+      "filename" : "female_glass_1.png",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
-      "filename" : "眼镜1_0005_眼镜0111.png",
       "scale" : "2x"
     },
     {

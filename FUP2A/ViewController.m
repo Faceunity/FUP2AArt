@@ -45,7 +45,7 @@ FUHistoryViewControllerDelegate
 // 版本号 debug view
 @property (weak, nonatomic) IBOutlet UILabel *appVersionLabel;
 @property (weak, nonatomic) IBOutlet UILabel *sdkVersionLabel;
-@property (weak, nonatomic) IBOutlet UIView *debugView;
+
 @end
 
 @implementation ViewController
@@ -72,8 +72,12 @@ FUHistoryViewControllerDelegate
     renderMode = FURenderCommonMode ;
     [self.camera startCapture ];
     
-    [FUManager shareInstance].isDeform = YES ;
-    [FUManager shareInstance].showDebugInfo = NO;
+    [self reloadDebugInfo];
+}
+
+- (void)reloadDebugInfo {
+    self.appVersionLabel.text = [FUManager shareInstance].appVersion;
+    self.sdkVersionLabel.text = [FUManager shareInstance].sdkVersion;
 }
 
 -(void)viewWillAppear:(BOOL)animated {
@@ -107,7 +111,7 @@ FUHistoryViewControllerDelegate
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender{
-
+    
     NSString *identifier = segue.identifier ;
     if ([identifier isEqualToString:@"FUHomeBar"]) {
         
@@ -186,7 +190,6 @@ FUHistoryViewControllerDelegate
     }
     self.appVersionLabel.hidden = sender.selected ;
     self.sdkVersionLabel.hidden = sender.selected ;
-    self.debugView.hidden = sender.selected ;
 }
 
 #pragma mark ---- loading
@@ -202,6 +205,7 @@ FUHistoryViewControllerDelegate
 }
 
 #pragma mark ---- FUCameraDelegate
+
 -(void)didOutputVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer {
     if (loadingBundles) {
         return ;
@@ -293,37 +297,24 @@ FUHistoryViewControllerDelegate
 }
 
 - (void)willResignActive    {
-
+    
     if (self.navigationController.visibleViewController == self) {
         [self.camera stopCapture];
     }
 }
 
 - (void)willEnterForeground {
-
+    
     if (self.navigationController.visibleViewController == self) {
         [self.camera startCapture];
     }
 }
 
 - (void)didBecomeActive {
-
+    
     if (self.navigationController.visibleViewController == self) {
         [self.camera startCapture];
     }
-}
-
-- (void)shouldDeleteAllAvatar {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.homeBar reloadModeData];
-    });
-}
-
--(void)shouldReloadCurrentAvatar {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [FUManager shareInstance].avatars = nil;
-        [self loadDefaultAvatar];
-    });
 }
 
 @end

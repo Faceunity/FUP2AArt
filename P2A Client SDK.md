@@ -1,6 +1,6 @@
-# P2A 对接说明文档-iOS
+# P2A Client SDK-iOS
 
-本文主要介绍了如何快速跑通我们的FUP2A工程 、如何创建和编辑风格化形象、如何绘制风格化形象、SDK的分类及相关资源说明等。工程中会使用到两个库文件:FUP2AClient SDK、Nama SDK，其中FUP2AClient SDK 用来做风格化形象的生成，Nama SDK 用来做风格化形象的绘制。
+本文主要介绍了如何快速跑通我们的FUP2A工程 、如何创建和编辑风格化形象、如何绘制风格化形象、SDK的分类及相关资源说明等。工程中会使用到两个库文件:FUP2AClient SDK、Nama SDK，其中 FUP2AClient SDK 用来做风格化形象的生成，Nama SDK 用来做风格化形象的绘制。
 
 ## 快速开始
 
@@ -25,7 +25,7 @@
 
 - **head.bundle**：头道具，不同的人生成的头不一样，需要绑定到controller道具上才能使用。
 - **body.bundle**：身体道具，男女各一个身体，需要绑定到controller道具上才能使用。
-- **hair.bundle**：头发道具，有多种款式，可以修改发色，需要绑定到controller道具上才能使用。
+- **hair.bundle**：预置头发道具，用于形象生成时生成与头道具大小相匹配的头发道具。可以修改发色，新生成的头发道具需要绑定到controller道具上才能使用。
 - **beard.bundle**：胡子道具，有多种款式，可以修改胡子颜色，需要绑定到controller道具上才能使用。
 - **clothes.bundle**：衣服道具，有多种款式，需要绑定到controller道具上才能使用。
 - **glass.bundle**：眼镜道具，有多种款式，可以修改镜框及镜片颜色，需要绑定到controller道具上才能使用。
@@ -36,22 +36,28 @@
 
 本工程主要包括以下功能：
 
-* 形象生成：上传照片到服务端对人脸进行检测，利用服务端返回的数据生成风格化形象；
-
-* 形象编辑：形象编辑：支持美型，以及对肤色、唇色、瞳色、发型、胡子、眼镜、帽子、衣服的个性化编辑；
+* 形象生成：上传照片到服务端对人脸进行检测，利用服务端返回的数据生成风格化形象；对风格化形象进行美型后，重新生成形象。
 * 形象绘制：实现风格化形象的实时绘制。
+* 形象驱动：通过人脸驱动风格化形象。
+* 形象编辑：形象编辑：支持美型，以及对肤色、唇色、瞳色、发型、胡子、眼镜、帽子、衣服的个性化编辑；
 
 ## 形象生成
 
-首先上传照片到服务端做人脸检测，并得到服务端返回的数据，然后使用服务端返回的数据调用FUP2AClient SDK来创建头和头发道具。
+首先上传照片到服务端做人脸检测，并得到服务端返回的数据，然后使用服务端返回的数据调用FUP2AClient SDK来创建头和头发道具。另外当对风格化形象进行美型后，也需要重新生成形象的头道具。主要流程如下：
+
+* 上传照片
+* 初始化 FUP2AClient SDK 
+* 使用 FUP2AClient SDK 生成头道具
+* 使用 FUP2AClient SDK 生成头发道具
+* 使用 FUP2AClient SDK 重新生成头道具
 
 ### 上传照片
 
 用户上传照片到服务端，服务端对该图片做人脸检测，并返回检测后的人脸数据： server.bundle。server.bundle 包含用户的发型、肤色、眼镜、唇色、脸型等详细信息。
 
-### 生成头和头发道具
+### 初始化 FUP2AClient SDK 
 
-使用 server.bundle 调用 FUP2AClient SDK 相关接口前，需要先进行初始化，且只需要初始化一次。
+调用 FUP2AClient SDK 相关接口前，需要先进行初始化，且只需要初始化一次。
 
 初始化接口说明如下：
 
@@ -65,7 +71,9 @@
 + (void)setupWithClientData:(NSData *)data ;
 ```
 
-然后使用 server.bundle 调用 FUP2AClient SDK 相关接口便可以生成头和头发道具，相关API接口说明如下：
+### 生成头道具
+
+使用 server.bundle 调用 FUP2AClient SDK 相关接口便可以生成头道具，相关API接口说明如下：
 
 ```objective-c
 /**
@@ -77,7 +85,15 @@
  *  @return            生成的头部模型数据
  */
 + (NSData *)createAvatarHeadWithData:(NSData *)data ;
+```
 
+注：该接口支持异步并行调用。
+
+### 生成头发道具
+
+使用 server.bundle 与预置的 hair.bundle，调用 FUP2AClient SDK 相关接口，生成与头道具大小相匹配的头发道具，相关API接口说明如下：
+
+```objective-c
 /**
  *  生成 hair.Bundle
         - 根据服务端传回的数据流和预置的头发模型 生成和此头部模型匹配的头发模型
@@ -91,21 +107,11 @@
                            defaultHairData:(NSData *)hairData ;
 ```
 
-注：这两个接口都支持异步并行调用。
+注：该接口支持异步并行调用。
 
-## 形象编辑
+### 重新生成头道具
 
-形象编辑功能包括：美型，以及对肤色、唇色、瞳色、发型、胡子、眼镜、帽子、衣服的个性化编辑。
-
-- 通过修改 controller.bundle 的相关参数，可以实现美型、及对肤色、唇色、瞳色、发色、胡子颜色、眼镜颜色、帽子颜色的修改。
-
-- 通过加载并绑定相关道具到 controller.bundle 道具上，可以对发型、胡子、眼镜、帽子、衣服的样式进行修改。
-
-在保存形象时，仅有美型需要调用 FUP2AClient 的接口生成新的头道具，而其他参数值及道具（发型、胡子、眼镜、帽子、衣服）信息需要客户端缓存。
-
-### 美型保存
-
-保存美型修改时，需要调用 FUP2AClient 的 deformAvatarHeadWithHeadData 接口生成新的头道具，API接口说明如下：
+对风格化形象进行美型后，重新生成形象的头道具。需要调用 FUP2AClient SDK 的 deformAvatarHeadWithHeadData 接口生成新的头道具，API接口说明如下：
 
 API接口说明如下：
 
@@ -127,9 +133,18 @@ API接口说明如下：
 
 注：该接口支持异步并行调用。
 
-### 道具加载与绑定
+## 形象绘制
 
-该功能需要使用 Nama SDK 的相关接口，而使用 Nama SDK 前，需要先对 Nama SDK 进行初始化。初始化接口说明如下：
+使用 FUP2AClient SDK 生成的风格化形象，目前支持通过 Nama SDK 进行绘制，后续将支持使用其他绘制引擎进行绘制，如 Unity 3D。使用 Nama SDK 进行绘制，主要流程如下：
+
+* 初始化 Nama SDK
+* 道具加载与绑定
+* 道具绘制
+* 道具的解绑与销毁
+
+### 初始化 Nama SDK
+
+使用 Nama SDK 前，需要先对 Nama SDK 进行初始化。初始化接口说明如下：
 
 ```objective-c
 /**
@@ -145,7 +160,9 @@ API接口说明如下：
 - (void)setupWithDataPath:(NSString *)v3path authPackage:(void *)package authSize:(int)size shouldCreateContext:(BOOL)shouldCreate;
 ```
 
-初始化完成后，需要先加载controller道具，然后再加载道具分类中的其他道具，并将这些道具绑定到 controller 道具上（背景道具除外）。道具的加载与绑定相关API如下：
+### 道具加载与绑定
+
+加载风格化形象相关道具时，需要先加载controller道具，然后再加载道具分类中的其他道具，并将这些道具绑定到 controller 道具上（背景道具除外）。道具的加载与绑定相关API如下：
 
 ```objective-c
 /**
@@ -167,6 +184,96 @@ API接口说明如下：
  @return 被绑定到目标道具上的普通道具个数
  */
 + (int)bindItems:(int)item items:(int*)items itemsCount:(int)itemsCount;
+```
+
+### 道具绘制
+
+在绘制风格化形象道具时，首先将 controller 道具及背景道具句柄存储到的一个 int 数组中，然后把该 int 数组作为参数传入 renderItems 进行绘制即可。相关接口相关API如下：
+
+```objective-c
+/**
+ 道具绘制接口
+
+ @param inPtr 输入数据
+ @param inFormat 输入数据格式
+ @param outPtr 输出数据
+ @param outFormat 输出数据格式
+ @param width 图像宽度
+ @param height 图像高度
+ @param frameid 当前处理的视频帧序数，每次处理完对其进行加 1 操作，不加 1 将无法驱动道具中的特效动画
+ @param items 包含多个道具句柄的 int 数组
+ @param itemCount 句柄数组中包含的句柄个数
+ @param flip 道具镜像使能，如果设置为 YES 可以将道具做镜像操作
+ @return 返回内部纹理ID
+ */
+- (int)renderItems:(void *)inPtr inFormat:(FUFormat)inFormat outPtr:(void *)outPtr outFormat:(FUFormat)outFormat width:(int)width height:(int)height frameId:(int)frameid items:(int *)items itemCount:(int)itemCount flipx:(BOOL)flip;
+```
+
+在绘制风格化形象的模式下，该接口输入的数据格式为 FU_FORMAT_AVATAR_INFO ，输出的数据为渲染好的图像数据，支持多种主流图像格式，也支持输出纹理ID。在输入格式为FU_FORMAT_AVATAR_INFO，输出的图像宽高可以自定义。接口示例如下：
+
+```objective-c
+static int frameid = 0 ;
+- (CVPixelBufferRef) renderP2AItemWithPixelBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks{
+   
+    float expression[46] = {0};
+    float translation[3] = {0};
+    float rotation[4] = {0,0,0,1};
+    float rotation_mode[1] = {0};
+    float pupil_pos[2] = {0};
+    int is_valid = 0 ;
+    
+    TAvatarInfo info;
+    info.p_translation = translation;
+    info.p_rotation = rotation;
+    info.p_expression = expression;
+    info.rotation_mode = rotation_mode;
+    info.pupil_pos = pupil_pos;
+    info.is_valid = is_valid ;
+    
+   CVPixelBufferLockBaseAddress(renderTarget, 0);
+
+    void *bytes = (void *)CVPixelBufferGetBaseAddress(renderTarget);
+    int stride1 = (int)CVPixelBufferGetBytesPerRow(renderTarget);
+    int h1 = (int)CVPixelBufferGetHeight(renderTarget);
+    
+    [[FURenderer shareRenderer] renderItems:&info inFormat:FU_FORMAT_AVATAR_INFO outPtr:bytes outFormat:FU_FORMAT_BGRA_BUFFER width:stride1/4 height:h1 frameId:frameid items:mItems itemCount:3 flipx:NO];
+    
+    CVPixelBufferUnlockBaseAddress(renderTarget, 0);
+
+    frameid++;
+    return renderTarget ;
+}
+```
+
+其中renderTarget是用来当作输出的pixelBuffer，创建方式如下：
+
+```objective-c
+- (void)createPixelBuffer
+{
+    CGSize size = [UIScreen mainScreen].currentMode.size;
+    if (size.width > 850) {
+        
+        CGFloat a = 0.7;
+        CGFloat w = (((int)(size.width*a) + 3)>>2) * 4;
+        CGFloat h = (((int)(size.height*a) + 3)>>2) * 4;
+        size = CGSizeMake(w, h);
+    }
+    
+    if (!renderTarget) {
+        NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
+                                                  @(kCVPixelFormatType_32BGRA),
+                                              (NSString*) kCVPixelBufferWidthKey : @(size.width),
+                                              (NSString*) kCVPixelBufferHeightKey : @(size.height),
+                                              (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
+                                              (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
+        
+        CVPixelBufferCreate(kCFAllocatorDefault,
+                            size.width, size.height,
+                            kCVPixelFormatType_32BGRA,
+                            (__bridge CFDictionaryRef)pixelBufferOptions,
+                            &renderTarget);
+    }
+}
 ```
 
 ### 道具的解绑与销毁
@@ -204,7 +311,7 @@ API接口说明如下：
 + (void)destroyItem:(int)item;
 ```
 
-道具切换示例如下：
+### 道具切换与销毁示例
 
 ```objective-c
 // 加载道具
@@ -250,89 +357,9 @@ API接口说明如下：
 }
 ```
 
-## 形象绘制
+## 形象驱动
 
-形象绘制可分为普通模式与面部追踪模式。
-
-### 普通模式
-
-首先将 controller 道具及背景道具句柄存储到的一个 int 数组中，然后把该 int 数组作为参数传入 renderItems 进行绘制即可。相关接口相关API如下：
-
-```objective-c
-/**
- 道具绘制接口
-
- @param inPtr 输入数据
- @param inFormat 输入数据格式
- @param outPtr 输出数据
- @param outFormat 输出数据格式
- @param width 图像宽度
- @param height 图像高度
- @param frameid 当前处理的视频帧序数，每次处理完对其进行加 1 操作，不加 1 将无法驱动道具中的特效动画
- @param items 包含多个道具句柄的 int 数组
- @param itemCount 句柄数组中包含的句柄个数
- @param flip 道具镜像使能，如果设置为 YES 可以将道具做镜像操作
- @return 返回内部纹理ID
- */
-- (int)renderItems:(void *)inPtr inFormat:(FUFormat)inFormat outPtr:(void *)outPtr outFormat:(FUFormat)outFormat width:(int)width height:(int)height frameId:(int)frameid items:(int *)items itemCount:(int)itemCount flipx:(BOOL)flip;
-```
-
-这里使用的绘制方法与Nama使用的普通接口不一样，一般应用中摄像头采集分辨率比较低，使用普通接口绘制风格化形象的话，会导致渲染出来的效果显得比较粗糙。这里我们通过采集低分辨率图片中人脸信息传入接口，然后输出高分辨率的图像的方法来绘制风格化形象。绘制示例如下：
-
-```objective-c
-static int frameid = 0 ;
-- (CVPixelBufferRef) renderP2AItemWithPixelBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks{
-   
-   CVPixelBufferLockBaseAddress(renderTarget, 0);
-
-    void *bytes = (void *)CVPixelBufferGetBaseAddress(renderTarget);
-    int stride1 = (int)CVPixelBufferGetBytesPerRow(renderTarget);
-    int h1 = (int)CVPixelBufferGetHeight(renderTarget);
-    
-    [[FURenderer shareRenderer] renderItems:&info inFormat:FU_FORMAT_AVATAR_INFO outPtr:bytes outFormat:FU_FORMAT_BGRA_BUFFER width:stride1/4 height:h1 frameId:frameid items:mItems itemCount:3 flipx:NO];
-    
-    CVPixelBufferUnlockBaseAddress(renderTarget, 0);
-
-    frameid++;
-    return renderTarget ;
-}
-```
-
-其中renderTarget是用来当作输出的pixelBuffer,创建方式如下：
-
-
-```objective-c
-- (void)createPixelBuffer
-{
-    CGSize size = [UIScreen mainScreen].currentMode.size;
-    if (size.width > 850) {
-        
-        CGFloat a = 0.7;
-        CGFloat w = (((int)(size.width*a) + 3)>>2) * 4;
-        CGFloat h = (((int)(size.height*a) + 3)>>2) * 4;
-        size = CGSizeMake(w, h);
-    }
-    
-    if (!renderTarget) {
-        NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
-                                                  @(kCVPixelFormatType_32BGRA),
-                                              (NSString*) kCVPixelBufferWidthKey : @(size.width),
-                                              (NSString*) kCVPixelBufferHeightKey : @(size.height),
-                                              (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
-                                              (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
-        
-        CVPixelBufferCreate(kCFAllocatorDefault,
-                            size.width, size.height,
-                            kCVPixelFormatType_32BGRA,
-                            (__bridge CFDictionaryRef)pixelBufferOptions,
-                            &renderTarget);
-    }
-}
-```
-
-### 面部追踪模式
-
-此模式需要先对人脸进行检测获取人脸信息，并保存到TAvatarInfo结构体对象中，再将 TAvatarInfo 作为参数传入 renderItems 接口即可，相关API说明如下：
+形象驱动是指使用 Nama SDK 进行人脸检测，再使用检测到人脸信息驱动风格化形象的功能。流程为：先对人脸进行检测，将获取到人脸信息保存到TAvatarInfo结构体中，再将 TAvatarInfo 作为参数传入 renderItems 接口即可，相关API说明如下：
 
 ```objective-c
 /**
@@ -346,6 +373,50 @@ static int frameid = 0 ;
  @return 检测到的人脸个数，返回 0 代表没有检测到人脸
  */
 + (int)trackFace:(int)inputFormat inputData:(void*)inputData width:(int)width height:(int)height;
+
+/**
+ 获取人脸信息：
+     - 在程序中需要先运行过视频处理接口( 视频处理接口8 除外)或 人脸信息跟踪接口 后才能使用该接口来获取人脸信息；
+     - 该接口能获取到的人脸信息与我司颁发的证书有关，普通证书无法通过该接口获取到人脸信息；
+     - 具体参数及证书要求如下：
+ 
+         landmarks: 2D人脸特征点，返回值为75个二维坐标，长度75*2
+         证书要求: LANDMARK证书、AVATAR证书
+ 
+         landmarks_ar: 3D人脸特征点，返回值为75个三维坐标，长度75*3
+         证书要求: AVATAR证书
+ 
+         rotation: 人脸三维旋转，返回值为旋转四元数，长度4
+         证书要求: LANDMARK证书、AVATAR证书
+ 
+         translation: 人脸三维位移，返回值一个三维向量，长度3
+         证书要求: LANDMARK证书、AVATAR证书
+ 
+         eye_rotation: 眼球旋转，返回值为旋转四元数,长度4
+         证书要求: LANDMARK证书、AVATAR证书
+ 
+         rotation_raw: 人脸三维旋转（不考虑屏幕方向），返回值为旋转四元数，长度4
+         证书要求: LANDMARK证书、AVATAR证书
+ 
+         expression: 表情系数，长度46
+         证书要求: AVATAR证书
+ 
+         projection_matrix: 投影矩阵，长度16
+         证书要求: AVATAR证书
+ 
+         face_rect: 人脸矩形框，返回值为(xmin,ymin,xmax,ymax)，长度4
+         证书要求: LANDMARK证书、AVATAR证书
+ 
+         rotation_mode: 人脸朝向，0-3分别对应手机四种朝向，长度1
+         证书要求: LANDMARK证书、AVATAR证书
+ 
+ @param faceId 被检测的人脸 ID ，未开启多人检测时传 0 ，表示检测第一个人的人脸信息；当开启多人检测时，其取值范围为 [0 ~ maxFaces-1] ，取其中第几个值就代表检测第几个人的人脸信息
+ @param name 人脸信息参数名： "landmarks" , "eye_rotation" , "translation" , "rotation" ....
+ @param pret 作为容器使用的 float 数组指针，获取到的人脸信息会被直接写入该 float 数组。
+ @param number float 数组的长度
+ @return 返回 1 代表获取成功，返回 0 代表获取失败
+ */
++ (int)getFaceInfo:(int)faceId name:(NSString *)name pret:(float *)pret number:(int)number;
 ```
 
 示例代码如下：
@@ -353,7 +424,7 @@ static int frameid = 0 ;
 ```objective-c
 	float expression[46] = {0};
     float translation[3] = {0};
-    float rotation[4] = {0};
+    float rotation[4] = {0,0,0,1};
     float rotation_mode[1] = {0};
     float pupil_pos[2] = {0};
     int is_valid = 0 ;
@@ -387,5 +458,13 @@ static int frameid = 0 ;
     info.is_valid = is_valid ;
 ```
 
-更多详情，请参考Demo代码!**
+## 形象编辑
 
+形象编辑功能包括：美型，以及对肤色、唇色、瞳色、发型、胡子、眼镜、帽子、衣服的个性化编辑。
+
+- 通过修改 controller.bundle 的相关参数，可以实现美型、及对肤色、唇色、瞳色、发色、胡子颜色、眼镜颜色、帽子颜色的修改。详情请参考[controller说明文档](Controller%20%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3.md)。
+- 通过加载并绑定相关道具到 controller.bundle 道具上，可以对发型、胡子、眼镜、帽子、衣服的样式进行修改。详情请参考[道具加载与绑定](#道具加载与绑定)。
+
+在保存形象时，仅有美型功能需要使用 FUP2AClient SDK 的接口生成新的头道具，而其他参数值及道具（发型、胡子、眼镜、帽子、衣服）信息需要客户端缓存。
+
+**更多详情，请参考Demo代码!**

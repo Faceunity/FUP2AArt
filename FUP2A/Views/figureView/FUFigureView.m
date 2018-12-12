@@ -235,14 +235,15 @@ FUFigureShapeCollectionDelegate
     
     
     // default value
-    if (currentAvatar.skinColor) {
-        _defaultSkinLevel = (int)currentAvatar.skinColor.index - 1;
+    if (currentAvatar.skinLevel != 0.0) {
+        _defaultSkinLevel = currentAvatar.skinLevel ;
         self.skinColor = currentAvatar.skinColor ;
+        self.skinLevel = currentAvatar.skinLevel ;
     }else {
         _defaultSkinLevel = [[FUManager shareInstance] getSkinColorIndex];
         self.skinColor = self.skinColorArray[_defaultSkinLevel] ;
+        self.skinLevel = _defaultSkinLevel ;
     }
-    self.skinLevel = _defaultSkinLevel ;
     
     if (currentAvatar.lipColor) {
         _defaultLipLevel = (int)currentAvatar.lipColor.index - 1;
@@ -532,7 +533,11 @@ FUFigureShapeCollectionDelegate
         
         self.middleSliderView.hidden = NO ;
         self.middleSlider.type = FUFigureSliderTypeOther ;
-        self.middleSlider.value = 0 ;
+        self.middleSlider.value = self.skinLevel - floor(self.skinLevel) ;
+//        self.middleSlider.value = 0 ;
+        
+        
+        
         
 //        self.shapeAdjustBtn.hidden = YES ;
 //        self.shapeAdjustBtn.selected = NO ;

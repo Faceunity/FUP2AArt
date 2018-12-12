@@ -26,6 +26,7 @@
 			<string>female_hair_13</string>
 			<string>female_hair_15</string>
 			<string>female_hair_16</string>
+			<string>female_hair_20</string>
 			<string>female_hair_21</string>
 			<string>female_hair_22</string>
 			<string>female_hair_23</string>
@@ -41,13 +42,39 @@
 		<array>
 			<string>glasses-noitem</string>
 			<string>female_glass_1</string>
+			<string>female_glass_2</string>
+			<string>female_glass_3</string>
+			<string>female_glass_4</string>
 			<string>female_glass_5</string>
 			<string>female_glass_6</string>
 			<string>female_glass_7</string>
+			<string>female_glass_8</string>
+			<string>female_glass_10</string>
+			<string>female_glass_11</string>
+			<string>female_glass_15</string>
+			<string>female_glass_16</string>
+			<string>female_glass_17</string>
+			<string>female_glass_18</string>
+			<string>female_glass_19</string>
+			<string>female_glass_20</string>
+			<string>female_glass_21</string>
 			<string>male_glass_1</string>
+			<string>male_glass_2</string>
+			<string>male_glass_3</string>
+			<string>male_glass_4</string>
 			<string>male_glass_5</string>
 			<string>male_glass_6</string>
 			<string>male_glass_7</string>
+			<string>male_glass_8</string>
+			<string>male_glass_10</string>
+			<string>male_glass_11</string>
+			<string>male_glass_15</string>
+			<string>male_glass_16</string>
+			<string>male_glass_17</string>
+			<string>male_glass_18</string>
+			<string>male_glass_19</string>
+			<string>male_glass_20</string>
+			<string>male_glass_21</string>
 		</array>
 	</dict>
 	<dict>
@@ -82,14 +109,44 @@
 		<key>items</key>
 		<array>
 			<string>hat-noitem</string>
+			<string>female_hat_1</string>
+			<string>female_hat_2</string>
+			<string>female_hat_3</string>
+			<string>female_hat_4</string>
+			<string>female_hat_5</string>
+			<string>female_hat_6</string>
+			<string>female_hat_7</string>
 			<string>female_hat_8</string>
 			<string>female_hat_9</string>
 			<string>female_hat_10</string>
 			<string>female_hat_11</string>
+			<string>female_hat_12</string>
+			<string>female_hat_13</string>
+			<string>female_hat_15</string>
+			<string>female_hat_16</string>
+			<string>female_hat_17</string>
+			<string>female_hat_18</string>
+			<string>female_hat_20</string>
+			<string>female_hat_21</string>
+			<string>male_hat_1</string>
+			<string>male_hat_2</string>
+			<string>male_hat_3</string>
+			<string>male_hat_4</string>
+			<string>male_hat_5</string>
+			<string>male_hat_6</string>
+			<string>male_hat_7</string>
 			<string>male_hat_8</string>
 			<string>male_hat_9</string>
 			<string>male_hat_10</string>
 			<string>male_hat_11</string>
+			<string>male_hat_12</string>
+			<string>male_hat_13</string>
+			<string>male_hat_15</string>
+			<string>male_hat_16</string>
+			<string>male_hat_17</string>
+			<string>male_hat_18</string>
+			<string>male_hat_20</string>
+			<string>male_hat_21</string>
 		</array>
 	</dict>
 </array>
