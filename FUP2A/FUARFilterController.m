@@ -25,6 +25,8 @@ FUARFilterViewDelegate
 
 @property (nonatomic, strong) FUARFilterView *filterView ;
 @property (weak, nonatomic) IBOutlet UIButton *photoBtn;
+
+@property (nonatomic, strong) FUAvatar *firstAvatar ;
 @end
 
 @implementation FUARFilterController
@@ -37,7 +39,7 @@ FUARFilterViewDelegate
     [super viewDidLoad];
     
     [self.camera startCapture ];
-    [[FUManager shareInstance] maxFace:1];
+    [[FUManager shareInstance] setMaxFaceNum:1];
     
     UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapClick:)];
     [self.renderView addGestureRecognizer:tapGesture];
@@ -50,20 +52,24 @@ FUARFilterViewDelegate
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
+    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+    [avatar enterARMode];
     [[FUManager shareInstance] enterARMode];
     
-    [self.filterView selectedModeWith:[FUManager shareInstance].currentAvatar];
+    self.firstAvatar = avatar ;
+    
+    [self.filterView selectedModeWith:[FUManager shareInstance].currentAvatars.firstObject];
 }
 
 - (IBAction)backAction:(id)sender {
     
     [self.camera stopCapture];
-    [[FUManager shareInstance] quitARMode];
-    [[FUManager shareInstance] maxFace:1];
     
-    if (avatarChanged) {
-        [[FUManager shareInstance] loadAvatar:[FUManager shareInstance].currentAvatar];
-    }
+    [[FUManager shareInstance] reloadRenderAvatar:self.firstAvatar];
+    [self.firstAvatar loadStandbyAnimation];
+    
+    [self.firstAvatar quitARMode];
+    [[FUManager shareInstance] setMaxFaceNum:1];
     
     [self.navigationController popViewControllerAnimated:NO];
 }
@@ -93,12 +99,13 @@ FUARFilterViewDelegate
 #pragma mark ---- FUARFilterViewDelegate
 -(void)ARFilterViewDidSelectedAvatar:(FUAvatar *)avatar {
     avatarChanged = YES;
-    [[FUManager shareInstance] loadARModel:avatar];
+    [[FUManager shareInstance] reloadRenderAvatarInARMode:avatar];
 }
 
 // 点击滤镜
 - (void)ARFilterViewDidSelectedARFilter:(NSString *)filterName {
-    [[FUManager shareInstance] loadARFilter:filterName];
+    NSString *filterPath = [[NSBundle mainBundle] pathForResource:filterName ofType:@"bundle"];
+    [[FUManager shareInstance] reloadARFilterWithPath:filterPath];
 }
 
 - (void)ARFilterViewDidShowTopView:(BOOL)show {

@@ -1,2 +1,2 @@
-#error 请先替换证书
+#error message ---- 请联系我司获取
 static char g_auth_package[]={};

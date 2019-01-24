@@ -1,9 +1,9 @@
 //
 //  FUFigureSlider.m
-//  EditView
+//  FUP2A
 //
-//  Created by L on 2018/11/5.
-//  Copyright © 2018年 L. All rights reserved.
+//  Created by L on 2019/1/9.
+//  Copyright © 2019年 L. All rights reserved.
 //
 
 #import "FUFigureSlider.h"
@@ -15,11 +15,9 @@
     UIImageView *bgImgView;
     
     UIView *middleView ;
-//    UIView *line ;
 }
 
-- (void)awakeFromNib
-{
+- (void)awakeFromNib {
     [super awakeFromNib];
     
     [self setThumbImage:[UIImage imageNamed:@"figure-slider-dot"] forState:UIControlStateNormal];
@@ -31,8 +29,8 @@
     
     tipLabel = [[UILabel alloc] initWithFrame:bgImgView.frame];
     tipLabel.text = @"";
-    tipLabel.textColor = [UIColor colorWithHexColorString:@"4C96FF"];
-    tipLabel.font = [UIFont systemFontOfSize:14];
+    tipLabel.textColor = [UIColor whiteColor];
+    tipLabel.font = [UIFont systemFontOfSize:12];
     tipLabel.textAlignment = NSTextAlignmentCenter;
     tipLabel.backgroundColor = [UIColor clearColor];
     [self addSubview:tipLabel];
@@ -49,17 +47,6 @@
         middleView.backgroundColor = [UIColor colorWithHexColorString:@"4C96FF"];
         [self insertSubview:middleView atIndex: self.subviews.count - 1];
     }
-    
-//    if (!line) {
-//        line = [[UIView alloc] init];
-//        line.backgroundColor = [UIColor whiteColor];
-//        line.layer.masksToBounds = YES ;
-//        line.layer.cornerRadius = 1.0 ;
-//        [self insertSubview:line atIndex: self.subviews.count - 1];
-//    }
-//
-//    line.frame = CGRectMake(self.frame.size.width / 2.0 - 1.0, 4.0, 2.0, self.frame.size.height - 8.0) ;
-    
     CGFloat value = self.value ;
     [self setValue:value animated:NO];
 }
@@ -70,18 +57,17 @@
         case FUFigureSliderTypeShape:{
             [self setMaximumValue:1.0];
             [self setMinimumValue:-1.0];
-//            line.hidden = NO ;
         }
-        break;
+            break;
         case FUFigureSliderTypeOther:{
             [self setMaximumValue:0.99];
             [self setMinimumValue:0];
-//            line.hidden = YES ;
         }
-        break ;
+            break ;
     }
+    CGFloat value = self.value ;
+    [self setValue:value animated:NO];
 }
-
 
 // 后设置 value
 - (void)setValue:(float)value animated:(BOOL)animated   {
@@ -128,7 +114,5 @@
     tipLabel.hidden = !self.tracking;
     bgImgView.hidden = !self.tracking;
 }
-
-
 
 @end

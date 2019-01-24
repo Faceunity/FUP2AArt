@@ -1,0 +1,28 @@
+ [
+      {
+          "gender" : 0,
+          "glasses" : "glasses-noitem",
+          "hair_label" : 1,
+          "beard_label" : 0,
+          "beard" : "beard-noitem",
+          "hair" : "male_hair_1",
+          "matchLabel" : 0,
+          "clothes" : "male_clothes_1",
+          "hat" : "hat-noitem",
+          "name" : "1",
+          "default" : 1
+      },
+      {
+          "gender" : 1,
+          "glasses" : "glasses-noitem",
+          "hair_label" : 16,
+          "beard_label" : 0,
+          "beard" : "beard-noitem",
+          "hair" : "female_hair_16",
+          "matchLabel" : 3,
+          "clothes" : "female_clothes_1",
+          "hat" : "hat-noitem",
+          "name" : "2",
+          "default" : 1
+      }
+  ]

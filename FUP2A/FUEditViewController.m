@@ -10,18 +10,15 @@
 #import "FUCamera.h"
 #import "FUOpenGLView.h"
 #import "FUManager.h"
+#import "FUAvatar.h"
 #import <SVProgressHUD.h>
 #import "FUTool.h"
 
-#import "FUFigureColor.h"
+#import "FUP2AColor.h"
 #import "FUFigureView.h"
 
 @interface FUEditViewController ()<FUCameraDelegate,FUFigureViewDelegate>
-{
-    CGFloat preScale; // 捏合比例
-    
-    CVPixelBufferRef renderTarget;
-}
+
 @property (nonatomic, strong) FUCamera *camera ;
 @property (weak, nonatomic) IBOutlet FUOpenGLView *renderView;
 
@@ -33,6 +30,9 @@
 @property (weak, nonatomic) IBOutlet UIImageView *loadingImage;
 @property (weak, nonatomic) IBOutlet UILabel *pointLabel;
 @property (nonatomic, strong) NSTimer *labelTimer ;
+
+@property (nonatomic, strong) FUAvatar *currentAvatar ;
+
 @end
 
 @implementation FUEditViewController
@@ -44,13 +44,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    [[FUManager shareInstance] enterFacepupMode];
-    
-    // 捏合 用于缩放
-    UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(zoomAvatar:)];
-    [self.renderView addGestureRecognizer:pinchGesture];
-    UIPinchGestureRecognizer *pinchGesture2 = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(zoomAvatar:)];
-    [self.figureView addGestureRecognizer:pinchGesture2];
+    self.currentAvatar = [FUManager shareInstance].currentAvatars.firstObject;
+    [self.currentAvatar enterFacepupMode];
     
     [self.figureView setupFigureView];
 }
@@ -58,6 +53,8 @@
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self.camera startCapture];
+    
+    [self.currentAvatar resetScaleToFace];
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -78,34 +75,13 @@
     
     float dx = (locationX - preLocationX) / self.renderView.frame.size.width;
     
-    [[FUManager shareInstance] setRotDelta:dx Horizontal:YES];
-    
     CGFloat locationY = [touch locationInView:self.renderView].y;
     CGFloat preLocationY = [touch previousLocationInView:self.renderView].y;
     
     float dy = (locationY - preLocationY) / self.renderView.frame.size.height ;
     
-    [[FUManager shareInstance] setRotDelta:dy Horizontal:NO];
-}
-
-// Avatar 缩放
-- (void)zoomAvatar:(UIPinchGestureRecognizer *)gesture {
-    float curScale = gesture.scale;
-    
-    if (curScale < 1.0) {
-        curScale = - fabsf(1 / curScale - 1);
-    }else   {
-        curScale -= 1;
-    }
-    
-    float ds = curScale - preScale;
-    preScale = curScale;
-    
-    [[FUManager shareInstance] setScaleDelta:ds];
-    
-    if (gesture.state == UIGestureRecognizerStateEnded) {
-        preScale = 0.0;
-    }
+    [self.currentAvatar resetRotDelta:dx];
+    [self.currentAvatar resetTranslateDelta:-dy];
 }
 
 -(void)didOutputVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer {
@@ -114,56 +90,6 @@
     CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemWithPixelBuffer:pixelBuffer RenderMode:FURenderCommonMode Landmarks:nil];
     
     [self.renderView displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:YES];
-    
-    
-    CVPixelBufferLockBaseAddress(buffer, 0);
-    
-    int width = (int)CVPixelBufferGetWidth(buffer) ;
-    int height = (int)CVPixelBufferGetHeight(buffer) ;
-    int size = (int)CVPixelBufferGetDataSize(buffer) ;
-    void *byte = CVPixelBufferGetBaseAddress(buffer) ;
-    
-    CVPixelBufferUnlockBaseAddress(buffer, 0);
-    
-    if (renderTarget) {
-        
-        int w = (int)CVPixelBufferGetWidth(renderTarget) ;
-        int h = (int)CVPixelBufferGetHeight(renderTarget) ;
-        
-        if (width == w && height == h) {
-            
-            CVPixelBufferLockBaseAddress(renderTarget, 0) ;
-            
-            void *b = CVPixelBufferGetBaseAddress(renderTarget) ;
-            
-            memcpy(b, byte, size) ;
-            
-            CVPixelBufferUnlockBaseAddress(renderTarget, 0) ;
-        }else {
-            CFRelease(renderTarget) ;
-            renderTarget = nil ;
-            [self creatPixelBufferWithSize:CGSizeMake(width, height)] ;
-        }
-    }else {
-        [self creatPixelBufferWithSize:CGSizeMake(width, height)] ;
-    }
-}
-
-- (void)creatPixelBufferWithSize:(CGSize)size {
-    
-    if (!renderTarget) {
-        NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
-                                                  @(kCVPixelFormatType_32BGRA),
-                                              (NSString*) kCVPixelBufferWidthKey : @(size.width),
-                                              (NSString*) kCVPixelBufferHeightKey : @(size.height),
-                                              (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
-                                              (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
-        CVPixelBufferCreate(kCFAllocatorDefault,
-                            size.width, size.height,
-                            kCVPixelFormatType_32BGRA,
-                            (__bridge CFDictionaryRef)pixelBufferOptions,
-                            &renderTarget);
-    }
 }
 
 // 返回
@@ -175,54 +101,67 @@
         
         UIAlertAction *cancle = [UIAlertAction actionWithTitle:@"放弃" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
             [weaklSelf.camera stopCapture];
-            [weaklSelf resetPupParams];
-            [[FUManager shareInstance] quitFacepupMode];
-            FUAvatar *avatar = [FUManager shareInstance].currentAvatar;
-            if (self.figureView.currentHair != avatar.defaultHair) {
-                NSString *hairPath;
-                if (avatar.time) {
-                    hairPath = [[avatar avatarPath] stringByAppendingPathComponent:avatar.defaultHair];
-                }else {
-                    hairPath = [[[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Resource"] stringByAppendingPathComponent:avatar.bundleName] stringByAppendingPathComponent:avatar.defaultHair];
-                }
+            
+            if (self.figureView.currentHair != self.currentAvatar.hair) {
+                NSString *hairPath = [[self.currentAvatar filePath] stringByAppendingPathComponent:self.currentAvatar.hair];
                 if (![hairPath hasSuffix:@"bundle"]) {
                     hairPath = [hairPath stringByAppendingString:@".bundle"];
                 }
-                [[FUManager shareInstance] loadItemWithtype:FUItemTypeHair filePath:hairPath];
+                [self.currentAvatar reloadHairWithPath:hairPath];
             }
-            if (self.figureView.currentCloth != avatar.defaultClothes) {
-                NSString *clothes = avatar.defaultClothes ;
-                if (clothes == nil || [clothes isEqualToString:@"noitem"]) {
-                    clothes = avatar.isMale ? @"male_underware" : @"female_underware" ;
-                }
+            if (self.figureView.currentCloth != self.currentAvatar.clothes) {
+                NSString *clothes = self.currentAvatar.clothes ;
                 NSString *clothesPath = [[NSBundle mainBundle] pathForResource:clothes ofType:@"bundle"];
-                [[FUManager shareInstance] loadItemWithtype:FUItemTypeClothes filePath:clothesPath];
+                [self.currentAvatar reloadClothesWithPath:clothesPath];
             }
-            if (self.figureView.currentGlasses != avatar.defaultGlasses) {
+            if (self.figureView.currentGlasses != self.currentAvatar.glasses) {
                 NSString *glassesPath = nil ;
-                if (avatar.defaultGlasses != nil && ![avatar.defaultGlasses isEqualToString:@"glasses-noitem"]) {
-                    glassesPath = [[NSBundle mainBundle] pathForResource:avatar.defaultGlasses ofType:@"bundle"];
+                if (self.currentAvatar.glasses != nil && ![self.currentAvatar.glasses isEqualToString:@"glasses-noitem"]) {
+                    NSString *glassName = [self.currentAvatar.glasses stringByAppendingString:@".bundle"];
+                    glassesPath = [[NSBundle mainBundle] pathForResource:glassName ofType:nil];
                 }
-                [[FUManager shareInstance] loadItemWithtype:FUItemTypeGlasses filePath:glassesPath];
+                [self.currentAvatar reloadGlassesWithPath:glassesPath];
             }
             
-            if (self.figureView.currentBeard != avatar.defaultBeard) {
-                NSString *glassesPath = nil ;
-                if (avatar.defaultBeard != nil && ![avatar.defaultBeard isEqualToString:@"beard-noitem"]) {
-                    glassesPath = [[NSBundle mainBundle] pathForResource:avatar.defaultBeard ofType:@"bundle"];
+            if (self.figureView.currentBeard != self.currentAvatar.beard) {
+                NSString *beardPath = nil ;
+                if (self.currentAvatar.beard != nil && ![self.currentAvatar.beard isEqualToString:@"beard-noitem"]) {
+                    NSString *beardName = [self.currentAvatar.beard stringByAppendingString:@".bundle"];
+                    beardPath = [[NSBundle mainBundle] pathForResource:beardName ofType:nil];
                 }
-                [[FUManager shareInstance] loadItemWithtype:FUItemTypeBeard filePath:glassesPath];
+                [self.currentAvatar reloadBeardWithPath:beardPath];
             }
             
-            if (self.figureView.currentHat != avatar.defaultHat) {
+            if (self.figureView.currentHat != self.currentAvatar.hat) {
                 NSString *hatPath = nil ;
-                if (avatar.defaultHat != nil && ![avatar.defaultHat isEqualToString:@"hat-noitem"]) {
-                    hatPath = [[NSBundle mainBundle] pathForResource:avatar.defaultHat ofType:@"bundle"];
+                if (self.currentAvatar.hat != nil && ![self.currentAvatar.hat isEqualToString:@"hat-noitem"]) {
+                    NSString *hatName = [self.currentAvatar.hat stringByAppendingString:@".bundle"];
+                    hatPath = [[NSBundle mainBundle] pathForResource:hatName ofType:nil];
                 }
-                [[FUManager shareInstance] loadItemWithtype:FUItemTypeHat filePath:hatPath];
+                [self.currentAvatar reloadHatWithPath:hatPath];
             }
             
-            [[FUManager shareInstance] setDefaultColorForAvatar:avatar];
+            if (self.figureView.currentEyeLash != self.currentAvatar.eyeLash) {
+                NSString *hatPath = nil ;
+                if (self.currentAvatar.eyeLash != nil && ![self.currentAvatar.eyeLash isEqualToString:@"eyelash-noitem"]) {
+                    NSString *hatName = [self.currentAvatar.eyeLash stringByAppendingString:@".bundle"];
+                    hatPath = [[NSBundle mainBundle] pathForResource:hatName ofType:nil];
+                }
+                [self.currentAvatar reloadEyeLashWithPath:hatPath];
+            }
+            
+            if (self.figureView.currentEyeBrow != self.currentAvatar.eyeBrow) {
+                NSString *hatPath = nil ;
+                if (self.currentAvatar.eyeBrow != nil && ![self.currentAvatar.eyeBrow isEqualToString:@"eyeBrow-noitem"]) {
+                    NSString *hatName = [self.currentAvatar.eyeBrow stringByAppendingString:@".bundle"];
+                    hatPath = [[NSBundle mainBundle] pathForResource:hatName ofType:nil];
+                }
+                [self.currentAvatar reloadEyeBrowWithPath:hatPath];
+            }
+            
+            [self.currentAvatar setAvatarColors];
+            
+            [self.currentAvatar quitFacepupMode];
             
             [weaklSelf.navigationController popViewControllerAnimated:NO];
         }];
@@ -239,133 +178,47 @@
         }];
     }else {
         [self.camera stopCapture];
-        [self resetPupParams];
-        [[FUManager shareInstance] quitFacepupMode];
+        [self.currentAvatar setAvatarColors];
+        [self.currentAvatar quitFacepupMode];
         [self.navigationController popViewControllerAnimated:NO];
     }
-}
-
-- (void)resetPupParams {
-    
-    FUAvatar *avatar = [FUManager shareInstance].currentAvatar;
-    
-    double color[3] ;
-    FUFigureColor *c = avatar.skinColor ;
-    if (!c) {
-        c = self.figureView.skinColorArray[self.figureView.defaultSkinLevel] ;
-    }
-    color[0] = c.r ;
-    color[1] = c.g ;
-    color[2] = c.b ;
-    [[FUManager shareInstance] facepopSetSkinColor:color];
-    
-    c = avatar.lipColor ;
-    if (!c) {
-        c = self.figureView.lipColorArray[self.figureView.defaultLipLevel] ;
-    }
-    color[0] = c.r ;
-    color[1] = c.g ;
-    color[2] = c.b ;
-    [[FUManager shareInstance] facepopSetLipColor:color];
-    
-    c = avatar.irisColor ;
-    if (!c) {
-        c = self.figureView.irisColorArray[0] ;
-    }
-    color[0] = c.r ;
-    color[1] = c.g ;
-    color[2] = c.b ;
-    [[FUManager shareInstance] facepopSetIrisColor:color];
-    
-    c = avatar.hairColor ;
-    if (!c) {
-        c = self.figureView.hairColorArray[0] ;
-    }
-    color[0] = c.r ;
-    color[1] = c.g ;
-    color[2] = c.b ;
-    [[FUManager shareInstance] facepopSetHairColor:color intensity:c.intensity];
-    
-    c = avatar.glassFrameColor ;
-    if (!c) {
-        c = self.figureView.glassFrameArray[0] ;
-    }
-    color[0] = c.r ;
-    color[1] = c.g ;
-    color[2] = c.b ;
-    [[FUManager shareInstance] facepopSetGlassesFrameColor:color];
-    
-    c = avatar.glassColor ;
-    if (!c) {
-        c = self.figureView.glassColorArray[0] ;
-    }
-    color[0] = c.r ;
-    color[1] = c.g ;
-    color[2] = c.b ;
-    [[FUManager shareInstance] facepopSetGlassesColor:color];
-    
-    c = avatar.beardColor ;
-    if (!c) {
-        c = self.figureView.beardColorArray[0] ;
-    }
-    color[0] = c.r ;
-    color[1] = c.g ;
-    color[2] = c.b ;
-    [[FUManager shareInstance] facepopSetBeardColor:color];
 }
 
 // 保存
 - (IBAction)downLoadAction:(UIButton *)sender {
     sender.userInteractionEnabled = NO ;
     [self.camera stopCapture];
-    [self resetPupParams];
+    [self.currentAvatar setAvatarColors];
     [self startLoadingAnimation];
 
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         BOOL deformHead = [self.figureView figureViewIsChange] ;
         
-        if (!deformHead && [FUManager shareInstance].currentAvatar.time != nil) {
-            FUAvatar *avatar = [FUManager shareInstance].currentAvatar;
+        if (!deformHead && !self.currentAvatar.defaultModel) {
             
-            avatar.defaultHair = self.figureView.currentHair ;
-            avatar.defaultClothes = self.figureView.currentCloth ;
-            avatar.defaultGlasses = self.figureView.currentGlasses ;
-            avatar.defaultBeard = self.figureView.currentBeard ;
-            avatar.defaultHat = self.figureView.currentHat ;
+            self.currentAvatar.hair = self.figureView.currentHair ;
+            self.currentAvatar.clothes = self.figureView.currentCloth ;
+            self.currentAvatar.glasses = self.figureView.currentGlasses ;
+            self.currentAvatar.beard = self.figureView.currentBeard ;
+            self.currentAvatar.hat = self.figureView.currentHat ;
+            self.currentAvatar.eyeLash = self.figureView.currentEyeLash ;
+            self.currentAvatar.eyeBrow = self.figureView.currentEyeBrow ;
             
-            avatar.skinColor = self.figureView.skinColor ;
-            avatar.skinLevel = self.figureView.skinLevel ;
-            avatar.lipColor = self.figureView.lipColor ;
-            avatar.irisColor = self.figureView.irisColor ;
-            avatar.hairColor = self.figureView.hairColor ;
-            avatar.glassColor = self.figureView.glassesColor ;
-            avatar.glassFrameColor = self.figureView.glassesFrameColor ;
-            avatar.beardColor = self.figureView.beardColor ;
-            avatar.hatColor = self.figureView.hatColor ;
+            self.currentAvatar.skinColor = self.figureView.skinColor ;
+            self.currentAvatar.skinLevel = self.figureView.skinLevel ;
+            self.currentAvatar.lipColor = self.figureView.lipColor ;
+            self.currentAvatar.irisColor = self.figureView.irisColor ;
+            self.currentAvatar.hairColor = self.figureView.hairColor ;
+            self.currentAvatar.glassColor = self.figureView.glassesColor ;
+            self.currentAvatar.glassFrameColor = self.figureView.glassesFrameColor ;
+            self.currentAvatar.beardColor = self.figureView.beardColor ;
+            self.currentAvatar.hatColor = self.figureView.hatColor ;
             
-            [FUManager shareInstance].currentAvatar = avatar;
-      
-            [[FUManager shareInstance] setDefaultColorForAvatar:avatar];
+            [self.currentAvatar setAvatarColors];
             
-            [[FUManager shareInstance] quitFacepupMode];
+            [self.currentAvatar quitFacepupMode];
             
-            NSMutableArray<FUAvatar *> *history = [NSKeyedUnarchiver unarchiveObjectWithFile:historyPath];
-
-            if (!history) {
-                history = [[NSMutableArray alloc] init];
-            }
-            NSInteger index = -1 ;
-            for (FUAvatar *ava in history) {
-                if ([avatar.time isEqualToString:ava.time]) {
-                    index = [history indexOfObject:ava];
-                    break ;
-                }
-            }
-            
-            if (index != -1) {
-                [history replaceObjectAtIndex:index withObject:avatar];
-                [NSKeyedArchiver archiveRootObject:history toFile:historyPath];
-            }
+            [self rewriteJsonInfoWithAvatar:self.currentAvatar];
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self.navigationController popViewControllerAnimated:NO ];
@@ -373,13 +226,13 @@
             return ;
         }
         
-        float coeffi[36] = {
+        float coeffi[38] = {
             self.figureView.cheekNarrow > 0 ? self.figureView.cheekNarrow : 0,
             self.figureView.cheekNarrow > 0 ? 0 : fabs(self.figureView.cheekNarrow),
             self.figureView.headShrink > 0 ? self.figureView.headShrink : 0,
             self.figureView.headShrink > 0 ? 0 : fabs(self.figureView.headShrink),
-            self.figureView.headBoneStretch > 0 ? 0 : fabs(self.figureView.headBoneStretch),
-            self.figureView.headBoneStretch > 0 ? self.figureView.headBoneStretch : 0,
+            0,
+            0,
             self.figureView.jawLower > 0 ? self.figureView.jawLower : 0,
             self.figureView.jawLower > 0 ? 0 : fabs(self.figureView.jawLower),
             self.figureView.jawboneNarrow > 0 ? self.figureView.jawboneNarrow : 0,
@@ -410,106 +263,126 @@
             self.figureView.eyeOutterUp > 0 ? 0 : fabs(self.figureView.eyeOutterUp),
             self.figureView.eyeOutterUp > 0 ? self.figureView.eyeOutterUp : 0,
             self.figureView.eyeUp > 0 ? self.figureView.eyeUp : 0,
+            self.figureView.headBoneStretch > 0 ? 0 : fabs(self.figureView.headBoneStretch),
+            self.figureView.headBoneStretch > 0 ? self.figureView.headBoneStretch : 0,
         };
         
-        CFAbsoluteTime start = CFAbsoluteTimeGetCurrent() ;
-        BOOL ret = [[FUManager shareInstance] createPupAvatarWithCoeffi:coeffi colorIndex:0 DeformHead:deformHead] ;
-        CFAbsoluteTime create = CFAbsoluteTimeGetCurrent();
-        FUAvatar *avatar = [FUManager shareInstance].currentAvatar;
+        FUAvatar *avatar = [[FUManager shareInstance] createPupAvatarWithCoeffi:coeffi DeformHead:deformHead];
         
-        avatar.defaultGlasses = self.figureView.currentGlasses ;
-        avatar.defaultHair = self.figureView.currentHair ;
-        avatar.defaultClothes = self.figureView.currentCloth ;
-        avatar.defaultBeard = self.figureView.currentBeard ;
-        avatar.defaultHat = self.figureView.currentHat ;
-        
-        avatar.skinColor = self.figureView.skinColor ;
-        avatar.skinLevel = self.figureView.skinLevel ;
-        avatar.lipColor = self.figureView.lipColor ;
-        avatar.irisColor = self.figureView.irisColor ;
-        avatar.hairColor = self.figureView.hairColor ;
-        avatar.glassColor = self.figureView.glassesColor ;
-        avatar.glassFrameColor = self.figureView.glassesFrameColor ;
-        avatar.beardColor = self.figureView.beardColor ;
-        avatar.hatColor = self.figureView.hatColor ;
-        
-        NSMutableArray<FUAvatar *> *history = [[NSKeyedUnarchiver unarchiveObjectWithFile:historyPath] mutableCopy];
-
-        if (!history) {
-            history = [[NSMutableArray alloc] init];
-
-        }
-        NSInteger replaceIndex = -1 ;
-        for (FUAvatar *ava in history) {
-            if ([ava.time isEqualToString:avatar.time]) {
-                replaceIndex = [history indexOfObject:ava];
-                break ;
-
-            }
-
-        }
-        if (replaceIndex == -1) {
-            [history insertObject:avatar atIndex:0];
-            [[FUManager shareInstance].avatars insertObject:avatar atIndex:DefaultAvatarNum];
-
-        }else {
-            [history replaceObjectAtIndex:replaceIndex withObject:avatar];
-            [[FUManager shareInstance].avatars replaceObjectAtIndex:DefaultAvatarNum + replaceIndex withObject:avatar];
-
-        }
-        [NSKeyedArchiver archiveRootObject:history toFile:historyPath];
-        CFAbsoluteTime final = CFAbsoluteTimeGetCurrent() ;
-        NSLog(@"---- total: %f --- change default: %f", (final - start) * 1000.0, (final - create) * 1000.0);
-        [[FUManager shareInstance] loadAvatar:avatar];
-        if (ret) {
-            [[FUManager shareInstance] quitFacepupMode];
-            
-            // 避免 body 还没有加载完成。闪现上一个模型的画面。
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [self.navigationController popViewControllerAnimated:NO ];
-
-            });
-
-        }else {
+        if (!avatar) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self stopLoadingAnimation];
                 [SVProgressHUD showErrorWithStatus:@"模型保存失败，请重试"];
                 [self.camera startCapture];
                 sender.userInteractionEnabled = YES ;
-
+                
             });
-
+        }else {
+            
+            avatar.hair = self.figureView.currentHair ;
+            avatar.clothes = self.figureView.currentCloth ;
+            avatar.glasses = self.figureView.currentGlasses ;
+            avatar.beard = self.figureView.currentBeard ;
+            avatar.hat = self.figureView.currentHat ;
+            avatar.eyeLash = self.figureView.currentEyeLash ;
+            avatar.eyeBrow = self.figureView.currentEyeBrow ;
+            
+            avatar.skinColor = self.figureView.skinColor ;
+            avatar.skinLevel = self.figureView.skinLevel ;
+            avatar.lipColor = self.figureView.lipColor ;
+            avatar.irisColor = self.figureView.irisColor ;
+            avatar.hairColor = self.figureView.hairColor ;
+            NSLog(@"--------------------- hair color r:%.2f - g:%.2f - b:%.2f ", avatar.hairColor.r, avatar.hairColor.g, avatar.hairColor.b);
+            avatar.glassColor = self.figureView.glassesColor ;
+            avatar.glassFrameColor = self.figureView.glassesFrameColor ;
+            avatar.beardColor = self.figureView.beardColor ;
+            avatar.hatColor = self.figureView.hatColor ;
+            
+            
+            NSInteger replaceIndex = -1 ;
+            for (FUAvatar *ava in [FUManager shareInstance].avatarList) {
+                if ([ava.name isEqualToString:avatar.name]) {
+                    replaceIndex = [[FUManager shareInstance].avatarList indexOfObject:ava];
+                    break ;
+                }
+            }
+            if (replaceIndex == -1) {
+                [[FUManager shareInstance].avatarList insertObject:avatar atIndex:DefaultAvatarNum];
+            }else {
+                [[FUManager shareInstance].avatarList replaceObjectAtIndex: replaceIndex withObject:avatar];
+            }
+            
+            
+            [[FUManager shareInstance] reloadRenderAvatar:avatar];
+            
+            [avatar loadStandbyAnimation];
+            
+            [avatar setAvatarColors];
+            
+            [avatar quitFacepupMode];
+            
+            [self rewriteJsonInfoWithAvatar:avatar];
+            
+            // 避免 body 还没有加载完成。闪现上一个模型的画面。
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [self.navigationController popViewControllerAnimated:NO ];
+            });
         }
     });
+}
+
+- (void)rewriteJsonInfoWithAvatar:(FUAvatar *)avatar {
+    NSString *jsonPath = [[AvatarListPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
+    NSData *tmpData = [[NSString stringWithContentsOfFile:jsonPath encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
+    if (tmpData != nil) {
+        NSMutableDictionary *avatarInfo = [NSJSONSerialization JSONObjectWithData:tmpData options:NSJSONReadingMutableContainers error:nil];
+        
+        [avatarInfo setObject:avatar.hair forKey:@"hair"];
+        [avatarInfo setObject:avatar.clothes forKey:@"clothes"];
+        [avatarInfo setObject:avatar.glasses forKey:@"glasses"];
+        [avatarInfo setObject:avatar.beard forKey:@"beard"];
+        [avatarInfo setObject:avatar.hat forKey:@"hat"];
+        [avatarInfo setObject:avatar.eyeLash forKey:@"eyeLash"];
+        [avatarInfo setObject:avatar.eyeBrow forKey:@"eyeBrow"];
+        
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:avatarInfo options:NSJSONWritingPrettyPrinted error:nil];
+        [jsonData writeToFile:jsonPath atomically:YES];
+    }
 }
 
 #pragma mark --- FUEditViewDelegate
 - (BOOL)isModeChanged  {
     
-    FUAvatar *avatar = [FUManager shareInstance].currentAvatar;
-    if (self.figureView.currentHair != avatar.defaultHair
-        || self.figureView.currentCloth != avatar.defaultClothes
-        || self.figureView.currentGlasses != avatar.defaultGlasses
-        || self.figureView.currentBeard != avatar.defaultBeard
-        || self.figureView.currentHat != avatar.defaultHat) {
+    // 装饰
+    if (self.figureView.currentHair != self.currentAvatar.hair
+        || self.figureView.currentCloth != self.currentAvatar.clothes
+        || self.figureView.currentGlasses != self.currentAvatar.glasses
+        || self.figureView.currentBeard != self.currentAvatar.beard
+        || self.figureView.currentHat != self.currentAvatar.hat
+        || self.figureView.currentEyeLash != self.currentAvatar.eyeLash
+        || self.figureView.currentEyeBrow != self.currentAvatar.eyeBrow) {
         
         return YES ;
     }
     
+    // 捏脸参数
     if ([self.figureView figureViewIsChange]) {
         return YES ;
     }
-
-    if (self.figureView.skinLevel != self.figureView.defaultSkinLevel
-        || self.figureView.lipLevel != self.figureView.defaultLipLevel ) {
+    
+    // 肤色
+    if (self.figureView.skinLevel != self.figureView.defaultSkinLevel) {
         return YES ;
     }
     
-    if ((avatar.hairColor != nil && ![self.figureView.hairColor colorIsEqualTo: avatar.hairColor])
-        || (avatar.beardColor != nil && ![self.figureView.beardColor colorIsEqualTo: avatar.beardColor])
-        || (avatar.glassColor != nil && ![self.figureView.glassesColor colorIsEqualTo: avatar.glassColor])
-        || (avatar.glassFrameColor != nil && ![self.figureView.glassesFrameColor colorIsEqualTo: avatar.glassFrameColor])
-        || (avatar.hatColor != nil && ![self.figureView.hatColor colorIsEqualTo: avatar.hatColor])) {
+    if ((self.currentAvatar.hairColor != nil && ![self.figureView.hairColor colorIsEqualTo: self.currentAvatar.hairColor])
+//        || (self.currentAvatar.beardColor != nil && ![self.figureView.beardColor colorIsEqualTo: self.currentAvatar.beardColor])
+        || (self.currentAvatar.glassColor != nil && ![self.figureView.glassesColor colorIsEqualTo: self.currentAvatar.glassColor])
+        || (self.currentAvatar.glassFrameColor != nil && ![self.figureView.glassesFrameColor colorIsEqualTo: self.currentAvatar.glassFrameColor])
+        || (self.currentAvatar.hatColor != nil && ![self.figureView.hatColor colorIsEqualTo: self.currentAvatar.hatColor])
+        || (self.currentAvatar.irisColor != nil && ![self.figureView.irisColor colorIsEqualTo: self.currentAvatar.irisColor])
+        || (self.currentAvatar.lipColor != nil && ![self.figureView.lipColor colorIsEqualTo: self.currentAvatar.lipColor])) {
+        
         return YES ;
     }
     
@@ -570,158 +443,150 @@
 
 
 #pragma mark ---- FUFigureViewDelegate
-- (void)figureViewShapeParamsDidChangedWithKey:(NSString *)key level:(double)level {
-    [[FUManager shareInstance] facepopSetShapParam:key level:level];
-    self.downloadBtn.enabled = YES ;
+
+// 捏合手势实现
+- (void)figureViewDidReceiveZoomAction:(float)ds {
+    [self.currentAvatar resetScaleDelta:ds];
 }
 
-- (void)figureViewSkinColorDidChangedCurrentColor:(FUFigureColor *)curColor nextColor:(FUFigureColor *)nextColor scale:(double)scale {
-    double c[3] ;
-    c[0] = curColor.r ;
-    c[1] = curColor.g ;
-    c[2] = curColor.b ;
-    if (nextColor) {
-        c[0] = (nextColor.r - curColor.r) * scale + curColor.r;
-        c[1] = (nextColor.g - curColor.g) * scale + curColor.g;
-        c[2] = (nextColor.b - curColor.b) * scale + curColor.b;
-    }
-    
-    [[FUManager shareInstance] facepopSetSkinColor:c];
-    self.downloadBtn.enabled = YES ;
-}
-
-- (void)figureViewLipColorDidChanged {
-    FUFigureColor *color = self.figureView.lipColor ;
-    double c[3] ;
-    c[0] = color.r ;
-    c[1] = color.g ;
-    c[2] = color.b ;
-    [[FUManager shareInstance] facepopSetLipColor:c];
-    self.downloadBtn.enabled = YES ;
-}
-
-- (void)figureViewIrisColorDidChanged {
-    FUFigureColor *color = self.figureView.irisColor ;
-    double c[3] ;
-    c[0] = color.r ;
-    c[1] = color.g ;
-    c[2] = color.b ;
-    [[FUManager shareInstance] facepopSetIrisColor:c];
-    self.downloadBtn.enabled = YES ;
-}
-
-- (void)figureViewDiaChangeHairColor {
-    FUFigureColor *color = self.figureView.hairColor ;
-    double c[3] ;
-    c[0] = color.r ;
-    c[1] = color.g ;
-    c[2] = color.b ;
-    [[FUManager shareInstance] facepopSetHairColor:c intensity:color.intensity];
-    self.downloadBtn.enabled = YES ;
-}
-
-- (void)figureViewDiaChangeHair:(NSString *)hairName {
-    
-    NSLog(@"--------------- hair name: %@", hairName);
+// 头发
+- (void)figureViewDidChangeHair:(NSString *)hairName {
     NSString *filePath = nil ;
     if ([hairName isEqualToString:@"hair-noitem"]) {
         filePath = nil ;
     }else {
-        FUAvatar *avatar = [FUManager shareInstance].currentAvatar;
-        if (avatar.time) {
-            filePath = [[[avatar avatarPath] stringByAppendingPathComponent:hairName] stringByAppendingString:@".bundle"];
+        if (self.currentAvatar.name) {
+            filePath = [[[self.currentAvatar filePath] stringByAppendingPathComponent:hairName] stringByAppendingString:@".bundle"];
 
         }else {
-            filePath = [[[[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Resource"] stringByAppendingPathComponent:avatar.bundleName] stringByAppendingPathComponent:hairName] stringByAppendingString:@".bundle"] ;
+            filePath = [[[[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Resource"] stringByAppendingPathComponent:self.currentAvatar.name] stringByAppendingPathComponent:hairName] stringByAppendingString:@".bundle"] ;
         }
     }
-    [[FUManager shareInstance] loadItemWithtype:FUItemTypeHair filePath:filePath];
+    [self.currentAvatar reloadHairWithPath:filePath];
     self.downloadBtn.enabled = YES ;
 }
 
-- (void)figureViewDiaChangeGlassesFrameColor {
-    FUFigureColor *color = self.figureView.glassesFrameColor ;
-    double c[3] ;
-    c[0] = color.r ;
-    c[1] = color.g ;
-    c[2] = color.b ;
-    [[FUManager shareInstance] facepopSetGlassesFrameColor:c];
-    self.downloadBtn.enabled = YES ;
-}
-
-- (void)figureViewDiaChangeGlassesColor {
-    FUFigureColor *color = self.figureView.glassesColor ;
-    double c[3] ;
-    c[0] = color.r ;
-    c[1] = color.g ;
-    c[2] = color.b ;
-    [[FUManager shareInstance] facepopSetGlassesColor:c];
-    self.downloadBtn.enabled = YES ;
-}
-
-- (void)figureViewDiaChangeGlasses:(NSString *)glassesName {
-    NSString *filePath = nil ;
-    if ([glassesName isEqualToString:@"glasses-noitem"]) {
-        filePath = nil ;
-    }else {
-        filePath = [[NSBundle mainBundle] pathForResource:glassesName ofType:@"bundle"];
-    }
-    [[FUManager shareInstance] loadItemWithtype:FUItemTypeGlasses filePath:filePath];
-    self.downloadBtn.enabled = YES ;
-}
-
-- (void)figureViewDiaChangeBeardColor {
-    FUFigureColor *color = self.figureView.beardColor ;
-    double c[3] ;
-    c[0] = color.r ;
-    c[1] = color.g ;
-    c[2] = color.b ;
-    [[FUManager shareInstance] facepopSetBeardColor:c];
-    self.downloadBtn.enabled = YES ;
-}
-
-- (void)figureViewDiaChangeBeard:(NSString *)beardName {
+// 胡子
+- (void)figureViewDidChangeBeard:(NSString *)beardName {
     NSString *filePath = nil ;
     if ([beardName isEqualToString:@"beard-noitem"]) {
         filePath = nil ;
     }else {
         filePath = [[NSBundle mainBundle] pathForResource:beardName ofType:@"bundle"];
     }
-    [[FUManager shareInstance] loadItemWithtype:FUItemTypeBeard filePath:filePath];
+    [self.currentAvatar reloadBeardWithPath:filePath];
     self.downloadBtn.enabled = YES ;
 }
 
-- (void)figureViewDiaChangeCloth:(NSString *)clothName {
-    NSString *filePath = nil ;
-    if ([clothName isEqualToString:@"noitem"]) {
-        filePath = [FUManager shareInstance].currentAvatar.isMale ? [[NSBundle mainBundle] pathForResource:@"male_underware" ofType:@"bundle"] :  [[NSBundle mainBundle] pathForResource:@"female_underware" ofType:@"bundle"];
-    }else {
-        filePath = [[NSBundle mainBundle] pathForResource:clothName ofType:@"bundle"];
+// 眉毛
+- (void)figureViewDidChangeEyeBrow:(NSString *)browName {
+    NSString *hatPath = nil ;
+    if (browName && ![browName isEqualToString:@"eyebrow-noitem"]) {
+        hatPath = [[NSBundle mainBundle] pathForResource:browName ofType:@"bundle"];
     }
-    [[FUManager shareInstance] loadItemWithtype:FUItemTypeClothes filePath:filePath];
-
+    [self.currentAvatar reloadEyeBrowWithPath:hatPath];
     self.downloadBtn.enabled = YES ;
 }
 
-- (void)figureViewDiaChangeHat:(NSString *)hatName {
-    NSLog(@"--------------- hat name: %@", hatName);
+// 睫毛
+- (void)figureViewDidChangeeyeLash:(NSString *)lashName {
+    NSString *hatPath = nil ;
+    if (lashName && ![lashName isEqualToString:@"eyelash-noitem"]) {
+        hatPath = [[NSBundle mainBundle] pathForResource:lashName ofType:@"bundle"];
+    }
+    [self.currentAvatar reloadEyeLashWithPath:hatPath];
+    self.downloadBtn.enabled = YES ;
+}
+
+// 帽子
+- (void)figureViewDidChangeHat:(NSString *)hatName {
     NSString *hatPath = nil ;
     if (hatName && ![hatName isEqualToString:@"hat-noitem"]) {
         hatPath = [[NSBundle mainBundle] pathForResource:hatName ofType:@"bundle"];
     }
-    [[FUManager shareInstance] loadItemWithtype:FUItemTypeHat filePath:hatPath];
-    
+    [self.currentAvatar reloadHatWithPath:hatPath];
     self.downloadBtn.enabled = YES ;
 }
 
-- (void)figureViewDiaChangeHatColor {
-    FUFigureColor *color = self.figureView.hatColor ;
-    double c[3] ;
-    c[0] = color.r ;
-    c[1] = color.g ;
-    c[2] = color.b ;
-    [[FUManager shareInstance] facepopSetHatColor:c];
+// 衣服
+- (void)figureViewDidChangeClothes:(NSString *)clothesName {
+    NSString *filePath = nil ;
+    if (![clothesName isEqualToString:@"noitem"]) {
+        filePath = [[NSBundle mainBundle] pathForResource:clothesName ofType:@"bundle"];
+    }
+    [self.currentAvatar reloadClothesWithPath:filePath];
     self.downloadBtn.enabled = YES ;
+}
+
+// 眼镜
+- (void)figureViewDidChangeGlasses:(NSString *)glassesName {
+    
+    NSString *filePath = nil ;
+    if (![glassesName isEqualToString:@"glasses-noitem"]) {
+        filePath = [[NSBundle mainBundle] pathForResource:glassesName ofType:@"bundle"];
+    }
+    [self.currentAvatar reloadGlassesWithPath:filePath];
+    self.downloadBtn.enabled = YES ;
+}
+
+// 发色
+- (void)figureViewDidChangeHairColor:(FUP2AColor *)hairColor {
+    NSLog(@"--- haircolor - r:%.0f - g:%.0f - b:%.0f ", hairColor.r, hairColor.g, hairColor.b);
+    [self.currentAvatar facepupModeSetColor:hairColor key:@"hair_color"];
+    self.downloadBtn.enabled = YES ;
+}
+
+// 帽色
+- (void)figureViewDidChangeHatColor:(FUP2AColor *)hatColor {
+    [self.currentAvatar facepupModeSetColor:hatColor key:@"hat_color"];
+    self.downloadBtn.enabled = YES ;
+}
+
+// 肤色
+- (void)figureViewDidChangeSkinColor:(FUP2AColor *)skinColor {
+    [self.currentAvatar facepupModeSetColor:skinColor key:@"skin_color"];
+    self.downloadBtn.enabled = YES ;
+}
+// 瞳色
+- (void)figureViewDidChangeIrisColor:(FUP2AColor *)irisColor {
+    [self.currentAvatar facepupModeSetColor:irisColor key:@"iris_color"];
+    self.downloadBtn.enabled = YES ;
+}
+
+// 唇色
+- (void)figureViewDidChangeLipsColor:(FUP2AColor *)lipsColor {
+    [self.currentAvatar facepupModeSetColor:lipsColor key:@"lip_color"];
+    self.downloadBtn.enabled = YES ;
+}
+
+//  镜框颜色
+- (void)figureViewDidChangeGlassesColor:(FUP2AColor *)color {
+    [self.currentAvatar facepupModeSetColor:color key:@"glass_color"];
+    self.downloadBtn.enabled = YES ;
+}
+
+//  镜片颜色
+- (void)figureViewDidChangeGlassesFrameColor:(FUP2AColor *)color {
+    [self.currentAvatar facepupModeSetColor:color key:@"glass_frame_color"];
+    self.downloadBtn.enabled = YES ;
+}
+
+// 美型参数改变
+- (void)figureViewShapeParamsDidChangedWithKey:(NSString *)key level:(double)level {
+    [self.currentAvatar facepupModeSetParam:key level:level];
+    self.downloadBtn.enabled = YES ;
+}
+// 页面类型选择
+- (void)figureViewDidSelectedTypeWithIndex:(NSInteger)typeIndex {
+    if (typeIndex == 10) {
+        [self.currentAvatar resetScaleToSmallBody];
+    }else {
+        [self.currentAvatar resetScaleToFace];
+    }
+}
+// 隐藏全部子页面
+- (void)figureViewDidHiddenAllTypeViews {
+    [self.currentAvatar resetScaleToBody];
 }
 
 - (void)didReceiveMemoryWarning {

@@ -8,6 +8,7 @@
 
 #import "AppDelegate.h"
 #import <SVProgressHUD.h>
+#import <Photos/Photos.h>
 
 @interface AppDelegate ()
 @end
@@ -16,7 +17,12 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [SVProgressHUD setMinimumDismissTimeInterval:2.0];
+    [self getAuthorityOfPhotoLibrary];
     return YES; 
 }
 
+- (void)getAuthorityOfPhotoLibrary {
+    [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+    }];
+}
 @end

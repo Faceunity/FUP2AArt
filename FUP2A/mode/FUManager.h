@@ -1,25 +1,24 @@
 //
 //  FUManager.h
-//  FUP2A
+//  P2A
 //
-//  Created by L on 2018/6/1.
+//  Created by L on 2018/12/17.
 //  Copyright © 2018年 L. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
-#import "FUAvatar.h"
 #import "FUP2ADefine.h"
 
+@class FUAvatar, FUP2AColor;
 @interface FUManager : NSObject
 
+// version info
 @property (nonatomic, copy, readonly) NSString *appVersion ;
 @property (nonatomic, copy, readonly) NSString *sdkVersion ;
-@property (nonatomic, assign) BOOL isDeform ;
-@property (nonatomic, assign) BOOL showDebugInfo ;
 
 // 数据模型
-@property (nonatomic, strong) NSMutableArray *avatars ;
+@property (nonatomic, strong) NSMutableArray *avatarList ;
 @property (nonatomic, strong) NSArray *femaleHairs ;
 @property (nonatomic, strong) NSArray *maleHairs ;
 @property (nonatomic, strong) NSArray *femaleGlasses ;
@@ -29,6 +28,10 @@
 @property (nonatomic, strong) NSArray *maleBeards ;
 @property (nonatomic, strong) NSArray *femaleHats ;
 @property (nonatomic, strong) NSArray *maleHats ;
+//
+@property (nonatomic, strong) NSArray *femaleEyeLashs ;
+@property (nonatomic, strong) NSArray *femaleEyeBrows ;
+@property (nonatomic, strong) NSArray *maleEyeBrows ;
 
 // 颜色值
 @property (nonatomic, strong) NSArray *skinColorArray ;
@@ -41,99 +44,116 @@
 @property (nonatomic, strong) NSArray *hatColorArray ;
 
 // 当前 avatar
-@property (nonatomic, strong) FUAvatar *currentAvatar;
+@property (nonatomic, strong) NSMutableArray <FUAvatar *>*currentAvatars ;
 
 + (instancetype)shareInstance ;
 
-// 加载 avatar
-- (void)loadAvatar:(FUAvatar *)avatar ;
-// 根据路径加载道具
-- (void)loadItemWithtype:(FUItemType)itemType filePath:(NSString *)path ;
+/**
+ 普通模式下切换 Avatar
 
-// 检测人脸处理接口
+ @param avatar Avatar
+ */
+- (void)reloadRenderAvatar:(FUAvatar *)avatar ;
+
+/**
+ 普通模式下 新增 Avatar render
+
+ @param avatar 新增的 Avatar
+ */
+- (void)addRenderAvatar:(FUAvatar *)avatar ;
+
+/**
+ 普通模式下 删除 Avatar render
+
+ @param avatar 需要删除的 avatar
+ */
+- (void)removeRenderAvatar:(FUAvatar *)avatar ;
+
+/**
+ 进入 AR滤镜 模式
+ -- 会切换 controller 所在句柄
+ */
+- (void)enterARMode ;
+
+/**
+ 在 AR滤镜 模式下切换 Avatar
+ 
+ @param avatar Avatar
+ */
+- (void)reloadRenderAvatarInARMode:(FUAvatar *)avatar ;
+
+/**
+ 切换 AR滤镜
+
+ @param filePath AR滤镜 路径
+ */
+- (void)reloadARFilterWithPath:(NSString *)filePath ;
+
+/**
+ 检测人脸接口
+
+ @param sampleBuffer  图像数据
+ @return              图像数据
+ */
 - (CVPixelBufferRef)trackFaceWithBuffer:(CMSampleBufferRef)sampleBuffer ;
 
-// Avatar 处理接口
+
+/**
+ Avatar 处理接口
+
+ @param pixelBuffer 图像数据
+ @param renderMode  render 模式
+ @param landmarks   landmarks 数组
+ @return            处理之后的图像
+ */
 - (CVPixelBufferRef)renderP2AItemWithPixelBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks;
 
-//设置缩放参数
-- (void)setScaleDelta:(float)scale ;
+/**
+ AR 滤镜处理接口
 
-//设置旋转参数
-- (void)setRotDelta:(float)rot Horizontal:(BOOL)hor ;
-
-// creat avatar
-- (FUAvatar *) createAvatarWithData:(NSData *)data FileName:(NSString *)fileName isMale:(BOOL)male ;
-
-// 加载待机动画
-- (void)loadStandbyAnimation ;
-// 去除待机动画
-- (void)removeStandbyAnimation ;
-// 面部追踪 pose
-- (void)loadPose ;
-// 进入/退出 面部追踪
-- (void)enterTrackAnimationMode ;
-- (void)quitTrackAnimationMode ;
-
-// 拍摄检测
-- (int)photoDetectionAction ;
-
-// 进入/退出 AR
-- (void)enterARMode ;
-- (void)quitARMode ;
-
-// AR 滤镜 item
-- (void)loadARFilter:(NSString *)filterName ;
-// AR 滤镜 mode
-- (void)loadARModel:(FUAvatar *)avatar ;
-
-// AR滤镜 处理接口
+ @param pixelBuffer 图像数据
+ @return            处理之后的图像数据
+ */
 - (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer ;
 
-// 进入/退出 捏脸模式
-- (void)enterFacepupMode ;
-- (void)quitFacepupMode ;
+/**
+ Avatar 生成
+ 
+ @param data    服务端拉流数据
+ @param name    Avatar 名字
+ @param gender  Avatar 性别
+ @return        生成的 Avatar
+ */
+- (FUAvatar *)createAvatarWithData:(NSData *)data avatarName:(NSString *)name gender:(FUGender)gender ;
 
-/**    ---- 捏脸参数改变 ----     **/
-// set face shape params
-- (void)facepopSetShapParam:(NSString *)key level:(double)level ;
-// get face shape params
-- (double)getFacepopParamWith:(NSString *)key ;
+/**
+ 捏脸之后生成新的 Avatar
 
-// skin color index
-- (int)getSkinColorIndex ;
-// lip color index
-- (int)getLipColorIndex ;
-// iris color index
-- (int)getIrisColorIndex ;
+ @param coeffi  捏脸参数
+ @param deform  是否 deform
+ @return        新的 Avatar
+ */
+- (FUAvatar *)createPupAvatarWithCoeffi:(float *)coeffi DeformHead:(BOOL)deform ;
 
-// set skin color
-- (void)facepopSetSkinColor:(double*)color ;
-// set lip color
-- (void)facepopSetLipColor:(double*)color;
-// set iris color
-- (void)facepopSetIrisColor:(double*)color;
-// set hair color
-- (void)facepopSetHairColor:(double*)color intensity:(double)intensity ;
-// set galsses color
-- (void)facepopSetGlassesColor:(double*)color;
-// set glasses frame color
-- (void)facepopSetGlassesFrameColor:(double*)color;
-// set beard color
-- (void)facepopSetBeardColor:(double*)color;
-// set hat color
-- (void)facepopSetHatColor:(double*)color;
+/**
+ 拍摄检测
 
-// set current avatar default color
-- (void)setDefaultColorForAvatar:(FUAvatar *)avatar;
+ @return 检测结果
+ */
+- (NSString *)photoDetectionAction ;
 
-// 捏脸后 生成新的模型
-- (BOOL)createPupAvatarWithCoeffi:(float *)coeffi colorIndex:(float)color DeformHead:(BOOL)deform ;
+/**
+ 设置最多识别人脸的个数
 
-// 最大识别人脸数量
-- (void)maxFace:(int)num ;
+ @param num 最多识别人脸个数
+ */
+- (void)setMaxFaceNum:(int)num ;
 
-// 获取人脸框
+/**
+ 获取人脸矩形框
+
+ @return 人脸矩形框
+ */
 - (CGRect)getFaceRect ;
 
 @end

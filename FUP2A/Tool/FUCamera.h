@@ -38,5 +38,7 @@
 // 设置采集方向
 - (void)setCaptureVideoOrientation:(AVCaptureVideoOrientation)orientation;
 
+// 拍照
 - (void)takePhoto:(BOOL)mirr;
+
 @end

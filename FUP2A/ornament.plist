@@ -19,7 +19,10 @@
 			<string>male_hair_t_2</string>
 			<string>male_hair_t_3</string>
 			<string>male_hair_t_4</string>
+			<string>male_hair_t_5</string>
+			<string>male_hair_t_6</string>
 			<string>female_hair_7</string>
+			<string>female_hair_9</string>
 			<string>female_hair_10</string>
 			<string>female_hair_11</string>
 			<string>female_hair_12</string>
@@ -33,6 +36,7 @@
 			<string>female_hair_t_1</string>
 			<string>female_hair_t_2</string>
 			<string>female_hair_t_3</string>
+			<string>female_hair_t_4</string>
 		</array>
 	</dict>
 	<dict>
@@ -82,11 +86,13 @@
 		<string>衣服</string>
 		<key>items</key>
 		<array>
-			<string>female_clothes</string>
+			<string>female_clothes_1</string>
 			<string>female_clothes_2</string>
 			<string>female_clothes_3</string>
-			<string>male_clothes</string>
-			<string>male_cloth_02</string>
+			<string>female_clothes_4</string>
+			<string>male_clothes_1</string>
+			<string>male_clothes_2</string>
+			<string>male_clothes_3</string>
 		</array>
 	</dict>
 	<dict>
@@ -122,11 +128,9 @@
 			<string>female_hat_11</string>
 			<string>female_hat_12</string>
 			<string>female_hat_13</string>
-			<string>female_hat_15</string>
 			<string>female_hat_16</string>
 			<string>female_hat_17</string>
 			<string>female_hat_18</string>
-			<string>female_hat_20</string>
 			<string>female_hat_21</string>
 			<string>male_hat_1</string>
 			<string>male_hat_2</string>
@@ -141,12 +145,36 @@
 			<string>male_hat_11</string>
 			<string>male_hat_12</string>
 			<string>male_hat_13</string>
-			<string>male_hat_15</string>
 			<string>male_hat_16</string>
 			<string>male_hat_17</string>
 			<string>male_hat_18</string>
-			<string>male_hat_20</string>
 			<string>male_hat_21</string>
+		</array>
+	</dict>
+	<dict>
+		<key>typeName</key>
+		<string>睫毛</string>
+		<key>items</key>
+		<array>
+			<string>eyelash-noitem</string>
+			<string>female_eyelash_1</string>
+			<string>female_eyelash_2</string>
+			<string>female_eyelash_3</string>
+		</array>
+	</dict>
+	<dict>
+		<key>typeName</key>
+		<string>眉毛</string>
+		<key>items</key>
+		<array>
+			<string>eyebrow-noitem</string>
+			<string>female_eyebrow_1</string>
+			<string>female_eyebrow_2</string>
+			<string>female_eyebrow_3</string>
+			<string>female_eyebrow_4</string>
+			<string>female_eyebrow_5</string>
+			<string>male_eyebrow_1</string>
+			<string>male_eyebrow_2</string>
 		</array>
 	</dict>
 </array>

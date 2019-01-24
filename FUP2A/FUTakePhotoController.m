@@ -10,12 +10,12 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import <SVProgressHUD/SVProgressHUD.h>
+#import "FUAvatar.h"
 #import "FUManager.h"
 #import "FUCamera.h"
 #import "FUOpenGLView.h"
 #import "FUTool.h"
 #import "FURequestManager.h"
-#import <ZipArchive.h>
 #import "CRender.h"
 #import "FULoadingView.h"
 
@@ -103,6 +103,7 @@ FULoadingViewDelegate
                     [weakSelf.loadingView stopLoading];
                     weakSelf.loadingContainer.hidden = YES ;
                     weakSelf.photoImageView.hidden = YES ;
+                    weakSelf.imageView.hidden = NO ;
                     [weakSelf.camera startCapture];
                     weakSelf.photoBtn.hidden = NO ;
                     weakSelf.libraryBtn.hidden = NO ;
@@ -171,8 +172,10 @@ FULoadingViewDelegate
     currentType = FUCurrentViewTypePreparingCreat ;
     
     selectedImage = image ;
+    iconImage = image ;
     self.photoImageView.image = image ;
     self.photoImageView.hidden = NO ;
+    self.imageView.hidden = YES ;
     self.messageLabel.hidden = YES ;
     self.photoBtn.hidden = YES ;
     self.libraryBtn.hidden = YES ;
@@ -209,41 +212,7 @@ static int frameID = 0;
     frameID ++ ;
     if (frameID % 15 == 0) {
         
-        int res = [[FUManager shareInstance] photoDetectionAction];
-        NSString *message ;
-        switch (res) {
-            case 0:{
-                message = @" 完美  " ;
-            }
-                break ;
-            case 1:{
-                message = @" 请保持1个人输入  " ;
-            }
-                break;
-            case 2:{
-                message = @" 请保持正面  " ;
-            }
-                break ;
-            case 3:{
-                message = @" 请将人脸对准虚线框  " ;
-            }
-                break ;
-            case 4:{
-                message = @" 请保持面部无夸张表情  " ;
-            }
-                break ;
-            case 5:{
-                message = @" 光线不均匀  " ;
-            }
-                break ;
-            case 6:{
-                message = @" 光线不充足  " ;
-            }
-                break ;
-            default:
-                message = @" 请将人脸对准虚线框  " ;
-                break;
-        }
+        NSString *message  = [[FUManager shareInstance] photoDetectionAction];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             self.messageLabel.text = message ;
@@ -278,6 +247,7 @@ static int frameID = 0;
             
             self.photoImageView.image = self->selectedImage ;
             self.photoImageView.hidden = NO ;
+            self.imageView.hidden = YES ;
             self.messageLabel.hidden = YES ;
             self.photoBtn.hidden = YES ;
             self.libraryBtn.hidden = YES ;
@@ -318,7 +288,7 @@ static int frameID = 0;
     NSString *filePath = [documentPath stringByAppendingPathComponent:fileName];
     [[NSFileManager defaultManager] createDirectoryAtPath:filePath withIntermediateDirectories:YES attributes:nil error:nil];
     
-    NSLog(@"------------------------------------------------------------------------------ start creating avatar ~");
+    NSLog(@"------------------------------ start creating avatar ~");
     [[FURequestManager sharedInstance] createQAvatarWithImage:selectedImage Params:params CompletionWithData:^(NSData *data, NSError *error) {
         if (!error && data) {
 
@@ -337,8 +307,8 @@ static int frameID = 0;
                 [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
                 return ;
             }
-
-            FUAvatar *avatar = [[FUManager shareInstance] createAvatarWithData:data FileName:fileName isMale:gender == FUGenderMale];
+            
+            FUAvatar *avatar = [[FUManager shareInstance] createAvatarWithData:data avatarName:fileName gender:gender];
 
             if (avatar) {
 
@@ -346,19 +316,11 @@ static int frameID = 0;
                     [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
                     return ;
                 }
-
-                [[FUManager shareInstance] loadAvatar:avatar];
-
-                [[FUManager shareInstance] loadStandbyAnimation];
-
-                NSMutableArray<FUAvatar *> *history = [NSKeyedUnarchiver unarchiveObjectWithFile:historyPath];
-                if (!history || history.count == 0) {
-                    history = [[NSMutableArray alloc] init];
-                }
-                [history insertObject:avatar atIndex:0];
-                [NSKeyedArchiver archiveRootObject:history toFile:historyPath];
-
-                [[FUManager shareInstance].avatars insertObject:avatar atIndex:DefaultAvatarNum];
+                
+                [[FUManager shareInstance] reloadRenderAvatar:avatar];
+                [avatar loadStandbyAnimation];
+                
+                [[FUManager shareInstance].avatarList insertObject:avatar atIndex:DefaultAvatarNum];
 
                 // 避免 body 还没有加载完成。闪现上一个模型的画面。
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -367,7 +329,7 @@ static int frameID = 0;
                     [self.loadingView stopLoading];
                     self.loadingContainer.hidden = YES ;
 
-                    NSLog(@"------------------------------------------------------------------------------ create avatar completed ~");
+                    NSLog(@"------------------------------ create avatar completed ~");
 
                     [self.navigationController popViewControllerAnimated:YES ];
                 });
@@ -418,6 +380,7 @@ static int frameID = 0;
         
         self.loadingContainer.hidden = YES ;
         self.photoImageView.hidden = YES ;
+        self.imageView.hidden = NO ;
         self.messageLabel.hidden = NO ;
         [self.camera startCapture];
         self.photoBtn.hidden = NO ;
@@ -425,8 +388,6 @@ static int frameID = 0;
         self.switchBtn.hidden = NO ;
     }) ;
 }
-
-
 
 #pragma mark --- Observer
 

@@ -12,6 +12,7 @@
 #import "FUOpenGLView.h"
 #import "FUManager.h"
 #import "FUAvatar.h"
+#import "FUP2AColor.h"
 #import "FUTool.h"
 #import "FUTakePhotoController.h"
 #import "FUEditViewController.h"
@@ -45,6 +46,7 @@ FUHistoryViewControllerDelegate
 // 版本号 debug view
 @property (weak, nonatomic) IBOutlet UILabel *appVersionLabel;
 @property (weak, nonatomic) IBOutlet UILabel *sdkVersionLabel;
+@property (weak, nonatomic) IBOutlet UIView *debugView;
 
 @end
 
@@ -52,6 +54,7 @@ FUHistoryViewControllerDelegate
 {
     BOOL firstLoad ;// 首次进入页面
 }
+
 - (BOOL)prefersStatusBarHidden{
     return YES;
 }
@@ -63,8 +66,8 @@ FUHistoryViewControllerDelegate
     
     firstLoad = YES ;
     
-    [[FUManager shareInstance] maxFace:1];
-    
+    [[FUManager shareInstance] setMaxFaceNum:1];
+
     [self loadDefaultAvatar];
     
     [self setLanchImage];
@@ -72,10 +75,6 @@ FUHistoryViewControllerDelegate
     renderMode = FURenderCommonMode ;
     [self.camera startCapture ];
     
-    [self reloadDebugInfo];
-}
-
-- (void)reloadDebugInfo {
     self.appVersionLabel.text = [FUManager shareInstance].appVersion;
     self.sdkVersionLabel.text = [FUManager shareInstance].sdkVersion;
 }
@@ -90,7 +89,6 @@ FUHistoryViewControllerDelegate
         });
         firstLoad = NO ;
     }else {
-        
         [self.homeBar reloadModeData];
         [self.camera startCapture ];
     }
@@ -105,8 +103,15 @@ FUHistoryViewControllerDelegate
         self.preView.hidden = YES ;
         
         self.preView.hidden = YES ;
-        [[FUManager shareInstance] loadStandbyAnimation];
+        FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
+        // 加载默认动画
+        [avatar loadStandbyAnimation];
+        
         renderMode = FURenderCommonMode ;
+        
+        self.appVersionLabel.hidden = NO ;
+        self.sdkVersionLabel.hidden = NO ;
+        self.debugView.hidden = NO ;
     }
 }
 
@@ -147,9 +152,9 @@ FUHistoryViewControllerDelegate
 - (void)loadDefaultAvatar {
     loadingBundles = YES ;
     
-    FUAvatar *avatar = [FUManager shareInstance].avatars[0];
-    [[FUManager shareInstance] loadAvatar:avatar];
-    [[FUManager shareInstance] loadStandbyAnimation];
+    FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
+    [[FUManager shareInstance] reloadRenderAvatar:avatar];
+    [avatar loadStandbyAnimation];
     
     loadingBundles = NO ;
 }
@@ -164,15 +169,14 @@ FUHistoryViewControllerDelegate
     
     float dx = (locationX - preLocationX) / self.displayView.frame.size.width;
     
-    [[FUManager shareInstance] setRotDelta:dx Horizontal:YES];
-    
-    
     CGFloat locationY = [touch locationInView:self.displayView].y;
     CGFloat preLocationY = [touch previousLocationInView:self.displayView].y;
     
     float dy = (locationY - preLocationY) / self.displayView.frame.size.height ;
     
-    [[FUManager shareInstance] setRotDelta:dy Horizontal:NO];
+    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+    [avatar resetRotDelta:dx];
+    [avatar resetTranslateDelta:-dy];
 }
 
 // track face
@@ -180,16 +184,20 @@ FUHistoryViewControllerDelegate
     sender.selected = !sender.selected ;
     self.preView.hidden = !sender.selected ;
     renderMode = sender.selected ? FURenderPreviewMode : FURenderCommonMode ;
+    
+    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+    
     if (sender.selected) {
-        [[FUManager shareInstance] loadPose];
-        [[FUManager shareInstance] enterTrackAnimationMode];
+        [avatar loadTrackFaceModePose];
+        [avatar enterTrackFaceMode];
         
     }else{
-        [[FUManager shareInstance] quitTrackAnimationMode];
-        [[FUManager shareInstance] loadStandbyAnimation];
+        [avatar quitTrackFaceMode];
+        [avatar loadStandbyAnimation];
     }
     self.appVersionLabel.hidden = sender.selected ;
     self.sdkVersionLabel.hidden = sender.selected ;
+    self.debugView.hidden = sender.selected ;
 }
 
 #pragma mark ---- loading
@@ -243,14 +251,15 @@ FUHistoryViewControllerDelegate
 - (void)homeBarViewDidSelectedAvatar:(FUAvatar *)avatar {
     
     self->loadingBundles = YES ;
-    [[FUManager shareInstance] loadAvatar:avatar];
+    [[FUManager shareInstance] reloadRenderAvatar:avatar];
     
     switch (self->renderMode) {
         case FURenderCommonMode:
-            [[FUManager shareInstance] loadStandbyAnimation];
+            [avatar loadStandbyAnimation];
             break;
         case FURenderPreviewMode:
-            [[FUManager shareInstance] loadPose];
+            [avatar loadTrackFaceModePose];
+            [avatar enterTrackFaceMode];
             break ;
     }
     
@@ -258,28 +267,46 @@ FUHistoryViewControllerDelegate
 }
 
 -(void)homeBarViewShouldShowTopView:(BOOL)show {
+    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+    
     if (show) {
+        
+        [avatar resetScaleToFace];
+        
         [UIView animateWithDuration:0.5 animations:^{
             self.trackBtn.transform = CGAffineTransformMakeTranslation(0, -200) ;
         }];
     }else {
-        [UIView animateWithDuration:0.5 animations:^{
-            self.trackBtn.transform = CGAffineTransformIdentity ;
-        }];
+        
+        if (!CGAffineTransformEqualToTransform(self.trackBtn.transform, CGAffineTransformIdentity)) {
+            
+            [avatar resetScaleToBody];
+            
+            [UIView animateWithDuration:0.5 animations:^{
+                self.trackBtn.transform = CGAffineTransformIdentity ;
+            }];
+        }
     }
 }
 - (void)homeBarSelectedActionWithAR:(BOOL)isAR {
     if (isAR) {     // AR 滤镜
-        [[FUManager shareInstance] quitTrackAnimationMode];
+        FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
+        [avatar quitTrackFaceMode];
         [self performSegueWithIdentifier:@"PushToARView" sender:nil];
     }else {         // 形象
         [self performSegueWithIdentifier:@"PushToEditView" sender:nil];
     }
 }
 
+// 合影
+- (void)homeBarSelectedGroupBtn {
+    [self performSegueWithIdentifier:@"showGroupPhotoController" sender:nil];
+}
+
 // zoom
 - (void)homeBarViewReceiveZoom:(float)zoomScale {
-    [[FUManager shareInstance] setScaleDelta:zoomScale];
+    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+    [avatar resetScaleDelta:zoomScale];
 }
 
 #pragma mark ---- FUHistoryViewControllerDelegate

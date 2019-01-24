@@ -97,10 +97,6 @@ static FURequestManager *sharedInstance;
             *_credential = credential;
             return disposition;
         }];
-        
-        
-        _servicerString = URL ;
-        
     }
     
     return self;
@@ -129,7 +125,6 @@ static FURequestManager *sharedInstance;
     }
     return YES;
 }
-
 
 - (void)createQAvatarWithImage:(UIImage *)image Params:(NSDictionary *)params CompletionWithData:(void (^)(NSData *data, NSError *error))handle {
     

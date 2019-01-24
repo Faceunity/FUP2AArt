@@ -6,7 +6,7 @@
 
 &emsp;&emsp;《[P2A Server API](P2A%20Server%20API.pdf)》：描述了如何调用P2A 服务端接口的文档。
 
-&emsp;&emsp;《[P2A 对接说明文档](P2A%20%E5%AF%B9%E6%8E%A5%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3.md)》：描述了客户端SDK，如何创建和编辑风格化形象，以及通过Nama SDK绘制风格化形象的文档。
+&emsp;&emsp;《[P2A Client SDK](P2A%20Client%20SDK.md))》：描述了客户端SDK，如何创建和编辑风格化形象，以及通过Nama SDK绘制风格化形象的文档。
 
 &emsp;&emsp;《[Controller 说明文档](Controller%20%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3.md)》：封装了客户端SDK在创建，编辑风格化形象，以及AR 模式，面部追踪过程中，涉及到的接口列表文档。	
 

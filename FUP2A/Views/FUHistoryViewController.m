@@ -26,10 +26,29 @@
 
 @implementation FUHistoryViewController
 
+- (BOOL)prefersStatusBarHidden{
+    return YES;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.dataSource = [NSKeyedUnarchiver unarchiveObjectWithFile:historyPath];
+    self.dataSource = [NSMutableArray arrayWithCapacity:1];
+    NSArray *array = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:AvatarListPath error:nil];
+    array = [array sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+        return [obj2 compare:obj1 options:NSNumericSearch] ;
+    }];
+    for (NSString *jsonName in array) {
+        if (![jsonName hasSuffix:@".json"]) {
+            continue ;
+        }
+        NSString *jsonPath = [AvatarListPath stringByAppendingPathComponent:jsonName];
+        NSData *jsonData = [[NSString stringWithContentsOfFile:jsonPath encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
+        NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:nil];
+        
+        FUAvatar *avatar = [FUAvatar avatarWithInfoDic:dic];
+        [self.dataSource addObject:avatar];
+    }
     
     self.noitemLabel.hidden = self.dataSource.count != 0 ;
     
@@ -73,30 +92,35 @@
         
         NSFileManager *fileManager = [NSFileManager defaultManager];
         
-        NSString *currentTime = [FUManager shareInstance].currentAvatar.time;
-        
+        FUAvatar *currentAvatar = [FUManager shareInstance].currentAvatars.firstObject ;
+        NSString *name = currentAvatar.name;
         
         for (FUAvatar *avatar  in weaklSelf.selectedItems) {
             if ([weaklSelf.dataSource containsObject:avatar]) {
                 [weaklSelf.dataSource removeObject:avatar];
                 
-                NSString *filePath = [documentPath stringByAppendingPathComponent:avatar.time];
+                // delete file
+                NSString *filePath = [documentPath stringByAppendingPathComponent:avatar.name];
                 if ([fileManager fileExistsAtPath:filePath]) {
                     [fileManager removeItemAtPath:filePath error:nil];
                 }
-                if ([currentTime isEqualToString:avatar.time]) {
+                // delete avatar info
+                NSString *jsonPath = [[AvatarListPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
+                if ([fileManager fileExistsAtPath:jsonPath]) {
+                    [fileManager removeItemAtPath:jsonPath error:nil];
+                }
+                
+                if ([name isEqualToString:avatar.name]) {
                     if (self.mDelegate && [self.mDelegate respondsToSelector:@selector(historyViewDidDeleteCurrentItem)]) {
                         [self.mDelegate historyViewDidDeleteCurrentItem];
                     }
                 }
             }
             
-            for (FUAvatar *a in [FUManager shareInstance].avatars) {
-                if (a.time) {
-                    if ([avatar.time isEqualToString:a.time]) {
-                        [[FUManager shareInstance].avatars removeObject:a];
-                        break ;
-                    }
+            for (FUAvatar *a in [FUManager shareInstance].avatarList) {
+                if (!a.defaultModel && [avatar.name isEqualToString:a.name]) {
+                    [[FUManager shareInstance].avatarList removeObject:a];
+                    break ;
                 }
             }
         }
@@ -106,8 +130,6 @@
         
         weaklSelf.noitemLabel.hidden = weaklSelf.dataSource.count != 0 ;
         [weaklSelf setDeleteBtnTitle];
-        
-        [NSKeyedArchiver archiveRootObject:weaklSelf.dataSource toFile:historyPath];
     }];
     
     [alertController addAction:cancle];

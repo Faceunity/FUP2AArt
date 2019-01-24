@@ -372,6 +372,8 @@ typedef enum {
  */
 + (int)trackFace:(int)inputFormat inputData:(void*)inputData width:(int)width height:(int)height;
 
++ (int)trackFaceWithTongue:(int)inputFormat inputData:(void*)inputData width:(int)width height:(int)height;
+
 /**
  获取人脸信息：
      - 在程序中需要先运行过视频处理接口( 视频处理接口8 除外)或 人脸信息跟踪接口 后才能使用该接口来获取人脸信息；

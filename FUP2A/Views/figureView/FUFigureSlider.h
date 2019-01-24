@@ -1,17 +1,13 @@
 //
 //  FUFigureSlider.h
-//  EditView
+//  FUP2A
 //
-//  Created by L on 2018/11/5.
-//  Copyright © 2018年 L. All rights reserved.
+//  Created by L on 2019/1/9.
+//  Copyright © 2019年 L. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
-
-typedef enum : NSInteger {
-    FUFigureSliderTypeShape            = 0,
-    FUFigureSliderTypeOther            = 1,
-} FUFigureSliderType;
+#import "FUFigureDefine.h"
 
 @interface FUFigureSlider : UISlider
 

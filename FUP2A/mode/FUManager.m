@@ -1,40 +1,36 @@
 //
 //  FUManager.m
-//  FUP2A
+//  P2A
 //
-//  Created by L on 2018/6/1.
+//  Created by L on 2018/12/17.
 //  Copyright © 2018年 L. All rights reserved.
 //
 
 #import "FUManager.h"
-#import "FUP2ADefine.h"
-#import "FURenderer.h"
 #import "authpack.h"
-#import <ZipArchive.h>
+#import "FURenderer.h"
 #import <FUP2AClient/FUP2AClient.h>
 #import "FURequestManager.h"
+#import "FUAvatar.h"
+#import "FUP2AColor.h"
 
 @interface FUManager ()
 {
+    // render 句柄
+    int mItems[7] ;
+    // ar模式下 render 句柄
+    int arItems[2] ;
     // 输出 buffer
     CVPixelBufferRef renderTarget;
-    
-    // 句柄数组
-    int mItems[12];
-    
-    int arItems[2] ;
-    
-    // 旋转缩放参数
-    NSMutableDictionary *p2aParams;
-    
+    // 图像宽高
     CGSize frameSize ;
+    // 光线检测
     float lightingValue ;
+    // 同步信号量
     dispatch_semaphore_t signal;
-    dispatch_semaphore_t arSignal;
 }
 
 @end
-
 
 @implementation FUManager
 
@@ -50,29 +46,33 @@ static FUManager *fuManager = nil ;
 -(instancetype)init {
     self = [super init];
     if (self) {
-        signal = dispatch_semaphore_create(1);
-        arSignal = dispatch_semaphore_create(1) ;
+        
         [self initFaceUnity];
         
-        // 设置旋转缩放参数
-        p2aParams = [NSMutableDictionary dictionary];
-        [self resetP2AParams];
+        [self loadTongueMode];
         
         [self creatPixelBuffer];
-
-        [self loadFxaa];
-        [self loadBackgroundItem];
-        // 加载 controller
-        [self loadController];
-        
-        frameSize = CGSizeZero ;
         
         // p2a bin
-        NSString *dataPath = [[NSBundle mainBundle] pathForResource:@"p2a_client" ofType:@"bin"];
+        NSString *dataPath = [[NSBundle mainBundle] pathForResource:@"p2a_client_q" ofType:@"bin"];
         NSData *data = [NSData dataWithContentsOfFile:dataPath];
         [FUP2AClient setupWithClientData:data];
         
+        [self loadFxaa];
+        
+        [self loadBackgroundItem];
+        
         [self loadSubData];
+        
+        self.currentAvatars = [NSMutableArray arrayWithCapacity:1];
+        
+        if (![[NSFileManager defaultManager] fileExistsAtPath:AvatarListPath]) {
+            [[NSFileManager defaultManager] createDirectoryAtPath:AvatarListPath withIntermediateDirectories:YES attributes:nil error:nil];
+        }
+        
+        frameSize = CGSizeZero ;
+        
+        signal = dispatch_semaphore_create(1);
     }
     return self ;
 }
@@ -85,15 +85,60 @@ static FUManager *fuManager = nil ;
     [FURenderer setMaxFaces:1];
 }
 
+- (void)creatPixelBuffer {
+    
+    CGSize size = [UIScreen mainScreen].currentMode.size;
+    if (size.width > 800) {
+        CGFloat a = 0.7;
+        CGFloat w = (((int)(size.width*a) + 3)>>2) * 4;
+        CGFloat h = (((int)(size.height*a) + 3)>>2) * 4;
+        size = CGSizeMake(w, h);
+    }
+    
+    if (!renderTarget) {
+        NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
+                                                  @(kCVPixelFormatType_32BGRA),
+                                              (NSString*) kCVPixelBufferWidthKey : @(size.width),
+                                              (NSString*) kCVPixelBufferHeightKey : @(size.height),
+                                              (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
+                                              (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
+        CVPixelBufferCreate(kCFAllocatorDefault,
+                            size.width, size.height,
+                            kCVPixelFormatType_32BGRA,
+                            (__bridge CFDictionaryRef)pixelBufferOptions,
+                            &renderTarget);
+    }
+}
+
+// 加载舌头Mode
+- (void)loadTongueMode {
+    NSData *tongueData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"tongue.bundle" ofType:nil]];
+    [FURenderer loadTongueModel:(void *)tongueData.bytes size:(int)tongueData.length];
+}
+
+//加载抗锯齿
+- (void)loadFxaa {
+    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"fxaa" ofType:@"bundle"];
+    mItems[0] = [FURenderer itemWithContentsOfFile:filePath];
+}
+
+//加载背景道具
+- (void)loadBackgroundItem {
+    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"bg" ofType:@"bundle"];
+    mItems[1] = [FURenderer itemWithContentsOfFile:filePath];
+}
+
+
+#pragma mark ----- 以下数据
 -(NSString *)appVersion {
-    return @"DigiMe Art v1.0.0" ;
+    return @"DigiMe Art v1.3.0" ;
 }
 
 -(NSString *)sdkVersion {
-    return @"SDK v1.0.1";
+    NSString *version = [FUP2AClient getClientVersion];
+    return [NSString stringWithFormat:@"SDK v%@", version] ;
 }
 
-/*------------ 数据 -----------*/
 - (void)loadSubData {
     
     // female hairs
@@ -190,6 +235,34 @@ static FUManager *fuManager = nil ;
     }
     _maleHats = [tmpArr1 copy] ;
     
+    
+    // female eyelash
+    expDic = ornamentArray[5] ;
+    tmpArr0 = expDic[@"items"] ;
+    _femaleEyeLashs = tmpArr0 ;
+    
+    // female eyeBrow
+    expDic = ornamentArray[6] ;
+    tmpArr0 = expDic[@"items"] ;
+    [tmpArr1 removeAllObjects];
+    tmpArr1 = [tmpArr0 mutableCopy];
+    
+    for (NSString *item in tmpArr0) {
+        if ([item hasPrefix:@"male"]) {
+            [tmpArr1 removeObject:item];
+        }
+    }
+    _femaleEyeBrows = [tmpArr1 copy] ;
+    
+    // male clothes
+    tmpArr1 = [tmpArr0 mutableCopy];
+    for (NSString *item in tmpArr0) {
+        if ([item hasPrefix:@"female"]) {
+            [tmpArr1 removeObject:item];
+        }
+    }
+    _maleEyeBrows = [tmpArr1 copy] ;
+    
     // color data
     NSData *jsonData = [[NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"color" ofType:@"json"] encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:nil];
@@ -206,7 +279,7 @@ static FUManager *fuManager = nil ;
             NSString *subKey = [NSString stringWithFormat:@"%d", i];
             NSDictionary *subValue = [infoDic objectForKey:subKey] ;
             
-            FUFigureColor *color = [FUFigureColor colorWithDict:subValue];
+            FUP2AColor *color = [FUP2AColor colorWithDict:subValue];
             color.index = i ;
             [tmpArray addObject:color];
         }
@@ -231,325 +304,196 @@ static FUManager *fuManager = nil ;
     }
 }
 
--(NSMutableArray *)avatars {
-    if (!_avatars) {
-        _avatars = [NSMutableArray arrayWithCapacity:1];
-        NSArray *dataArray = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"Avatars.plist" ofType:nil]];
+-(NSMutableArray *)avatarList {
+    if (!_avatarList) {
+        _avatarList = [NSMutableArray arrayWithCapacity:1];
+        
+        NSData *jsonData = [[NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"Avatars" ofType:@"json"] encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
+        NSArray *dataArray = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:nil];
+        
         for (NSDictionary *dict in dataArray) {
-            FUAvatar *avatar = [[FUAvatar alloc] init];
-            NSString *bundleName = dict[@"itemName"] ;
-            avatar.bundleName = bundleName ;
-            NSString *bundlePath = [[NSBundle mainBundle] pathForResource:bundleName ofType:@"bundle"];
-            avatar.bundlePath = bundlePath ;
-            BOOL isMale = [dict[@"isMale"] boolValue] ;
-            avatar.isMale = isMale ;
-            NSString *imagePath = [[NSBundle mainBundle] pathForResource:bundleName ofType:@"jpg"];
-            if (![[NSFileManager defaultManager] fileExistsAtPath:imagePath]) {
-                imagePath = [[NSBundle mainBundle] pathForResource:bundleName ofType:@"png"];
+            FUAvatar *avatar = [FUAvatar avatarWithInfoDic:dict];
+            [_avatarList addObject:avatar];
+        }
+        
+        NSArray *array = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:AvatarListPath error:nil];
+        array = [array sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+            return [obj2 compare:obj1 options:NSNumericSearch] ;
+        }];
+        for (NSString *jsonName in array) {
+            if (![jsonName hasSuffix:@".json"]) {
+                continue ;
             }
-            avatar.imagePath = imagePath;
+            NSString *jsonPath = [AvatarListPath stringByAppendingPathComponent:jsonName];
+            NSData *jsonData = [[NSString stringWithContentsOfFile:jsonPath encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
+            NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:nil];
             
-            avatar.hairArr = isMale ? self.maleHairs : self.femaleHairs ;
-            
-            avatar.defaultHair = dict[@"hair"] ;
-            avatar.defaultClothes = isMale ? @"male_clothes" : @"female_clothes" ;
-            avatar.defaultGlasses = @"glasses-noitem" ;
-            avatar.defaultBeard = isMale ? dict[@"beard"] : @"beard-noitem" ;
-            
-            avatar.hairLabel = -1.0 ;
-            avatar.bearLabel = -1.0 ;
-            avatar.matchLabel = -1 ;
-            
-            [_avatars addObject:avatar];
-        }
-        NSMutableArray<FUAvatar *> *history = [NSKeyedUnarchiver unarchiveObjectWithFile:historyPath];
-        if (history) {
-            [_avatars addObjectsFromArray:history];
+            FUAvatar *avatar = [FUAvatar avatarWithInfoDic:dic];
+            [_avatarList addObject:avatar];
         }
     }
-    return _avatars ;
+    return _avatarList ;
 }
 
-- (void)creatPixelBuffer {
+#pragma mark ----- 以下处理接口
+
+/**
+ 普通模式下切换 Avatar
+ 
+ @param avatar Avatar
+ */
+- (void)reloadRenderAvatar:(FUAvatar *)avatar {
     
-    CGSize size = [UIScreen mainScreen].currentMode.size;
-    if (size.width > 800) {
-        CGFloat a = 0.7;
-        CGFloat w = (((int)(size.width*a) + 3)>>2) * 4;
-        CGFloat h = (((int)(size.height*a) + 3)>>2) * 4;
-        size = CGSizeMake(w, h);
-    }
-    
-    if (!renderTarget) {
-        NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
-                                                  @(kCVPixelFormatType_32BGRA),
-                                              (NSString*) kCVPixelBufferWidthKey : @(size.width),
-                                              (NSString*) kCVPixelBufferHeightKey : @(size.height),
-                                              (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
-                                              (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
-        
-        CVPixelBufferCreate(kCFAllocatorDefault,
-                            size.width, size.height,
-                            kCVPixelFormatType_32BGRA,
-                            (__bridge CFDictionaryRef)pixelBufferOptions,
-                            &renderTarget);
-    }
-}
-
-//加载抗锯齿
-- (void)loadFxaa {
-    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"fxaa" ofType:@"bundle"];
-    [self loadItemWithtype:FUItemTypeFxaa filePath:filePath];
-}
-
-//加载背景道具
-- (void)loadBackgroundItem {
-    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"bg" ofType:@"bundle"];
-    [self loadItemWithtype:FUItemTypeBackground filePath:filePath];
-}
-
-// 加载 controller
-- (void)loadController {
-    if (mItems[FUItemTypeController] == 0) {
-        NSString *filePath = [[NSBundle mainBundle] pathForResource:@"controller" ofType:@"bundle"];
-        [self loadItemWithtype:FUItemTypeController filePath:filePath];
-    }
-}
-
-// 加载 avatar
-- (void)loadAvatar:(FUAvatar *)avatar {
-    self.currentAvatar = avatar ;
-
-    [self loadItemWithtype:FUItemTypeAvatar filePath:avatar.bundlePath];
-
-    [self loadAvatarBody];
-
-    [self loadAvatarHair];
-
-    [self loadAvatarClothes];
-
-    [self loadAvatarGlasses];
-
-    [self loadAvatarBeard];
-
-    [self loadAvatarHat];
-
-    [self setDefaultColorForAvatar:avatar];
-}
-
-- (void)loadAvatarHair {
-    
-    NSString *hairPath = nil ;
-    if (self.currentAvatar.defaultHair) {
-        NSString *hairName = self.currentAvatar.defaultHair ;
-        if (self.currentAvatar.time) {      // 生成的
-            hairPath = [[[self.currentAvatar avatarPath] stringByAppendingPathComponent:hairName] stringByAppendingString:@".bundle"];
-        }else {             // 预置模型
-            hairPath = [[[[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Resource"] stringByAppendingPathComponent:self.currentAvatar.bundleName] stringByAppendingPathComponent:hairName] stringByAppendingString:@".bundle"];
-        }
-    }
-    [self loadItemWithtype:FUItemTypeHair filePath:hairPath];
-}
-
-- (void)loadAvatarBody {
-    NSString *bundleName = self.currentAvatar.isMale ? @"male_body" : @"female_body" ;
-    NSString *bundlePath = [[NSBundle mainBundle] pathForResource:bundleName ofType:@"bundle"];
-    [self loadItemWithtype:FUItemTypeBody filePath:bundlePath];
-}
-
-- (void)loadAvatarClothes {
-    
-    NSString *clothName = self.currentAvatar.defaultClothes ;
-    NSString *clothPath = [[NSBundle mainBundle] pathForResource:clothName ofType:@"bundle"];
-    [self loadItemWithtype:FUItemTypeClothes filePath:clothPath];
-}
-
-- (void)loadAvatarGlasses {
-    NSString *glassesPath = nil;
-    if (self.currentAvatar.defaultGlasses && ![self.currentAvatar.defaultGlasses isEqualToString:@"glasses-noitem"]) {
-        glassesPath = [[NSBundle mainBundle] pathForResource:self.currentAvatar.defaultGlasses ofType:@"bundle"];
-    }
-    [self loadItemWithtype:FUItemTypeGlasses filePath:glassesPath];
-}
-
-- (void)loadAvatarBeard {
-    NSString *glassesPath = nil ;
-    if (self.currentAvatar.defaultBeard && ![self.currentAvatar.defaultBeard isEqualToString:@"beard-noitem"]) {
-        glassesPath = [[NSBundle mainBundle] pathForResource:self.currentAvatar.defaultBeard ofType:@"bundle"];
-    }
-    [self loadItemWithtype:FUItemTypeBeard filePath:glassesPath];
-}
-
-- (void)loadAvatarHat {
-    NSString *hatPath = nil ;
-    if (self.currentAvatar.defaultHat && ![self.currentAvatar.defaultHat isEqualToString:@"hat-noitem"]) {
-        hatPath = [[NSBundle mainBundle] pathForResource:self.currentAvatar.defaultHat ofType:@"bundle"];
-    }
-    [self loadItemWithtype:FUItemTypeHat filePath:hatPath];
-}
-
-- (void)loadItemWithtype:(FUItemType)itemType filePath:(NSString *)path {
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
-    if (path == nil ) {
+    
+    // 销毁上一个 avatar
+    if (self.currentAvatars.count != 0) {
+        FUAvatar *lastAvatar = self.currentAvatars.firstObject ;
+        [lastAvatar destroyAvatar];
+        [self.currentAvatars removeObject:lastAvatar];
+        mItems[2] = 0 ;
+    }
+    
+    // 创建新的
+    mItems[2] = [avatar loadAvatar];
+    // 保存到当前 render 列表里面
+    [self.currentAvatars addObject:avatar];
+    
+    dispatch_semaphore_signal(signal);
+}
+
+/**
+ 普通模式下 新增 Avatar render
+ 
+ @param avatar 新增的 Avatar
+ */
+- (void)addRenderAvatar:(FUAvatar *)avatar {
+    
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+    
+    // 创建新的
+    int handle = [avatar loadAvatar];
+    // 保存到当前 render 列表里面
+    [self.currentAvatars addObject:avatar];
+    
+    mItems[self.currentAvatars.count + 1] = handle ;
+    
+    dispatch_semaphore_signal(signal);
+}
+
+/**
+ 普通模式下 删除 Avatar render
+ 
+ @param avatar 需要删除的 avatar
+ */
+- (void)removeRenderAvatar:(FUAvatar *)avatar {
+    if (avatar == nil || ![self.currentAvatars containsObject:avatar]) {
+        NSLog(@"---- avatar is nil or avatar is not rendering ~");
+        return ;
+    }
+    
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+    
+    NSInteger index = [self.currentAvatars indexOfObject:avatar];
+    
+    [avatar destroyAvatar];
+    
+    mItems[index + 2] = 0 ;
+    
+    // 调整 render 顺序
+    if (index < self.currentAvatars.count -1) {
         
-        // 销毁此道具
-        [self destroyItemWithType:itemType];
+        for (NSInteger i = index + 2; i < self.currentAvatars.count + 2; i ++) {
+            mItems[i] = mItems[i + 1] ;
+            mItems[i + 1] = 0 ;
+            
+            if (i == sizeof(mItems)/sizeof(int) - 1) {
+                break ;
+            }
+        }
+    }
+    
+    [self.currentAvatars removeObject:avatar];
+    
+    dispatch_semaphore_signal(signal);
+}
+
+/**
+ 进入 AR滤镜 模式
+ -- 会切换 controller 所在句柄
+ */
+- (void)enterARMode {
+    
+    if (self.currentAvatars.count != 0) {
+        FUAvatar *avatar = self.currentAvatars.firstObject ;
+        int handle = [avatar getControllerHandle];
+        arItems[0] = handle ;
+    }
+}
+
+/**
+ 在 AR滤镜 模式下切换 Avatar
+ 
+ @param avatar Avatar
+ */
+- (void)reloadRenderAvatarInARMode:(FUAvatar *)avatar {
+    
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+    
+    // 销毁上一个 avatar
+    if (self.currentAvatars.count != 0) {
+        FUAvatar *lastAvatar = self.currentAvatars.firstObject ;
+        [lastAvatar destroyAvatar];
+        [self.currentAvatars removeObject:lastAvatar];
+        arItems[0] = 0 ;
+    }
+    
+    if (avatar == nil) {
+        dispatch_semaphore_signal(signal) ;
+        return ;
+    }
+    
+    arItems[0] = [avatar loadAvatarWithARMode];
+    // 保存到当前 render 列表里面
+    [self.currentAvatars addObject:avatar];
+    
+    dispatch_semaphore_signal(signal);
+}
+
+/**
+ 切换 AR滤镜
+ 
+ @param filePath AR滤镜 路径
+ */
+- (void)reloadARFilterWithPath:(NSString *)filePath {
+    
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+    
+    if (arItems[1] != 0) {
+        [FURenderer destroyItem:arItems[1]];
+        arItems[1] = 0 ;
+    }
+    
+    if (filePath == nil || ![[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
+        
         dispatch_semaphore_signal(signal);
         return ;
     }
     
-    int tmpHandle = [FURenderer itemWithContentsOfFile:path];
+    arItems[1] = [FURenderer itemWithContentsOfFile:filePath];
     
-    // 销毁同类道具
-    [self destroyItemWithType:itemType];
-    
-    // 绑定到身体上
-    mItems[itemType] = tmpHandle;
-    
-    if (mItems[FUItemTypeController] && itemType > 2) {
-        int tmp[1] = {tmpHandle} ;
-        fuBindItems(mItems[FUItemTypeController], tmp, 1) ;
-    }
     dispatch_semaphore_signal(signal);
 }
 
-// 销毁某个道具
-- (void)destroyItemWithType:(FUItemType)itemType {
-    
-    if (mItems[itemType] != 0) {
-        
-        // 解绑
-        if (mItems[FUItemTypeController] && itemType > 2) {
-            int tmp[1];
-            tmp[0]  = mItems[itemType];
-            fuUnbindItems(mItems[FUItemTypeController], tmp, 1) ;
-        }
-        // 销毁
-        [FURenderer destroyItem:mItems[itemType]];
-        mItems[itemType] = 0;
-    }
-}
 
-// creat avatar
-- (FUAvatar *) createAvatarWithData:(NSData *)data FileName:(NSString *)fileName isMale:(BOOL)male {
+/**
+ 检测人脸接口
+ 
+ @param sampleBuffer  图像数据
+ @return              图像数据
+ */
+- (CVPixelBufferRef)trackFaceWithBuffer:(CMSampleBufferRef)sampleBuffer {
     
-    // create avatar
-    FUAvatar *avatar = [[FUAvatar alloc] init];
-    avatar.time = fileName;
-    avatar.isMale = male ;
-    avatar.bearLabel = -1 ;
-    avatar.matchLabel = -1 ;
-    
-    // create head
-    CFAbsoluteTime startProcessHead = CFAbsoluteTimeGetCurrent() ;
-    NSData *finalBundleData = [FUP2AClient createAvatarHeadWithData:data];
-    
-    NSLog(@"------------ process head time: %f ms", (CFAbsoluteTimeGetCurrent() - startProcessHead) * 1000.0);
-    
-    // save head
-    [finalBundleData writeToFile:avatar.bundlePath atomically:YES];
-    
-    // 胡子
-    int beardLabel = [FUP2AClient getIntParamWithData:data key:@"beard_label"];
-    avatar.bearLabel = beardLabel ;
-    avatar.defaultBeard = male ? [self getBeardNameWithNum:beardLabel] : @"beard-noitem";
-    
-    // match
-    int matchLabel = [FUP2AClient getIntParamWithData:data key:@"id_match_facewarehouse"];
-    avatar.matchLabel = matchLabel ;
-    
-    // create default hair
-    NSString *baseHair = nil;
-    
-    // 默认头发
-    int hairLabel = [FUP2AClient getIntParamWithData:data key:@"hair_label"];
-    baseHair = [self gethairNameWithNum:hairLabel isMale:male];
-    avatar.hairLabel = hairLabel ;
-    if (!baseHair || baseHair.length == 0) {
-        baseHair = male ? @" male_hair_2" : @"female_td2" ;
-    }
-    avatar.defaultHair = baseHair ;
-    
-    NSArray *skinColorInfo = [FUP2AClient getParamsArrayWithData:data key:@"dst_transfer_color"];
-    avatar.mobileSkinColor = [self getColorWithColorInfo:skinColorInfo colorList:self.skinColorArray];
-    avatar.serverSkinColor = [FUFigureColor colorWithR:[skinColorInfo[0] floatValue] g:[skinColorInfo[1] floatValue] b:[skinColorInfo[2] floatValue]];
-    
-    NSArray *lipColorInfo = [FUP2AClient getParamsArrayWithData:data key:@"mouth_color"];
-    avatar.mobileLipColor = [self getColorWithColorInfo:lipColorInfo colorList:self.lipColorArray];
-    avatar.serverLipColor = [FUFigureColor colorWithR:[lipColorInfo[0] floatValue] g:[lipColorInfo[1] floatValue] b:[lipColorInfo[2] floatValue]];
-    
-    NSData *baseHairData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:baseHair ofType:@"bundle"]];
-    
-    CFAbsoluteTime startProcessHair = CFAbsoluteTimeGetCurrent() ;
-    NSData *defaultHairData = [FUP2AClient createAvatarHairWithServerData:data defaultHairData:baseHairData];
-    NSLog(@"------------ process hair time: %f ms - hair name: %@", (CFAbsoluteTimeGetCurrent() - startProcessHair) * 1000.0, baseHair);
-    
-    // save default hair
-    NSString *defaultHairPath = [[[avatar avatarPath] stringByAppendingPathComponent:baseHair] stringByAppendingString:@".bundle"];
-    [defaultHairData writeToFile:defaultHairPath atomically:YES];
-    
-    // other info
-    avatar.defaultClothes = male ? @"male_clothes" : @"female_clothes" ;
-    
-    int hasGlass = [FUP2AClient getIntParamWithData:data key:@"has_glasses"];
-    avatar.defaultGlasses = hasGlass == 0 ? @"glasses-noitem" : (male ? @"male_glass_01" : @"female_glass_01");
-    
-    // create other hairs
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        NSArray *hairs = male ? self.maleHairs : self.femaleHairs ;
-        for (NSString *hairName in hairs) {
-            if ([hairName isEqualToString:@"hair-noitem"] || [hairName isEqualToString:baseHair]) {
-                continue ;
-            }
-            NSString *hairPath = [[NSBundle mainBundle] pathForResource:hairName ofType:@"bundle"];
-            NSData *d0 = [NSData dataWithContentsOfFile:hairPath];
-            
-            CFAbsoluteTime startProcessHair1 = CFAbsoluteTimeGetCurrent() ;
-            
-            NSData *d1 = [FUP2AClient createAvatarHairWithServerData:data defaultHairData:d0];
-            NSLog(@"------------ process hair time: %f ms - hair name: %@", (CFAbsoluteTimeGetCurrent() - startProcessHair1) * 1000.0, hairName);
-            if (d1 == nil) {
-                NSLog(@"---- error path: %@", hairPath);
-            }
-            
-            NSString *hp = [[[avatar avatarPath] stringByAppendingPathComponent:hairName] stringByAppendingString:@".bundle"];
-            [d1 writeToFile:hp atomically:YES];
-        }
-    });
-    
-    return avatar ;
-}
-
-// 重置旋转缩放参数
-- (void)resetP2AParams {
-    p2aParams[@"rot_delta"] = @(0);
-    p2aParams[@"scale_delta"] = @(0);
-    p2aParams[@"translate_delta"] = @(0);
-}
-
-//设置移动参数
-- (void)setRotDelta:(float)rot Horizontal:(BOOL)hor {
-    
-    if (hor) {      // 设置左右旋转参数
-        float tmpRot = [p2aParams[@"rot_delta"] floatValue];
-        tmpRot += rot;
-        p2aParams[@"rot_delta"] = @(tmpRot);
-    }else {      // 设置上下移动参数
-        float td = [p2aParams[@"translate_delta"] floatValue];
-        td -= rot;
-        p2aParams[@"translate_delta"] = @(td);
-    }
-}
-
-//设置缩放参数
-- (void)setScaleDelta:(float)scale  {
-    float tmpScale = [p2aParams[@"scale_delta"] floatValue];
-    tmpScale += scale;
-    p2aParams[@"scale_delta"] = @(tmpScale);
-}
-
-// 美颜处理
-- (CVPixelBufferRef)trackFaceWithBuffer:(CMSampleBufferRef)sampleBuffer ;{
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     
     CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
@@ -578,22 +522,21 @@ static FUManager *fuManager = nil ;
     return pixelBuffer ;
 }
 
-// Avatar 处理接口
-static int frameid = 0 ;
-- (CVPixelBufferRef) renderP2AItemWithPixelBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks{
+
+static int frameId = 0 ;
+/**
+ Avatar 处理接口
+ 
+ @param pixelBuffer 图像数据
+ @param renderMode  render 模式
+ @param landmarks   landmarks 数组
+ @return            处理之后的图像
+ */
+- (CVPixelBufferRef)renderP2AItemWithPixelBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks {
+    
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
-    // 设置旋转 缩放
-    float rot = [p2aParams[@"rot_delta"] floatValue];
-    float scale = [p2aParams[@"scale_delta"] floatValue];
-    float td = [p2aParams[@"translate_delta"] floatValue];
-    [self resetP2AParams];
     
-    [FURenderer itemSetParam:mItems[FUItemTypeController] withName:@"rot_delta" value:@(rot)];
-    [FURenderer itemSetParam:mItems[FUItemTypeController] withName:@"scale_delta" value:@(scale)];
-    [FURenderer itemSetParam:mItems[FUItemTypeController] withName:@"translate_delta" value:@(td)];
-    [FURenderer itemSetParam:mItems[FUItemTypeController] withName:@"tile" value:@(6)];
-    
-    float expression[46] = {0};
+    float expression[56] = {0};
     float translation[3] = {0};
     float rotation[4] = {0};
     float rotation_mode[1] = {0};
@@ -607,8 +550,9 @@ static int frameid = 0 ;
         int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
         int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer) ;
         
-        [FURenderer trackFace:FU_FORMAT_BGRA_BUFFER inputData:baseAddress width:stride/4 height:height];
-        [FURenderer getFaceInfo:0 name:@"expression" pret:expression number:46];
+        [FURenderer trackFaceWithTongue:FU_FORMAT_BGRA_BUFFER inputData:baseAddress width:stride/4 height:height];
+        
+        [FURenderer getFaceInfo:0 name:@"expression" pret:expression number:56];
         [FURenderer getFaceInfo:0 name:@"translation" pret:translation number:3];
         [FURenderer getFaceInfo:0 name:@"rotation" pret:rotation number:4];
         [FURenderer getFaceInfo:0 name:@"rotation_mode" pret:rotation_mode number:1];
@@ -634,48 +578,225 @@ static int frameid = 0 ;
     int stride1 = (int)CVPixelBufferGetBytesPerRow(renderTarget);
     int h1 = (int)CVPixelBufferGetHeight(renderTarget);
     
-    [[FURenderer shareRenderer] renderItems:&info inFormat:FU_FORMAT_AVATAR_INFO outPtr:bytes outFormat:FU_FORMAT_BGRA_BUFFER width:stride1/4 height:h1 frameId:frameid items:mItems itemCount:3 flipx:NO];
+    [[FURenderer shareRenderer] renderItems:&info inFormat:FU_FORMAT_AVATAR_INFO outPtr:bytes outFormat:FU_FORMAT_BGRA_BUFFER width:stride1/4 height:h1 frameId:frameId ++ items:mItems itemCount:sizeof(mItems)/sizeof(int) flipx:NO];
     
     CVPixelBufferUnlockBaseAddress(renderTarget, 0);
     
-    frameid++;
     dispatch_semaphore_signal(signal);
+    
     return renderTarget ;
 }
 
-// 加载待机动画
-- (void)loadStandbyAnimation {
-    NSString *bundleName = self.currentAvatar.isMale ? @"male_animation" : @"female_animation" ;
-    NSString *bundlePath = [[NSBundle mainBundle] pathForResource:bundleName ofType:@"bundle"];
-    [self loadItemWithtype:FUItemTypeStandbyAnimation filePath:bundlePath];
-}
-// 去除待机动画
-- (void)removeStandbyAnimation {
-    [self destroyItemWithType:FUItemTypeStandbyAnimation];
-}
-- (void)enterTrackAnimationMode {
-    [FURenderer itemSetParam:mItems[FUItemTypeController] withName:@"enter_track_rotation_mode" value:@(1)];
+
+static int ARFilterID = 0 ;
+/**
+ AR 滤镜处理接口
+ 
+ @param pixelBuffer 图像数据
+ @return            处理之后的图像数据
+ */
+- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer {
+    
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+    
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+    
+    int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer) ;
+    int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
+    void *bytes = CVPixelBufferGetBaseAddress(pixelBuffer) ;
+    
+    [[FURenderer shareRenderer] renderItems:bytes inFormat:FU_FORMAT_BGRA_BUFFER outPtr:bytes outFormat:FU_FORMAT_BGRA_BUFFER width:stride/4 height:height frameId:ARFilterID ++ items:arItems itemCount:2 flipx:NO];
+    
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+    
+    dispatch_semaphore_signal(signal);
+    
+    return pixelBuffer ;
 }
 
-- (void)loadPose {
-    NSString *bundleName = self.currentAvatar.isMale ? @"male_pose" : @"female_pose" ;
-    NSString *bundlePath = [[NSBundle mainBundle] pathForResource:bundleName ofType:@"bundle"];
-    [self loadItemWithtype:FUItemTypeStandbyAnimation filePath:bundlePath];
+/**
+ Avatar 生成
+ 
+ @param data    服务端拉流数据
+ @param name    Avatar 名字
+ @param gender  Avatar 性别
+ @return        生成的 Avatar
+ */
+- (FUAvatar *)createAvatarWithData:(NSData *)data avatarName:(NSString *)name gender:(FUGender)gender {
+    
+    FUAvatar *avatar = [[FUAvatar alloc] init];
+    avatar.defaultModel = NO ;
+    avatar.name = name;
+    avatar.gender = gender ;
+    
+    // create head
+    NSData *finalBundleData = [FUP2AClient createAvatarHeadWithData:data];
+    [finalBundleData writeToFile:[[avatar filePath] stringByAppendingPathComponent:@"head.bundle"] atomically:YES];
+    
+    // 头发
+    int hairLabel = [FUP2AClient getIntParamWithData:data key:@"hair_label"];
+    avatar.hairLabel = hairLabel ;
+    NSString *defaultHair = [self gethairNameWithNum:hairLabel];
+    if ([defaultHair isEqualToString:@"hair-noitem"]) {
+        defaultHair = gender == FUGenderMale ? @"male_hair_2" : @"female_td2" ;
+    }
+    avatar.hair = defaultHair ;
+    
+    NSData *baseHairData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:defaultHair ofType:@"bundle"]];
+    NSData *defaultHairData = [FUP2AClient createAvatarHairWithServerData:data defaultHairData:baseHairData];
+    NSString *defaultHairPath = [[[avatar filePath] stringByAppendingPathComponent:defaultHair] stringByAppendingString:@".bundle"];
+    [defaultHairData writeToFile:defaultHairPath atomically:YES];
+    
+    // 衣服
+    avatar.clothes = gender == FUGenderMale ? @"male_clothes_1" : @"female_clothes_1" ;
+    
+    // 胡子
+    int beardLabel = [FUP2AClient getIntParamWithData:data key:@"beard_label"];
+    avatar.bearLabel = beardLabel ;
+    avatar.beard = gender == FUGenderMale ? [self getBeardNameWithNum:beardLabel] : @"beard-noitem";
+    
+    // 眼镜
+    int hasGlass = [FUP2AClient getIntParamWithData:data key:@"has_glasses"];
+    avatar.glasses = hasGlass == 0 ? @"glasses-noitem" : (gender == FUGenderMale ? @"male_glass_1" : @"female_glass_1");
+    
+    avatar.hat = @"hat-noitem" ;
+    
+    // avatar info
+    NSMutableDictionary *avatarInfo = [NSMutableDictionary dictionaryWithCapacity:1];
+    
+    [avatarInfo setObject:@(0) forKey:@"default"];
+    [avatarInfo setObject:name forKey:@"name"];
+    [avatarInfo setObject:@(gender) forKey:@"gender"];
+    [avatarInfo setObject:@(hairLabel) forKey:@"hair_label"];
+    [avatarInfo setObject:defaultHair forKey:@"hair"];
+    [avatarInfo setObject:avatar.clothes forKey:@"clothes"];
+    [avatarInfo setObject:avatar.glasses forKey:@"glasses"];
+    [avatarInfo setObject:@(beardLabel) forKey:@"beard_label"];
+    [avatarInfo setObject:avatar.beard forKey:@"beard"];
+    [avatarInfo setObject:avatar.hat forKey:@"hat"];
+    
+    NSString *avatarInfoPath = [[AvatarListPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
+    NSData *avatarInfoData = [NSJSONSerialization dataWithJSONObject:avatarInfo options:NSJSONWritingPrettyPrinted error:nil];
+    [avatarInfoData writeToFile:avatarInfoPath atomically:YES];
+    
+    // create other hairs
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        NSArray *hairs = gender == FUGenderMale ? self.maleHairs : self.femaleHairs ;
+        for (NSString *hairName in hairs) {
+            if ([hairName isEqualToString:@"hair-noitem"] || [hairName isEqualToString:defaultHair]) {
+                continue ;
+            }
+            NSString *hairPath = [[NSBundle mainBundle] pathForResource:hairName ofType:@"bundle"];
+            NSData *d0 = [NSData dataWithContentsOfFile:hairPath];
+            
+//            CFAbsoluteTime startProcessHair1 = CFAbsoluteTimeGetCurrent() ;
+            
+            NSData *d1 = [FUP2AClient createAvatarHairWithServerData:data defaultHairData:d0];
+//            NSLog(@"------------ process hair time: %f ms - hair name: %@", (CFAbsoluteTimeGetCurrent() - startProcessHair1) * 1000.0, hairName);
+            if (d1 == nil) {
+                NSLog(@"---- error path: %@", hairPath);
+            }
+            NSString *hp = [[[avatar filePath] stringByAppendingPathComponent:hairName] stringByAppendingString:@".bundle"];
+            [d1 writeToFile:hp atomically:YES];
+        }
+    });
+    
+    
+    return avatar ;
 }
 
-- (void)quitTrackAnimationMode {
-    [FURenderer itemSetParam:mItems[FUItemTypeController] withName:@"quit_track_rotation_mode" value:@(1)];
+/**
+ 捏脸之后生成新的 Avatar
+ 
+ @param coeffi  捏脸参数
+ @param deform  是否 deform
+ @return        新的 Avatar
+ */
+- (FUAvatar *)createPupAvatarWithCoeffi:(float *)coeffi DeformHead:(BOOL)deform {
+    
+    FUAvatar *currentAvatar = self.currentAvatars.firstObject ;
+    
+    NSData *headData = [NSData dataWithContentsOfFile:[[currentAvatar filePath] stringByAppendingPathComponent:@"head.bundle"]];
+    
+    if (deform) {
+        headData = [FUP2AClient deformAvatarHeadWithHeadData:headData deformParams:coeffi paramsSize:38];
+    }
+    
+    NSString *avatarName = currentAvatar.defaultModel ? [NSString stringWithFormat:@"%.0f", [[NSDate date] timeIntervalSince1970]] : currentAvatar.name ;
+    
+    // 文件夹
+    NSFileManager *fileManager = [NSFileManager defaultManager] ;
+    NSString *filePath = [documentPath stringByAppendingPathComponent:avatarName];
+
+    if (![fileManager fileExistsAtPath:filePath]) {
+        [[NSFileManager defaultManager] createDirectoryAtPath:filePath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+
+    // Avatar
+    FUAvatar *avatar = [[FUAvatar alloc] init];
+    avatar.name = avatarName;
+    avatar.gender = currentAvatar.gender ;
+
+    // 图片 icon
+    UIImage *image = [UIImage imageWithContentsOfFile:currentAvatar.imagePath];
+    NSData *imageData = UIImageJPEGRepresentation(image, 1.0) ;
+    [imageData writeToFile:avatar.imagePath atomically:YES];
+
+    // 头
+    [headData writeToFile:[[avatar filePath] stringByAppendingPathComponent:@"head.bundle"] atomically:YES];
+    // 头发
+    NSArray *hairs = currentAvatar.gender == FUGenderMale ? self.maleHairs : self.femaleHairs ;
+    
+    if (currentAvatar.defaultModel) { // 预置模型
+        // copy json
+        NSData *jsonData = [[NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"Avatars.json" ofType:nil] encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
+        NSArray *avatarsArray = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:nil];
+        NSData *avatarInfoData ;
+        for (NSDictionary *avatarInfo in avatarsArray) {
+            if ([avatarInfo[@"name"] isEqualToString:currentAvatar.name]) {
+                
+                [avatarInfo setValue:avatar.name forKey:@"name"];
+                [avatarInfo setValue:@(0) forKey:@"default"];
+                avatarInfoData = [NSJSONSerialization dataWithJSONObject:avatarInfo options:NSJSONWritingPrettyPrinted error:nil];
+                break ;
+            }
+        }
+        
+        NSString *jsonPath = [[AvatarListPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
+        [avatarInfoData writeToFile:jsonPath atomically:YES];
+        
+        // copy resource
+        NSString *hairPath = [[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Resource"] stringByAppendingPathComponent:currentAvatar.name];
+        NSMutableArray *hairArr = [NSMutableArray arrayWithCapacity:1];
+        
+        for (NSString *hair in hairs) {
+            if ([hair isEqualToString:@"hair-noitem"]) {
+                continue ;
+            }
+            NSString *hairSource =  [[hairPath stringByAppendingPathComponent:hair] stringByAppendingString:@".bundle"];
+            if ([fileManager fileExistsAtPath:hairSource]) {
+                [fileManager copyItemAtPath:hairSource toPath:[[filePath stringByAppendingPathComponent:hair] stringByAppendingString:@".bundle"] error:nil];
+                [hairArr addObject:hair];
+            }
+        }
+    }
+    return avatar ;
 }
 
-// 拍摄检测
+
 static float DetectionAngle = 20.0 ;
 static float CenterScale = 0.3 ;
-- (int)photoDetectionAction  {
+/**
+ 拍摄检测
+ 
+ @return 检测结果
+ */
+- (NSString *)photoDetectionAction {
     
     // 1、保证单人脸输入
     int faceNum = [FURenderer isTracking];
     if (faceNum != 1) {
-        return 1 ;
+        return @" 请保持1个人输入  " ;
     }
     
     // 2、保证正脸
@@ -690,7 +811,7 @@ static float CenterScale = 0.3 ;
         || yAngle < -DetectionAngle || yAngle > DetectionAngle
         || zAngle < -DetectionAngle || zAngle > DetectionAngle) {
         
-        return 2 ;
+        return @" 请保持正面  " ;
     }
     
     // 3、保证人脸在中心区域
@@ -699,7 +820,7 @@ static float CenterScale = 0.3 ;
     if (faceCenter.x < 0.5 - CenterScale / 2.0 || faceCenter.x > 0.5 + CenterScale / 2.0
         || faceCenter.y < 0.4 - CenterScale / 2.0 || faceCenter.y > 0.4 + CenterScale / 2.0) {
         
-        return 3 ;
+        return @" 请将人脸对准虚线框  " ;
     }
     
     // 4、夸张表情
@@ -710,17 +831,69 @@ static float CenterScale = 0.3 ;
         
         if (expression[i] > 0.50) {
             
-            return 4 ;
+            return @" 请保持面部无夸张表情  " ;
         }
     }
     
     // 5、光照均匀
     // 6、光照充足
     if (lightingValue < 0.0) {
-        return 6 ;
+        return @" 光线不充足  " ;
     }
     
-    return 0 ;
+    return @" 完美  " ;
+}
+
+/**
+ 设置最多识别人脸的个数
+ 
+ @param num 最多识别人脸个数
+ */
+- (void)setMaxFaceNum:(int)num {
+    [FURenderer setMaxFaces:num];
+}
+
+/**
+ 获取人脸矩形框
+ 
+ @return 人脸矩形框
+ */
+- (CGRect)getFaceRect {
+    
+    float faceRect[4];
+    int ret = [FURenderer getFaceInfo:0 name:@"face_rect" pret:faceRect number:4];
+    if (!ret) {
+        return CGRectZero ;
+    }
+    // 计算出中心点的坐标值
+    CGFloat centerX = (faceRect[0] + faceRect[2]) * 0.5;
+    CGFloat centerY = (faceRect[1] + faceRect[3]) * 0.5;
+    
+    // 将坐标系转换成以左上角为原点的坐标系
+    centerX = frameSize.width - centerX;
+    centerY = frameSize.height - centerY;
+    
+    CGRect rect = CGRectZero ;
+    if (frameSize.width < frameSize.height) {
+        CGFloat w = frameSize.width ;
+        rect.size = CGSizeMake(w, w) ;
+        rect.origin = CGPointMake(0, centerY - w/2.0) ;
+    }else {
+        CGFloat w = frameSize.height ;
+        rect.size = CGSizeMake(w, w) ;
+        rect.origin = CGPointMake(centerX - w / 2.0, 0) ;
+    }
+    
+    CGPoint origin = rect.origin ;
+    if (origin.x < 0) {
+        origin.x = 0 ;
+    }
+    if (origin.y < 0) {
+        origin.y = 0 ;
+    }
+    rect.origin = origin ;
+    
+    return rect ;
 }
 
 /**获取图像中人脸中心点*/
@@ -758,449 +931,11 @@ static float CenterScale = 0.3 ;
     return center;
 }
 
-// 进入/退出 AR
-- (void)enterARMode {
-    [FURenderer itemSetParam:mItems[FUItemTypeController] withName:@"reset_all" value:@1];
-    // 1、 unBind身体、衣服、动画、
-    int unBindItems[4] = {mItems[FUItemTypeBody],mItems[FUItemTypeClothes],mItems[FUItemTypeStandbyAnimation]};
-    [FURenderer unBindItems:mItems[FUItemTypeController] items:unBindItems itemsCount:sizeof(unBindItems)/sizeof(int)];
-    
-    // 2、传参
-    fuItemSetParamd(mItems[FUItemTypeController], "enter_ar_mode", 1) ;
-    
-    arItems[0] = mItems[FUItemTypeController] ;
-}
-
-- (void)quitARMode {
-    fuItemSetParamd(mItems[FUItemTypeController], "quit_ar_mode", 1) ;
-    arItems[0] = 0 ;
-    if (arItems[1] != 0) {
-        [FURenderer destroyItem:arItems[1]] ;
-        arItems[1] = 0 ;
-    }
-    
-    // bind身体、衣服、动画、
-    int bindItems[4] = {mItems[FUItemTypeBody],mItems[FUItemTypeClothes],mItems[FUItemTypeStandbyAnimation]};
-    [FURenderer bindItems:mItems[FUItemTypeController] items:bindItems itemsCount:sizeof(bindItems)/sizeof(int)];
-}
-
-// AR 滤镜 item
-- (void)loadARFilter:(NSString *)filterName {
-    dispatch_semaphore_wait(arSignal, DISPATCH_TIME_FOREVER);
-    int destoryItem = mItems[FUItemTypeARFilter];
-    
-    if (filterName != nil && ![filterName isEqual:@"noitem"]) {
-        /**先创建道具句柄*/
-        NSString *path = [[NSBundle mainBundle] pathForResource:filterName ofType:@"bundle"];
-        mItems[FUItemTypeARFilter] = [FURenderer itemWithContentsOfFile:path];
-    }else{
-        /**为避免道具句柄被销毁会后仍被使用导致程序出错，这里需要将存放道具句柄的items[1]设为0*/
-        mItems[FUItemTypeARFilter] = 0;
-    }
-    
-    if (destoryItem != 0)   {
-        [FURenderer destroyItem:destoryItem];
-    }
-    
-    arItems[1] = mItems[FUItemTypeARFilter] ;
-    dispatch_semaphore_signal(arSignal);
-}
-// AR 滤镜 mode
-- (void)loadARModel:(FUAvatar *)avatar {
-    
-    dispatch_semaphore_wait(arSignal, DISPATCH_TIME_FOREVER);
-    
-    if (avatar == nil) {
-        // 头，头发，眼镜, 帽子
-        [self loadItemWithtype:FUItemTypeAvatar filePath:nil];
-        [self loadItemWithtype:FUItemTypeHair filePath:nil];
-        if (mItems[FUItemTypeGlasses] != 0) {
-            [self loadItemWithtype:FUItemTypeGlasses filePath:nil];
-        }
-        if (mItems[FUItemTypeHat] != 0) {
-            [self loadItemWithtype:FUItemTypeHat filePath:nil];
-        }
-        dispatch_semaphore_signal(arSignal);
-        return ;
-    }
-    
-    // load head/hair/gless/beard/hat
-    [self loadItemWithtype:FUItemTypeAvatar filePath:avatar.bundlePath];
-    
-    NSString *hairPath = nil ;
-    if (avatar.defaultHair) {
-        NSString *hairName = avatar.defaultHair ;
-        if (avatar.time) {
-            hairPath = [[[avatar avatarPath] stringByAppendingPathComponent:hairName] stringByAppendingString:@".bundle"];
-        }else {
-            hairPath = [[[[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Resource"] stringByAppendingPathComponent:avatar.bundleName] stringByAppendingPathComponent:hairName] stringByAppendingString:@".bundle"];
-        }
-    }
-    [self loadItemWithtype:FUItemTypeHair filePath:hairPath];
-    
-    NSString *glessPath ;
-    if (avatar.defaultGlasses == nil || [avatar.defaultGlasses isEqualToString:@"glasses-noitem"]) {
-        glessPath = nil ;
-    }else {
-        glessPath = [[NSBundle mainBundle] pathForResource:avatar.defaultGlasses ofType:@"bundle"];
-    }
-    [self loadItemWithtype:FUItemTypeGlasses filePath:glessPath];
-    
-    NSString *beardPath = nil ;
-    if (avatar.defaultBeard == nil || [avatar.defaultBeard isEqualToString:@"beard-noitem"]) {
-        beardPath = nil ;
-    }else {
-        beardPath = [[NSBundle mainBundle] pathForResource:avatar.defaultBeard ofType:@"bundle"];
-    }
-    [self loadItemWithtype:FUItemTypeBeard filePath:beardPath];
-    
-    NSString *hatPath = nil ;
-    if (avatar.defaultHat == nil || [avatar.defaultHat isEqualToString:@"hat-noitem"]) {
-        hatPath = nil ;
-    }else {
-        hatPath = [[NSBundle mainBundle] pathForResource:avatar.defaultHat ofType:@"bundle"];
-    }
-    [self loadItemWithtype:FUItemTypeHat filePath:hatPath];
-    
-    // load skin color / lip color / hair color
-    [self setDefaultColorForAvatar:avatar];
-    
-    arItems[0] = mItems[FUItemTypeController];
-    
-    dispatch_semaphore_signal(arSignal);
-}
-
-// AR滤镜 处理接口
-static int ARFilterID = 0 ;
-- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer {
-    
-    dispatch_semaphore_wait(arSignal, DISPATCH_TIME_FOREVER);
-    
-    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
-    int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer) ;
-    int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
-    void *bytes = CVPixelBufferGetBaseAddress(pixelBuffer) ;
-    
-    [[FURenderer shareRenderer] renderItems:bytes inFormat:FU_FORMAT_BGRA_BUFFER outPtr:bytes outFormat:FU_FORMAT_BGRA_BUFFER width:stride/4 height:height frameId:ARFilterID items:arItems itemCount:2 flipx:NO];
-    
-    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
-    
-    ARFilterID ++ ;
-    
-    dispatch_semaphore_signal(arSignal);
-    
-    return pixelBuffer ;
-}
-
-// 进入/退出 捏脸模式
-- (void)enterFacepupMode {
-    fuItemSetParamd(mItems[FUItemTypeController], "enter_facepup_mode", 1) ;
-}
-- (void)quitFacepupMode {
-    fuItemSetParamd(mItems[FUItemTypeController], "quit_facepup_mode", 1) ;
-}
-
-- (int)getSkinColorIndex {
-    double currentColor = fuItemGetParamd(mItems[FUItemTypeController], "skin_color_index");
-    return (int)currentColor;
-}
-
-// lip color index
-- (int)getLipColorIndex {
-    double currentColor = fuItemGetParamd(mItems[FUItemTypeController], "lip_color_index");
-    return (int)currentColor;
-}
-
-// iris color index
-- (int)getIrisColorIndex {
-    return 0 ;
-}
-
-// set skin color
-- (void)facepopSetSkinColor:(double*)color {
-    fuItemSetParamdv(mItems[FUItemTypeController], "skin_color", color, 3) ;
-}
-
-// set lip color
-- (void)facepopSetLipColor:(double*)color{
-    fuItemSetParamdv(mItems[FUItemTypeController], "lip_color", color, 3) ;
-}
-// set iris color
-- (void)facepopSetIrisColor:(double*)color {
-    fuItemSetParamdv(mItems[FUItemTypeController], "iris_color", color, 3) ;
-}
-// set hair color
-- (void)facepopSetHairColor:(double*)color intensity:(double)intensity {
-    fuItemSetParamdv(mItems[FUItemTypeController], "hair_color", color, 3) ;
-    fuItemSetParamd(mItems[FUItemTypeController], "hair_color_intensity", intensity) ;
-}
-// set galsses color
-- (void)facepopSetGlassesColor:(double*)color {
-    fuItemSetParamdv(mItems[FUItemTypeController], "glass_color", color, 3) ;
-}
-// set glasses frame color
-- (void)facepopSetGlassesFrameColor:(double*)color {
-    fuItemSetParamdv(mItems[FUItemTypeController], "glass_frame_color", color, 3) ;
-}
-// set beard color
-- (void)facepopSetBeardColor:(double*)color {
-    fuItemSetParamdv(mItems[FUItemTypeController], "beard_color", color, 3) ;
-}
-// set hat color
-- (void)facepopSetHatColor:(double*)color {
-    fuItemSetParamdv(mItems[FUItemTypeController], "hat_color", color, 3) ;
-}
-
-// face shape params
-- (void)facepopSetShapParam:(NSString *)key level:(double)level {
-    key  = [NSString stringWithFormat:@"{\"name\":\"facepup\",\"param\":\"%@\"}", key];
-    fuItemSetParamd(mItems[FUItemTypeController], [key UTF8String], level) ;
-}
-
-- (double)getFacepopParamWith:(NSString *)key {
-    NSString * realKey  = [NSString stringWithFormat:@"{\"name\":\"facepup\",\"param\":\"%@\"}", key];
-    double level = fuItemGetParamd(mItems[FUItemTypeController], [realKey UTF8String]) ;
-    return level ;
-}
-
-// 生成新的
-- (BOOL)createPupAvatarWithCoeffi:(float *)coeffi colorIndex:(float)color DeformHead:(BOOL)deform {
-    
-    NSString *bundlePath = self.currentAvatar.bundlePath ;
-    NSData *bundleData = [NSData dataWithContentsOfFile:bundlePath];
-    
-    CFAbsoluteTime start = CFAbsoluteTimeGetCurrent() ;
-    
-    if (deform) {
-        bundleData = [FUP2AClient deformAvatarHeadWithHeadData:bundleData deformParams:coeffi paramsSize:36];
-    }
-    CFAbsoluteTime head = CFAbsoluteTimeGetCurrent() ;
-    NSLog(@"-------- create head: %f", (head - start) * 1000.0);
-    
-    NSString *fileName ;
-    if (self.currentAvatar.time) {// 非预置模型
-        fileName = self.currentAvatar.time;
-    }else {             // 预置模型
-        NSTimeInterval time = [[NSDate date] timeIntervalSince1970];
-        fileName = [NSString stringWithFormat:@"%.0f", time];
-    }
-    // 文件夹
-    NSFileManager *fileManager = [NSFileManager defaultManager] ;
-    NSString *filePath = [documentPath stringByAppendingPathComponent:fileName];
-    
-    if (![fileManager fileExistsAtPath:filePath]) {
-        [[NSFileManager defaultManager] createDirectoryAtPath:filePath withIntermediateDirectories:YES attributes:nil error:nil];
-    }
-    
-    // Avatar
-    FUAvatar *avatar = [[FUAvatar alloc] init];
-    avatar.time = fileName;
-    avatar.isMale = self.currentAvatar.isMale ;
-    
-    // 图片 icon
-    UIImage *image = [UIImage imageWithContentsOfFile:self.currentAvatar.imagePath];
-    NSData *imageData = UIImageJPEGRepresentation(image, 1.0) ;
-    [imageData writeToFile:avatar.imagePath atomically:YES];
-    
-    // 头
-    [bundleData writeToFile:avatar.bundlePath atomically:YES];
-    // 头发
-    NSArray *hairs = self.currentAvatar.hairArr ;
-    if (hairs == nil || hairs.count == 0) {
-        hairs = self.currentAvatar.isMale ? self.maleHairs : self.femaleHairs ;
-    }
-    NSString *hairPath ;
-    if (!self.currentAvatar.time) { // 预置模型
-        hairPath = [[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Resource"] stringByAppendingPathComponent:self.currentAvatar.bundleName];
-        NSMutableArray *hairArr = [NSMutableArray arrayWithCapacity:1];
-        for (NSString *hair in hairs) {
-            if ([hair isEqualToString:@"hair-noitem"]) {
-                continue ;
-            }
-            NSString *hairSource =  [[hairPath stringByAppendingPathComponent:hair] stringByAppendingString:@".bundle"];
-            if ([fileManager fileExistsAtPath:hairSource]) {
-                [fileManager copyItemAtPath:hairSource toPath:[[filePath stringByAppendingPathComponent:hair] stringByAppendingString:@".bundle"] error:nil];
-                [hairArr addObject:hair];
-            }
-        }
-    }
-    
-    avatar.hairArr = hairs ;
-    
-    self.currentAvatar = avatar ;
-    
-    return YES ;
-}
-
-// set current avatar default color
-- (void)setDefaultColorForAvatar:(FUAvatar *)avatar {
-    
-    double c[3] ;
-    if (avatar.skinColor) {
-        c[0] = avatar.skinColor.r ;
-        c[1] = avatar.skinColor.g ;
-        c[2] = avatar.skinColor.b ;
-        [self facepopSetSkinColor:c];
-    }
-    
-    if (avatar.lipColor) {
-        c[0] = avatar.lipColor.r ;
-        c[1] = avatar.lipColor.g ;
-        c[2] = avatar.lipColor.b ;
-        
-        [self facepopSetLipColor:c];
-    }
-    
-    if (avatar.irisColor) {
-        double c[3] = {
-            avatar.irisColor.r,
-            avatar.irisColor.g,
-            avatar.irisColor.b,
-        };
-        [self facepopSetIrisColor:c];
-    }
-    if (avatar.hairColor) {
-        c[0] = avatar.hairColor.r ;
-        c[1] = avatar.hairColor.g ;
-        c[2] = avatar.hairColor.b ;
-    }else {
-        FUFigureColor *color = self.hairColorArray[0] ;
-        c[0] = color.r ;
-        c[1] = color.g ;
-        c[2] = color.b ;
-    }
-    [self facepopSetHairColor:c intensity:avatar.hairColor.intensity];
-//    if (avatar.defaultHair != nil && ![avatar.defaultHair isEqualToString:@"hair-noitem"]) {
-//    }
-    if (avatar.glassFrameColor) {
-        c[0] = avatar.glassFrameColor.r ;
-        c[1] = avatar.glassFrameColor.g ;
-        c[2] = avatar.glassFrameColor.b ;
-    }else {
-        FUFigureColor *color = self.glassFrameArray[0] ;
-        c[0] = color.r ;
-        c[1] = color.g ;
-        c[2] = color.b ;
-    }
-    [self facepopSetGlassesFrameColor:c];
-    if (avatar.glassColor) {
-        c[0] = avatar.glassColor.r ;
-        c[1] = avatar.glassColor.g ;
-        c[2] = avatar.glassColor.b ;
-    }else {
-        FUFigureColor *color = self.glassColorArray[0] ;
-        c[0] = color.r ;
-        c[1] = color.g ;
-        c[2] = color.b ;
-    }
-    [self facepopSetGlassesColor:c];
-//    if (avatar.defaultGlasses != nil && ![avatar.defaultGlasses isEqualToString:@"glasses-noitem"]) {
-//    }
-    if (avatar.beardColor) {
-        c[0] = avatar.beardColor.r ;
-        c[1] = avatar.beardColor.g ;
-        c[2] = avatar.beardColor.b ;
-    }else {
-        FUFigureColor *color = self.beardColorArray[0] ;
-        c[0] = color.r ;
-        c[1] = color.g ;
-        c[2] = color.b ;
-    }
-    [self facepopSetBeardColor:c];
-//    if (avatar.defaultBeard != nil && ![avatar.defaultBeard isEqualToString:@"berad-noitem"]) {
-//    }
-    if (avatar.hatColor) {
-        c[0] = avatar.hatColor.r ;
-        c[1] = avatar.hatColor.g ;
-        c[2] = avatar.hatColor.b ;
-    }else {
-        FUFigureColor *color = self.hatColorArray[0] ;
-        c[0] = color.r ;
-        c[1] = color.g ;
-        c[2] = color.b ;
-    }
-    [self facepopSetHatColor:c];
-//    if (avatar.defaultHat != nil && ![avatar.defaultHat isEqualToString:@"hat-noitem"]) {
-//    }
-}
-
-- (void)maxFace:(int)num {
-    [FURenderer setMaxFaces:num];
-}
-
-// 获取人脸框
-- (CGRect)getFaceRect {
-    float faceRect[4];
-    int ret = [FURenderer getFaceInfo:0 name:@"face_rect" pret:faceRect number:4];
-    if (!ret) {
-        return CGRectZero ;
-    }
-    // 计算出中心点的坐标值
-    CGFloat centerX = (faceRect[0] + faceRect[2]) * 0.5;
-    CGFloat centerY = (faceRect[1] + faceRect[3]) * 0.5;
-    
-    // 将坐标系转换成以左上角为原点的坐标系
-    centerX = frameSize.width - centerX;
-    centerY = frameSize.height - centerY;
-    
-    CGRect rect = CGRectZero ;
-    if (frameSize.width < frameSize.height) {
-        CGFloat w = frameSize.width ;
-        rect.size = CGSizeMake(w, w) ;
-        rect.origin = CGPointMake(0, centerY - w/2.0) ;
-    }else {
-        CGFloat w = frameSize.height ;
-        rect.size = CGSizeMake(w, w) ;
-        rect.origin = CGPointMake(centerX - w / 2.0, 0) ;
-    }
-    
-    CGPoint origin = rect.origin ;
-    if (origin.x < 0) {
-        origin.x = 0 ;
-    }
-    if (origin.y < 0) {
-        origin.y = 0 ;
-    }
-    rect.origin = origin ;
-    
-    return rect ;
-}
-
-// 获取默认头发
-- (NSString *)gethairNameWithNum:(int)num isMale:(BOOL)male{
-    NSString *hairName ;
-    
-    if (num < 7) {
-        hairName = [NSString stringWithFormat:@"male_hair_%d", num];
-    }else if (num == 7 ||
-              (num >= 10 && num < 14) ||
-              (num > 14 && num < 17) ||
-              (num > 20 && num < 24) ){
-        hairName = [NSString stringWithFormat:@"female_hair_%d", num];
-    }else if (num == 8){
-        hairName = @"female_hair_7";
-    }else if (num == 9){
-        hairName = @"female_hair_16";
-    }else if (num == 14){
-        hairName = @"female_hair_13";
-    }else if (num == 17){
-        hairName = @"female_hair_16";
-    }else if (num == 18){
-        hairName = @"female_hair_13";
-    }else if (num == 19){
-        hairName = @"female_hair_12";
-    }else if (num == 24){
-        hairName = @"female_hair_13";
-    }else if (num == 20){
-        hairName = @"female_hair_21";
-    }
-    
-    return hairName ;
-}
-
+// 根据 beardLabel 获取 beard name
 - (NSString *)getBeardNameWithNum:(int)num {
     
     NSString *beardName = @"beard-noitem" ;
+    
     if (num > 0 && num <= 2) {
         beardName = @"male_beard_4" ;
     }else if (num > 2 && num < 5){
@@ -1217,7 +952,44 @@ static int ARFilterID = 0 ;
     return beardName ;
 }
 
-- (FUFigureColor *)getColorWithColorInfo:(NSArray *)colorInfo colorList:(NSArray *)list {
+// 根据 hairLabel 获取 hair name
+- (NSString *)gethairNameWithNum:(int)num {
+    
+    NSString *hairName = @"hair-noitem" ;
+    
+    if (num < 7) {
+        hairName = [NSString stringWithFormat:@"male_hair_%d", num];
+    }else if (num == 7 ||
+              (num >= 10 && num < 12) ||
+              num == 12              ||
+              (num > 14 && num < 17) ||
+              (num > 20 && num < 24) ){
+        hairName = [NSString stringWithFormat:@"female_hair_%d", num];
+    }else if (num == 8){
+        hairName = @"female_hair_7";
+    }else if (num == 9){
+        hairName = @"female_hair_9";
+    }else if (num == 14){
+        hairName = @"female_hair_13";
+    }else if (num == 17){
+        hairName = @"female_hair_16";
+    }else if (num == 18){
+        hairName = @"female_hair_13";
+    }else if (num == 19){
+        hairName = @"female_hair_12";
+    }else if (num == 24){
+        hairName = @"female_hair_13";
+    }else if (num == 20){
+        hairName = @"female_hair_21";
+    }else if (num == 12){
+        hairName = @"female_hair_t_1";
+    }
+    
+    return hairName ;
+}
+
+// 从色卡列表获取最相近的颜色
+- (FUP2AColor *)getColorWithColorInfo:(NSArray *)colorInfo colorList:(NSArray *)list {
     
     float r = [colorInfo[0] floatValue];
     float g = [colorInfo[1] floatValue];
@@ -1226,7 +998,7 @@ static int ARFilterID = 0 ;
     NSInteger index = 0 ;
     double min_distance = 1000.0 ;
     
-    for (FUFigureColor *des_color in list) {
+    for (FUP2AColor *des_color in list) {
         double distance = sqrt((r - des_color.r) * (r - des_color.r) + (g - des_color.g) * (g - des_color.g) + (b - des_color.b) * (b - des_color.b)) ;
         if (distance < min_distance) {
             min_distance = distance ;

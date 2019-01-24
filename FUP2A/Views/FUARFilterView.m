@@ -53,8 +53,8 @@ typedef enum : NSInteger {
     [self reloadData];
 
     modelIndex = 1 ;
-    if ([[FUManager shareInstance].avatars containsObject:avatar]) {
-        modelIndex = [[FUManager shareInstance].avatars indexOfObject:avatar] + 1 ;
+    if ([[FUManager shareInstance].avatarList containsObject:avatar]) {
+        modelIndex = [[FUManager shareInstance].avatarList indexOfObject:avatar] + 1 ;
     }
     
     [self.collection reloadData];
@@ -65,8 +65,8 @@ typedef enum : NSInteger {
 
 - (void)reloadData {
 
-    self.modelsArray = [FUManager shareInstance].avatars;
-    self.filtersArray = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ARFilter.plist" ofType:nil]];
+    self.modelsArray = [FUManager shareInstance].avatarList;
+    self.filtersArray = @[@"toonfilter"];
 }
 
 -(void)setCollectionType:(FUARCollectionType)collectionType {

@@ -10,14 +10,12 @@
 #import <UIKit/UIKit.h>
 #import <SVProgressHUD/SVProgressHUD.h>
 
-
 typedef enum : NSUInteger {
     CommonMode,
     PhotoTakeMode,
     VideoRecordMode,
     VideoRecordEndMode,
 } RunMode;
-
 
 @interface FUCamera()<AVCaptureVideoDataOutputSampleBufferDelegate,AVCaptureAudioDataOutputSampleBufferDelegate>
 {

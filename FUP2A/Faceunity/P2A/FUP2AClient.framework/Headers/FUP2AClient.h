@@ -12,7 +12,7 @@
 
 /**
  *  初始化 FUP2AClient data
- *      - 需要先初始化 data 才能使用其他接口，全局只需要初始化 data 一次
+       - 需要先初始化 data 才能使用其他接口，全局只需要初始化 data 一次
  
  *  @param data     p2a_client.bin 的 data 数据
  */
@@ -51,7 +51,7 @@
  *  @return                 新的头部模型数据
  */
 + (NSData *)deformAvatarHeadWithHeadData:(NSData *)headData
-                   deformParams:(float *)deformParams
+                            deformParams:(float *)deformParams
                               paramsSize:(NSInteger)paramsSize;
 
 /**
@@ -65,6 +65,8 @@
 + (int)getIntParamWithData:(NSData *)data key:(NSString *)key ;
 
 + (float)getFloatParamWithData:(NSData *)data key:(NSString *)key ;
+
++ (NSString *)getStringParamWithData:(NSData *)data key:(NSString *)key ;
 
 + (NSArray *)getParamsArrayWithData:(NSData *)data key:(NSString *)key ;
 

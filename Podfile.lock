@@ -14,25 +14,27 @@ PODS:
   - AFNetworking/Serialization (3.1.0)
   - AFNetworking/UIKit (3.1.0):
     - AFNetworking/NSURLSession
+  - SDWebImage (4.4.2):
+    - SDWebImage/Core (= 4.4.2)
+  - SDWebImage/Core (4.4.2)
   - SVProgressHUD (2.0.4)
-  - ZipArchive (1.4.0)
 
 DEPENDENCIES:
   - AFNetworking (~> 3.1.0)
+  - SDWebImage
   - SVProgressHUD (~> 2.0.3)
-  - ZipArchive (~> 1.4.0)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - AFNetworking
+    - SDWebImage
     - SVProgressHUD
-    - ZipArchive
 
 SPEC CHECKSUMS:
   AFNetworking: 5e0e199f73d8626b11e79750991f5d173d1f8b67
+  SDWebImage: 624d6e296c69b244bcede364c72ae0430ac14681
   SVProgressHUD: bfde85ed6c573ea802b9cb37894ed9b629034f1b
-  ZipArchive: e25a4373192673e3229ac8d6e9f64a3e5713c966
 
-PODFILE CHECKSUM: 062a6a51fa1f33cc074e03763b4573825b158dc8
+PODFILE CHECKSUM: 4118290b1504e5ab390c5368f63775559d415e03
 
 COCOAPODS: 1.5.3

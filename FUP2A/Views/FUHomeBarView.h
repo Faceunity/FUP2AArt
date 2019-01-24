@@ -22,6 +22,8 @@
 - (void)homeBarViewShouldShowTopView:(BOOL)show ;
 // 形象/AR 点击
 - (void)homeBarSelectedActionWithAR:(BOOL)isAR ;
+// 合影点击
+- (void)homeBarSelectedGroupBtn ;
 // 隐藏上半部
 - (void)homeBarViewDidHiddenTopView ;
 // zoom

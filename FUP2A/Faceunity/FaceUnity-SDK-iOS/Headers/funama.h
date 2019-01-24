@@ -232,6 +232,8 @@ FUNAMA_API int fuBeautifyImage(
 \return a GLuint texture handle containing the rendering result if out_format isn't FU_FORMAT_GL_CURRENT_FRAMEBUFFER
 */
 FUNAMA_API int fuTrackFace(int in_format,void* in_ptr,int w,int h);
+
+FUNAMA_API int fuTrackFaceWithTongue(int in_format,void* in_ptr,int w,int h);
 	
 /**
 \brief Generalized interface for rendering a list of items with extension.	

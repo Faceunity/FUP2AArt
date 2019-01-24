@@ -1,3 +1,6 @@
 *.xcuserstate
 *.DS_Store
 repo2/*
+fastlane/*
+Gemfile
+Gemfile.lock

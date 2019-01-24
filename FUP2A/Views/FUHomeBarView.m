@@ -11,6 +11,7 @@
 #import "UIColor+FU.h"
 #import "FUManager.h"
 #import "FUTool.h"
+#import "FUAvatar.h"
 
 @interface FUHomeBarView ()<UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout,UIGestureRecognizerDelegate>
 {
@@ -21,6 +22,7 @@
 @property (weak, nonatomic) IBOutlet FUHomeBarBtn *modeBtn;
 @property (weak, nonatomic) IBOutlet FUHomeBarBtn *editBtn;
 @property (weak, nonatomic) IBOutlet FUHomeBarBtn *arBtn;
+@property (weak, nonatomic) IBOutlet FUHomeBarBtn *togetherBtn;
 
 @property (weak, nonatomic) IBOutlet UICollectionView *modeCollection;
 @property (weak, nonatomic) IBOutlet UIView *bottomView;
@@ -134,6 +136,12 @@
     }
 }
 
+- (IBAction)togetherAction:(FUHomeBarBtn *)sender {
+    if ([self.delegate respondsToSelector:@selector(homeBarSelectedGroupBtn)]) {
+        [self.delegate homeBarSelectedGroupBtn];
+    }
+}
+
 // 隐藏上半部
 - (void)hidHomeBarTopView {
     [self showModeCollection:NO];
@@ -142,13 +150,13 @@
 // 刷新模型页
 - (void)reloadModeData {
     
-    selectedIndex = [[FUManager shareInstance].avatars indexOfObject:[FUManager shareInstance].currentAvatar] + 2;
+    selectedIndex = [[FUManager shareInstance].avatarList indexOfObject:[FUManager shareInstance].currentAvatars.firstObject] + 2;
     [self.modeCollection reloadData];
 }
 #pragma mark ---   UICollectionViewDataSource && UICollectionViewDelegate
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return [FUManager shareInstance].avatars.count + 2;
+    return [FUManager shareInstance].avatarList.count + 2;
 }
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -167,7 +175,7 @@
         }
             break ;
         default:{
-            FUAvatar *avatar = [FUManager shareInstance].avatars[indexPath.row - 2];
+            FUAvatar *avatar = [FUManager shareInstance].avatarList[indexPath.row - 2];
             image = [UIImage imageWithContentsOfFile:avatar.imagePath];
         }
             break;
@@ -202,12 +210,10 @@
             selectedIndex = indexPath.row ;
             [collectionView reloadData];
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                //            dispatch_async(dispatch_get_global_queue(0, 0), ^{
-                FUAvatar *avatar = [FUManager shareInstance].avatars[indexPath.row - 2];
+                FUAvatar *avatar = [FUManager shareInstance].avatarList[indexPath.row - 2];
                 if (self.delegate && [self.delegate respondsToSelector:@selector(homeBarViewDidSelectedAvatar:)]) {
                     [self.delegate homeBarViewDidSelectedAvatar:avatar];
                 }
-                //            });
             });
         }
             break;
