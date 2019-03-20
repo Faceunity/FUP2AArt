@@ -7,9 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "FUFigureDefine.h"
 
 @interface FUFigureSlider : UISlider
 
-@property (nonatomic, assign) FUFigureSliderType type ;
+//@property (nonatomic, assign) FUFigureSliderType type ;
 @end

@@ -9,6 +9,8 @@
 #import "FUCamera.h"
 #import <UIKit/UIKit.h>
 #import <SVProgressHUD/SVProgressHUD.h>
+//#import "FUP2AHelper.h"
+#import <FUP2AHelper/FUP2AHelper.h>
 
 typedef enum : NSUInteger {
     CommonMode,
@@ -311,7 +313,7 @@ typedef enum : NSUInteger {
         case PhotoTakeMode:{
             runMode = CommonMode;
             CVPixelBufferRef buffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-            UIImage *image = [self imageFromPixelBuffer:buffer mirr:photoMirr];
+            UIImage *image = [[FUP2AHelper shareInstance] createImageWithBuffer:buffer mirr:photoMirr];
             photoMirr = NO ;
             if (image) {
                 UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), NULL);
@@ -331,49 +333,6 @@ typedef enum : NSUInteger {
 {
     photoMirr = mirr ;
     runMode = PhotoTakeMode;
-}
-
-- (UIImage *)imageFromPixelBuffer:(CVPixelBufferRef)pixelBufferRef mirr:(BOOL)mirr{
-    
-    CVPixelBufferLockBaseAddress(pixelBufferRef, 0);
-    
-    CGFloat SW = [UIScreen mainScreen].bounds.size.width;
-    CGFloat SH = [UIScreen mainScreen].bounds.size.height;
-    
-    float width = CVPixelBufferGetWidth(pixelBufferRef);
-    float height = CVPixelBufferGetHeight(pixelBufferRef);
-    
-    float dw = width / SW;
-    float dh = height / SH;
-    
-    float cropW = width;
-    float cropH = height;
-    
-    if (dw > dh) {
-        cropW = SW * dh;
-    }else
-    {
-        cropH = SH * dw;
-    }
-    
-    CGFloat cropX = (width - cropW) * 0.5;
-    CGFloat cropY = (height - cropH) * 0.5;
-    
-    CIImage *ciImage = [CIImage imageWithCVPixelBuffer:pixelBufferRef];
-    
-    CIContext *temporaryContext = [CIContext contextWithOptions:nil];
-    CGImageRef videoImage = [temporaryContext createCGImage:ciImage fromRect:CGRectMake(cropX, cropY, cropW, cropH)];
-    
-    UIImage *image ;
-    if (mirr) {
-        image = [UIImage imageWithCGImage:videoImage scale:1.0 orientation:UIImageOrientationUpMirrored];
-    }else {
-        image = [UIImage imageWithCGImage:videoImage];
-    }
-    
-    CGImageRelease(videoImage);
-    CVPixelBufferUnlockBaseAddress(pixelBufferRef, 0);
-    return image;
 }
 
 - (UIImage *)getSquareImageFromBuffer:(CVPixelBufferRef)pixelBufferRef {

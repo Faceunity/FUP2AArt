@@ -11,6 +11,22 @@
 #import "FURenderer.h"
 #import "FUP2AColor.h"
 
+typedef enum : NSInteger {
+    FUItemTypeController        = 0,
+    FUItemTypeHead,
+    FUItemTypeBody,
+    FUItemTypeHair,
+    FUItemTypeClothes,
+    FUItemTypeGlasses,
+    FUItemTypeBeard,
+    FUItemTypeHat,
+    FUItemTypeAnimation,
+    FUItemTypeCamera,
+    FUItemTypeEyeLash,
+    FUItemTypeEyeBrow,
+} FUItemType;
+
+
 @interface FUAvatar ()
 {
     // 句柄数组
@@ -263,6 +279,21 @@
 }
 
 /**
+ 添加 Camera 道具
+ */
+- (void)loadCamera {
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"qiuhun_ani_cam" ofType:@"bundle"];
+    [self loadItemWithtype:FUItemTypeCamera filePath:path];
+}
+
+/**
+ 去除 Camera 道具
+ */
+- (void)removeCamera {
+    [self destroyItemWithType:FUItemTypeCamera];
+}
+
+/**
  更换睫毛
  
  @param eyelashPath 新睫毛所在路径
@@ -354,12 +385,37 @@
 }
 
 /**
- 缩放至面部
+ 缩放至面部正面
  */
 - (void)resetScaleToFace {
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(20)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(5)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0.0)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
+    
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(100)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(5)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(1)];
+}
+
+/**
+ 捏脸模式缩放至面部正面
+ */
+- (void)resetScaleToShapeFaceFront {
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(-10)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(-2.0)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0.0)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(3)];
+}
+
+/**
+ 捏脸模式缩放至面部侧面
+ */
+- (void)resetScaleToShapeFaceSide {
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(-10)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(-2.0)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(-1.0)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(3)];
 }
 
 /**
@@ -486,14 +542,36 @@
  进入捏脸模式
  */
 - (void)enterFacepupMode {
+    [self loadTrackFaceModePose];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"enter_facepup_mode" value:@(1)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"animState" value:@2.0];
 }
 
 /**
  退出捏脸模式
  */
 - (void)quitFacepupMode {
+    [self loadStandbyAnimation];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"quit_facepup_mode" value:@(1)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"animState" value:@1.0];
+}
+
+/**
+ 获取 mesh 顶点的坐标
+ 
+ @param index   顶点序号
+ @return        顶点坐标
+ */
+- (CGPoint)getMeshPointOfIndex:(NSInteger)index {
+    
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"query_vert" value: @(index)];
+    
+    double x = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"query_vert_x"];
+    double y = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"query_vert_y"];
+    
+    CGSize size = [UIScreen mainScreen].currentMode.size;
+    
+    return CGPointMake((1.0 - x/size.width) * [UIScreen mainScreen].bounds.size.width, y/size.height * [UIScreen mainScreen].bounds.size.height) ;
 }
 
 /**
@@ -736,7 +814,7 @@
  @return 动画总帧数
  */
 - (int)getAnimationFrameCount {
-    int num = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"maxFrameNum"];
+    int num = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"frameNum"];
     return num ;
 }
 
@@ -748,6 +826,14 @@
 - (int)getCurrentAnimationFrameIndex {
     int num = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"animFrameId"];
     return num ;
+}
+
+/**
+ 重新开始播放动画
+ */
+- (void)restartAnimation {
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"animFrameId" value:@0];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"animState" value:@1.0];
 }
 
 -(NSString *)eyeLash {

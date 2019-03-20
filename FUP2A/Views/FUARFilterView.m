@@ -187,7 +187,6 @@ typedef enum : NSInteger {
     return cell ;
 }
 
-
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
 
     switch (_collectionType) {
@@ -196,7 +195,7 @@ typedef enum : NSInteger {
             if (modelIndex == indexPath.row) {
                 return ;
             }
-
+            
             modelIndex = indexPath.row ;
 
             FUAvatar *avatar = nil ;

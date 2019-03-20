@@ -18,6 +18,7 @@
 #import "FURequestManager.h"
 #import "CRender.h"
 #import "FULoadingView.h"
+#import <FUP2AHelper/FUP2AHelper.h>
 
 typedef enum : NSInteger {
     FUCurrentViewTypeNone,
@@ -237,7 +238,7 @@ static int frameID = 0;
         
         iconImage = [self.camera getSquareImageFromBuffer:imageBuffer];
        
-        selectedImage = [self.camera imageFromPixelBuffer:buffer mirr:NO];
+        selectedImage = [[FUP2AHelper shareInstance] createImageWithBuffer:buffer mirr:NO];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             
@@ -277,18 +278,21 @@ static int frameID = 0;
 - (void)createAvatarWithGender:(FUGender)gender {
     
     currentType = FUCurrentViewTypeCreating ;
+//
+//    NSDictionary *params = @{
+//                             @"gender":@(gender),
+//                             @"is_q": @(1),
+//                             };
     
     NSDictionary *params = @{
                              @"gender":@(gender),
-                             @"is_q": @(1),
+                             @"version": @"1.0.2",
                              };
-    
     NSTimeInterval time = [[NSDate date] timeIntervalSince1970];
     NSString *fileName = [NSString stringWithFormat:@"%.0f", time];
     NSString *filePath = [documentPath stringByAppendingPathComponent:fileName];
     [[NSFileManager defaultManager] createDirectoryAtPath:filePath withIntermediateDirectories:YES attributes:nil error:nil];
     
-    NSLog(@"------------------------------ start creating avatar ~");
     [[FURequestManager sharedInstance] createQAvatarWithImage:selectedImage Params:params CompletionWithData:^(NSData *data, NSError *error) {
         if (!error && data) {
 
@@ -307,7 +311,7 @@ static int frameID = 0;
                 [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
                 return ;
             }
-            
+
             FUAvatar *avatar = [[FUManager shareInstance] createAvatarWithData:data avatarName:fileName gender:gender];
 
             if (avatar) {
@@ -316,10 +320,10 @@ static int frameID = 0;
                     [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
                     return ;
                 }
-                
+
                 [[FUManager shareInstance] reloadRenderAvatar:avatar];
                 [avatar loadStandbyAnimation];
-                
+
                 [[FUManager shareInstance].avatarList insertObject:avatar atIndex:DefaultAvatarNum];
 
                 // 避免 body 还没有加载完成。闪现上一个模型的画面。
@@ -329,7 +333,7 @@ static int frameID = 0;
                     [self.loadingView stopLoading];
                     self.loadingContainer.hidden = YES ;
 
-                    NSLog(@"------------------------------ create avatar completed ~");
+                    NSLog(@"------------------------------------------------------------------------------ create avatar completed ~");
 
                     [self.navigationController popViewControllerAnimated:YES ];
                 });
@@ -388,6 +392,8 @@ static int frameID = 0;
         self.switchBtn.hidden = NO ;
     }) ;
 }
+
+
 
 #pragma mark --- Observer
 

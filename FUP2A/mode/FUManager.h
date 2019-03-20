@@ -43,10 +43,27 @@
 @property (nonatomic, strong) NSArray *glassColorArray ;
 @property (nonatomic, strong) NSArray *hatColorArray ;
 
+@property (nonatomic, strong) NSDictionary *maleMeshPoints ;
+@property (nonatomic, strong) NSDictionary *femaleMeshPoints ;
+
 // 当前 avatar
 @property (nonatomic, strong) NSMutableArray <FUAvatar *>*currentAvatars ;
 
 + (instancetype)shareInstance ;
+
+/**
+ 加载背景道具
+
+ @param filePath 背景道具所在路径
+ */
+- (void)reloadBackGroundWithFilePath:(NSString *)filePath ;
+
+/**
+ 背景道具是否存在
+
+ @return 是否存在
+ */
+- (BOOL)isBackgroundItemExist ;
 
 /**
  普通模式下切换 Avatar
@@ -156,4 +173,6 @@
  */
 - (CGRect)getFaceRect ;
 
+// 批量生成
+- (void)batchCreatingAvatarsWithImageInfos:(NSArray *)imageInfos Completion:(void (^)(void))handle ;
 @end

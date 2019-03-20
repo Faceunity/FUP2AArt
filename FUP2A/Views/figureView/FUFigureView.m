@@ -16,9 +16,10 @@
 #import "FUFigureBottomCollection.h"
 #import "FUFigureDecorationCollection.h"
 #import "FUFigureDecorationColorCollection.h"
-#import "FUFigureFaceCollection.h"
 #import "FUFigureSlider.h"
 #import "FUFigureDecorationHorizCollection.h"
+#import "FUFigureColorCollection.h"
+#import "FUFigureShapeCollection.h"
 
 @interface FUFigureView ()
 <
@@ -26,13 +27,16 @@ UIGestureRecognizerDelegate,
 FUFigureBottomCollectionDelegate,
 FUFigureDecorationCollectionDelegate,
 FUFigureDecorationColorCollectionDelegate,
-FUFigureFaceCollectionDelegate,
-FUFigureDecorationHorizCollectionDelegate
+FUFigureDecorationHorizCollectionDelegate,
+FUFigureColorCollectionDelegate,
+FUFigureShapeCollectionDelegate
 >
 {
     BOOL isMale ;
     
     CGFloat preScale; // 捏合比例
+    
+    FUFigureShapeType currentShapeType ;
 }
 
 @property (weak, nonatomic) IBOutlet FUFigureBottomCollection *bottomCollection;
@@ -41,41 +45,24 @@ FUFigureDecorationHorizCollectionDelegate
 @property (weak, nonatomic) IBOutlet FUFigureDecorationCollection *decorationCollection;
 @property (weak, nonatomic) IBOutlet FUFigureDecorationColorCollection *decorationColorCollection;
 
-@property (weak, nonatomic) IBOutlet UIView *faceView;
-@property (weak, nonatomic) IBOutlet FUFigureFaceCollection *faceCollection;
-@property (weak, nonatomic) IBOutlet UIView *faceSliderView;
-@property (weak, nonatomic) IBOutlet FUFigureSlider *faceSlider;
-@property (weak, nonatomic) IBOutlet NSLayoutConstraint *middleLabelLeft;
-@property (weak, nonatomic) IBOutlet NSLayoutConstraint *middleSliderLeft;
-@property (weak, nonatomic) IBOutlet UILabel *sliderLabel;
-@property (weak, nonatomic) IBOutlet FUFigureDecorationColorCollection *faceColorCollection;
-
 @property (weak, nonatomic) IBOutlet UIView *glassesView;
 @property (weak, nonatomic) IBOutlet FUFigureDecorationHorizCollection *glassesCollection;
 @property (weak, nonatomic) IBOutlet UIView *glassesColorView;
 @property (weak, nonatomic) IBOutlet FUFigureDecorationColorCollection *glassesFrameColorCollection;
 @property (weak, nonatomic) IBOutlet FUFigureDecorationColorCollection *glassesColorCollection;
 
-// face shape value
-@property (nonatomic, assign) double headShrink0 ;
-@property (nonatomic, assign) double headBoneStretch0  ;
-@property (nonatomic, assign) double cheekNarrow0 ;
-@property (nonatomic, assign) double jawboneNarrow0 ;
-@property (nonatomic, assign) double jawLower0 ;
-// eye shape value
-@property (nonatomic, assign) double eyeUp0 ;
-@property (nonatomic, assign) double eyeOutterUp0  ;
-@property (nonatomic, assign) double eyeClose0 ;
-@property (nonatomic, assign) double eyeBothIn0 ;
-// mouth shape value
-@property (nonatomic, assign) double mouthUp0 ;
-@property (nonatomic, assign) double upperLipThick0  ;
-@property (nonatomic, assign) double lowerLipThick0 ;
-@property (nonatomic, assign) double lipCornerIn0 ;
-// nose shape value
-@property (nonatomic, assign) double noseUp0 ;
-@property (nonatomic, assign) double nostrilIn0  ;
-@property (nonatomic, assign) double noseTipUp0 ;
+// color collection
+@property (weak, nonatomic) IBOutlet UIView *colorView;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *colorCollectionLeft;
+@property (weak, nonatomic) IBOutlet FUFigureColorCollection *colorCollection;
+@property (weak, nonatomic) IBOutlet UIView *colorSliderView;
+@property (weak, nonatomic) IBOutlet FUFigureSlider *colorSlider;
+
+// shape collection
+@property (weak, nonatomic) IBOutlet FUFigureShapeCollection *shapeCollection;
+@property (weak, nonatomic) IBOutlet UIButton *faceBtn;
+
+@property (weak, nonatomic) IBOutlet UIView *shapeView;
 
 @end
 
@@ -83,6 +70,8 @@ FUFigureDecorationHorizCollectionDelegate
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+    
+    currentShapeType = FUFigureShapeTypeNoneFront ;
 }
 
 - (void)setupFigureView  {
@@ -98,36 +87,11 @@ FUFigureDecorationHorizCollectionDelegate
     [self loadData];
 }
 
-- (BOOL)figureViewIsChange {
-    BOOL change = NO ;
-    if (_headShrink != _headShrink0 ||
-        _headBoneStretch != _headBoneStretch0 ||
-        _cheekNarrow != _cheekNarrow0 ||
-        _jawboneNarrow != _jawboneNarrow0 ||
-        _jawLower != _jawLower0 ||
-        _eyeUp != _eyeUp0 ||
-        _eyeOutterUp != _eyeOutterUp0 ||
-        _eyeClose != _eyeClose0 ||
-        _eyeBothIn != _eyeBothIn0 ||
-        _mouthUp != _mouthUp0 ||
-        _upperLipThick != _upperLipThick0 ||
-        _lowerLipThick != _lowerLipThick0 ||
-        _lipCornerIn != _lipCornerIn0 ||
-        _noseUp != _noseUp0 ||
-        _nostrilIn != _nostrilIn0 ||
-        _noseTipUp != _noseTipUp0 ) {
-
-        change = YES ;
-    }
-
-    return change ;
-}
-
 - (void)tapClick:(UITapGestureRecognizer *)tap {
     
     [self.bottomCollection hiddenSelectedItem];
     
-    if (!self.decorationView.hidden || !self.faceView.hidden || !self.glassesView.hidden) {
+    if (!self.decorationView.hidden || !self.glassesView.hidden) {
         if ([self.delegate respondsToSelector:@selector(figureViewDidHiddenAllTypeViews)]) {
             [self.delegate figureViewDidHiddenAllTypeViews];
         }
@@ -165,124 +129,50 @@ FUFigureDecorationHorizCollectionDelegate
     self.glassesFrameColorCollection.mDelegate = self ;
     self.glassesColorCollection.mDelegate = self ;
     
-    self.faceCollection.mDelegate = self ;
+    
+    self.colorCollection.mDelegate = self ;
+    
+    // skin color
+    self.colorCollection.skinColorArray = [FUManager shareInstance].skinColorArray;
     if (currentAvatar.skinLevel != 0.0) {
         self.defaultSkinLevel = currentAvatar.skinLevel ;
         self.skinColor = currentAvatar.skinColor ;
         self.skinLevel = currentAvatar.skinLevel ;
-        
+
         FUP2AColor *color = [FUManager shareInstance].skinColorArray[(int)self.skinLevel];
-        self.faceCollection.currentSkinColor = color ;
-    }else {
+        self.colorCollection.skinColor = color ;
         
+        self.colorSlider.value = self.skinLevel - (int)self.skinLevel ;
+    }else {
+
         self.defaultSkinLevel = [currentAvatar facePupGetColorIndexWithKey:@"skin_color_index"];
         self.skinColor = [FUManager shareInstance].skinColorArray[(int)_defaultSkinLevel] ;
         self.skinLevel = _defaultSkinLevel ;
         
         currentAvatar.skinLevel = self.skinLevel ;
         currentAvatar.skinColor = self.skinColor ;
-        self.faceCollection.currentSkinColor = _skinColor ;
+        self.colorCollection.skinColor = _skinColor ;
+        
+        self.colorSlider.value = 0.0 ;
     }
     
-    self.faceColorCollection.mDelegate = self ;
+    // iris color
+    self.colorCollection.irisColorArray = [FUManager shareInstance].irisColorArray;
+    if (currentAvatar.irisColor == nil) {
+        currentAvatar.irisColor = [FUManager shareInstance].irisColorArray[0];
+    }
+    self.colorCollection.irisColor = [self getColorOfColorList:[FUManager shareInstance].irisColorArray color:currentAvatar.irisColor] ;
     
-
-    // default params currentAvatar
-    self.headShrink = [currentAvatar getFacepupModeParamWith:@"Head_shrink"];
-    if (self.headShrink == 0) {
-        self.headShrink = -fabs([currentAvatar getFacepupModeParamWith:@"Head_stretch"]);
+    // lips color
+    self.colorCollection.lipsColorArray = [FUManager shareInstance].lipColorArray;
+    if (currentAvatar.lipColor == nil) {
+        currentAvatar.lipColor = [FUManager shareInstance].lipColorArray[0];
     }
-    self.headShrink0 = self.headShrink ;
-
-    self.headBoneStretch = [currentAvatar getFacepupModeParamWith:@"Forehead_Wide"];
-    if (self.headBoneStretch == 0) {
-        self.headBoneStretch = -fabs([currentAvatar getFacepupModeParamWith:@"Forehead_Narrow"]);
-    }
-    self.headBoneStretch0 = self.headBoneStretch ;
-
-    self.cheekNarrow = [currentAvatar getFacepupModeParamWith:@"cheek_narrow"];
-    if (self.cheekNarrow == 0) {
-        self.cheekNarrow = -fabs([currentAvatar getFacepupModeParamWith:@"Head_fat"]);
-    }
-    self.cheekNarrow0 = self.cheekNarrow ;
-
-    self.jawboneNarrow = [currentAvatar getFacepupModeParamWith:@"jawbone_Narrow"];
-    if (self.jawboneNarrow == 0) {
-        self.jawboneNarrow = -fabs([currentAvatar getFacepupModeParamWith:@"jawbone_Wide"]);
-    }
-    self.jawboneNarrow0 = self.jawboneNarrow ;
-
-    self.jawLower = [currentAvatar getFacepupModeParamWith:@"jaw_lower"];
-    if (self.jawLower == 0) {
-        self.jawLower = -fabs([currentAvatar getFacepupModeParamWith:@"jaw_up"]);
-    }
-    self.jawLower0 = self.jawLower;
-
-    self.eyeUp = [currentAvatar getFacepupModeParamWith:@"Eye_up"];
-    if (self.eyeUp == 0) {
-        self.eyeUp = -fabs([currentAvatar getFacepupModeParamWith:@"Eye_down"]);
-    }
-    self.eyeUp0 = self.eyeUp ;
-
-    self.eyeOutterUp = [currentAvatar getFacepupModeParamWith:@"Eye_outter_up"];
-    if (self.eyeOutterUp == 0) {
-        self.eyeOutterUp = -fabs([currentAvatar getFacepupModeParamWith:@"Eye_outter_down"]);
-    }
-    self.eyeOutterUp0 = self.eyeOutterUp ;
-
-    self.eyeClose = [currentAvatar getFacepupModeParamWith:@"Eye_close"];
-    if (self.eyeClose == 0) {
-        self.eyeClose = -fabs([currentAvatar getFacepupModeParamWith:@"Eye_open"]);
-    }
-    self.eyeClose0 = self.eyeClose;
-
-    self.eyeBothIn = [currentAvatar getFacepupModeParamWith:@"Eye_both_in"];
-    if (self.eyeBothIn == 0) {
-        self.eyeBothIn = -fabs([currentAvatar getFacepupModeParamWith:@"Eye_both_out"]);
-    }
-    self.eyeBothIn0 = self.eyeBothIn ;
-
-    self.mouthUp = [currentAvatar getFacepupModeParamWith:@"mouth_Up"];
-    if (self.mouthUp == 0) {
-        self.mouthUp = -fabs([currentAvatar getFacepupModeParamWith:@"mouth_Down"]);
-    }
-    self.mouthUp0 = self.mouthUp ;
-
-    self.upperLipThick = [currentAvatar getFacepupModeParamWith:@"upperLip_Thick"];
-    if (self.upperLipThick == 0) {
-        self.upperLipThick = -fabs([currentAvatar getFacepupModeParamWith:@"upperLip_Thin"]);
-    }
-    self.upperLipThick0 = self.upperLipThick ;
-
-    self.lowerLipThick = [currentAvatar getFacepupModeParamWith:@"lowerLip_Thick"];
-    if (self.lowerLipThick == 0) {
-        self.lowerLipThick = -fabs([currentAvatar getFacepupModeParamWith:@"lowerLip_Thin"]);
-    }
-    self.lowerLipThick0 = self.lowerLipThick ;
-
-    self.lipCornerIn = [currentAvatar getFacepupModeParamWith:@"lipCorner_In"];
-    if (self.lipCornerIn == 0) {
-        self.lipCornerIn = -fabs([currentAvatar getFacepupModeParamWith:@"lipCorner_Out"]);
-    }
-    self.lipCornerIn0 = self.lipCornerIn ;
-
-    self.noseUp = [currentAvatar getFacepupModeParamWith:@"nose_UP"];
-    if (self.noseUp == 0) {
-        self.noseUp = -fabs([currentAvatar getFacepupModeParamWith:@"nose_Down"]);
-    }
-    self.noseUp0 = self.noseUp ;
-
-    self.nostrilIn = [currentAvatar getFacepupModeParamWith:@"nostril_In"];
-    if (self.nostrilIn == 0) {
-        self.nostrilIn = -fabs([currentAvatar getFacepupModeParamWith:@"nostril_Out"]);
-    }
-    self.nostrilIn0 = self.nostrilIn ;
-
-    self.noseTipUp = [currentAvatar getFacepupModeParamWith:@"noseTip_Up"];
-    if (self.noseTipUp == 0) {
-        self.noseTipUp = -fabs([currentAvatar getFacepupModeParamWith:@"noseTip_Down"]);
-    }
-    self.noseTipUp0 = self.noseTipUp ;
+    self.colorCollection.lipsColor = [self getColorOfColorList:[FUManager shareInstance].lipColorArray color:currentAvatar.lipColor] ; ;
+    
+    self.colorCollection.type = FUFigureColorTypeSkinColor ;
+    
+    self.shapeCollection.mDelegate = self ;
 }
 
 - (void)zoomAction:(UIPinchGestureRecognizer *)gesture {
@@ -323,104 +213,60 @@ FUFigureDecorationHorizCollectionDelegate
         }
             break;
         case 1:{     // 肤色
-            subView = self.faceView ;
-            self.faceCollection.currentType = FUFigureFaceTypeSkinColor ;
-            [self.faceCollection scrollCurrentToCenterWithAnimation:NO];
-            self.faceSliderView.hidden = NO ;
-            self.faceColorCollection.hidden = YES ;
-            self.faceSlider.type = FUFigureSliderTypeOther ;
-            self.faceSlider.value = self.skinLevel - (int)(self.skinLevel) ;
-            self.middleLabelLeft.active = NO ;
-            self.middleSliderLeft.active = YES ;
+            subView = self.colorView ;
+            self.colorCollection.type = FUFigureColorTypeSkinColor ;
+            self.colorCollectionLeft.constant = 70.0 ;
+            [self.colorView layoutIfNeeded];
+            self.colorSliderView.hidden = NO ;
         }
             break;
-        case 2:{     // 面部
-            subView = self.faceView ;
-            self.faceCollection.currentType = FUFigureFaceTypeFace ;
-            [self.faceCollection scrollCurrentToCenterWithAnimation:NO];
-            NSInteger selectedIndex = [[self.faceCollection.selectedDic objectForKey:@(FUFigureFaceTypeFace)] integerValue];
-            if (selectedIndex == -1) {
-                self.faceSliderView.hidden = YES ;
-                self.faceColorCollection.hidden = YES ;
-            }else {
-                self.faceSlider.type = FUFigureSliderTypeShape ;
-                
-                FigureShapeSelectedType type = 10 + selectedIndex ;
-                [self faceCollectionShapeParamChangedWithType:type];
+        case 2:{     // 捏脸
+            subView = self.shapeView ;
+            if ([self.delegate respondsToSelector:@selector(figureViewDidSelectShapeView:)]) {
+                [self.delegate figureViewDidSelectShapeView:currentShapeType];
             }
         }
             break;
-        case 3:{     // 眼睛
-            subView = self.faceView ;
-            self.faceCollection.currentType = FUFigureFaceTypeEyes ;
-            [self.faceCollection scrollCurrentToCenterWithAnimation:NO];
-            NSInteger selectedIndex = [[self.faceCollection.selectedDic objectForKey:@(FUFigureFaceTypeEyes)] integerValue];
-            if (selectedIndex == -1) {
-                self.faceSliderView.hidden = YES ;
-                self.faceColorCollection.hidden = YES ;
-            }else {
-                self.faceSlider.type = FUFigureSliderTypeShape ;
-                
-                FigureShapeSelectedType type = 20 + selectedIndex ;
-                [self faceCollectionShapeParamChangedWithType:type];
-            }
+        case 3:{     // 瞳色
+            subView = self.colorView ;
+            self.colorCollection.type = FUFigureColorTypeirisColor ;
+            self.colorCollectionLeft.constant = 0.0 ;
+            [self.colorView layoutIfNeeded];
+            self.colorSliderView.hidden = YES ;
         }
             break;
-        case 4:{     // 嘴唇
-            subView = self.faceView ;
-            self.faceCollection.currentType = FUFigureFaceTypeLips ;
-            [self.faceCollection scrollCurrentToCenterWithAnimation:NO];
-            NSInteger selectedIndex = [[self.faceCollection.selectedDic objectForKey:@(FUFigureFaceTypeLips)] integerValue];
-            if (selectedIndex == -1) {
-                self.faceSliderView.hidden = YES ;
-                self.faceColorCollection.hidden = YES ;
-            }else {
-                self.faceSlider.type = FUFigureSliderTypeShape ;
-                
-                FigureShapeSelectedType type = 30 + selectedIndex ;
-                [self faceCollectionShapeParamChangedWithType:type];
-            }
+        case 4:{     // 唇色
+            subView = self.colorView ;
+            self.colorCollection.type = FUFigureColorTypeLipsColor ;
+            self.colorCollectionLeft.constant = 0.0 ;
+            [self.colorView layoutIfNeeded];
+            self.colorSliderView.hidden = YES ;
         }
             break;
-        case 5:{     // 鼻子
-            subView = self.faceView ;
-            self.faceCollection.currentType = FUFigureFaceTypeNose ;
-            NSInteger selectedIndex = [[self.faceCollection.selectedDic objectForKey:@(FUFigureFaceTypeNose)] integerValue];
-            if (selectedIndex == -1) {
-                self.faceSliderView.hidden = YES ;
-                self.faceColorCollection.hidden = YES ;
-            }else {
-                self.faceSlider.type = FUFigureSliderTypeShape ;
-                
-                FigureShapeSelectedType type = 40 + selectedIndex ;
-                [self faceCollectionShapeParamChangedWithType:type];
-            }
-        }
-            break;
-        case 6:{     // 男胡子 && 女眉毛
+        case 5:{     // 男胡子 && 女眉毛
             subView = self.decorationView ;
             self.decorationCollection.currentType = isMale ? FUFigureDecorationTypeBeard : FUFigureDecorationTypeEyeBrow ;
             self.decorationColorCollection.hidden = YES;
         }
             break;
-        case 7:{     // 男眉毛 && 女睫毛
+        case 6:{     // 男眉毛 && 女睫毛
             subView = self.decorationView ;
             self.decorationCollection.currentType = isMale ? FUFigureDecorationTypeEyeBrow : FUFigureDecorationTypeEyeLash ;
             self.decorationColorCollection.hidden = YES;
         }
             break;
-        case 8:{     // 眼镜
+        case 7:{     // 眼镜
             subView = self.glassesView ;
         }
             break;
-        case 9:{     // 帽子
+        case 8:{     // 帽子
             subView = self.decorationView ;
             self.decorationCollection.currentType = FUFigureDecorationTypeHat ;
             self.decorationColorCollection.hidden = [self.currentHat isEqualToString:@"hat-noitem"];
             self.decorationColorCollection.currentType = FUFigureDecorationTypeHat ;
         }
             break;
-        case 10:{    // 衣服
+        case 9:{    // 衣服
             subView = self.decorationView ;
             self.decorationCollection.currentType = FUFigureDecorationTypeClothes ;
             self.decorationColorCollection.hidden = YES;
@@ -434,8 +280,10 @@ FUFigureDecorationHorizCollectionDelegate
     subView.hidden = NO ;
     if (!show) {
         
-        if ([self.delegate respondsToSelector:@selector(figureViewDidHiddenAllTypeViews)]) {
-            [self.delegate figureViewDidHiddenAllTypeViews];
+        if (index != 2) {
+            if ([self.delegate respondsToSelector:@selector(figureViewDidHiddenAllTypeViews)]) {
+                [self.delegate figureViewDidHiddenAllTypeViews];
+            }
         }
         
         subView.transform = CGAffineTransformIdentity ;
@@ -445,6 +293,7 @@ FUFigureDecorationHorizCollectionDelegate
             subView.hidden = YES ;
         }];
     }else {
+        
         if ([self.delegate respondsToSelector:@selector(figureViewDidSelectedTypeWithIndex:)]) {
             [self.delegate figureViewDidSelectedTypeWithIndex:index];
         }
@@ -464,17 +313,20 @@ FUFigureDecorationHorizCollectionDelegate
     if (animation) {
         [UIView animateWithDuration:0.35 animations:^{
             self.decorationView.transform = CGAffineTransformMakeTranslation(0, self.decorationView.frame.size.height) ;
-            self.faceView.transform = CGAffineTransformMakeTranslation(0, self.faceView.frame.size.height) ;
+            self.colorView.transform = CGAffineTransformMakeTranslation(0, self.colorView.frame.size.height) ;
             self.glassesView.transform = CGAffineTransformMakeTranslation(0, self.glassesView.frame.size.height) ;
+            self.shapeView.transform = CGAffineTransformMakeTranslation(0, self.shapeView.frame.size.height) ;
         }completion:^(BOOL finished) {
             self.decorationView.hidden = YES ;
-            self.faceView.hidden = YES ;
+            self.colorView.hidden = YES ;
             self.glassesView.hidden = YES ;
+            self.shapeView.hidden = YES ;
         }];
     }else {
         self.decorationView.hidden = YES ;
-        self.faceView.hidden = YES ;
+        self.colorView.hidden = YES ;
         self.glassesView.hidden = YES ;
+        self.shapeView.hidden = YES ;
     }
 }
 
@@ -503,10 +355,10 @@ FUFigureDecorationHorizCollectionDelegate
     return self.decorationColorCollection.hairColor ;
 }
 -(FUP2AColor *)irisColor {
-    return self.faceColorCollection.irisColor ;
+    return self.colorCollection.irisColor ;
 }
 -(FUP2AColor *)lipColor {
-    return self.faceColorCollection.lipsColor ;
+    return self.colorCollection.lipsColor ;
 }
 - (FUP2AColor *)hatColor {
     return self.decorationColorCollection.hatColor ;
@@ -630,10 +482,10 @@ FUFigureDecorationHorizCollectionDelegate
         }
             break ;
         case FUFigureDecorationTypeBeard:{  // 胡色
-            self.beardColor = color;
-            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeHairColor:)]) {
-                [self.delegate figureViewDidChangeBeardColor:color];
-            }
+//            self.beardColor = color;
+//            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeHairColor:)]) {
+//                [self.delegate figureViewDidChangeBeardColor:color];
+//            }
         }
             break ;
         case FUFigureDecorationTypeIris:{  // 瞳色
@@ -670,69 +522,81 @@ FUFigureDecorationHorizCollectionDelegate
     }
 }
 
-#pragma mark ----- FUFigureFaceCollectionDelegate
+#pragma mark ----- FUFigureColorCollectionDelegate
 
-// 重置
-- (IBAction)resetParamsAction:(UIButton *)sender {
+// 肤色点击
+- (void)colorCollectionDidSelectedSkinColor:(FUP2AColor *)skinColor {
     
-    NSString *message = nil ;
-    switch (self.faceCollection.currentType) {
-        case FUFigureFaceTypeSkinColor:{
-            if (_defaultSkinLevel == self.skinLevel) {
-                return ;
-            }
-            message = @"确认将肤色恢复默认吗？" ;
-        }
-            break;
-        case FUFigureFaceTypeFace:{
-            if (_headShrink == _headShrink0 &&
-                _headBoneStretch == _headBoneStretch0 &&
-                _cheekNarrow == _cheekNarrow0 &&
-                _jawboneNarrow == _jawboneNarrow0 &&
-                _jawLower == _jawLower0 ) {
-                return ;
-            }
-            message = @"确认将面部参数恢复默认吗？" ;
-        }
-            break ;
-        case FUFigureFaceTypeEyes:{
-            if (_eyeUp == _eyeUp0 &&
-                _eyeOutterUp == _eyeOutterUp0 &&
-                _eyeClose == _eyeClose0 &&
-                _eyeBothIn == _eyeBothIn0 ) {
-                return ;
-            }
-            message = @"确认将眼睛参数恢复默认吗？" ;
-        }
-            break ;
-        case FUFigureFaceTypeLips:{
-            if (_mouthUp == _mouthUp0 &&
-                _upperLipThick == _upperLipThick0 &&
-                _lowerLipThick == _lowerLipThick0 &&
-                _lipCornerIn == _lipCornerIn0) {
-                return ;
-            }
-            message = @"确认将嘴唇参数恢复默认吗？" ;
-        }
-            break ;
-        case FUFigureFaceTypeNose:{
-            if (_noseUp == _noseUp0 &&
-                _nostrilIn == _nostrilIn0 &&
-                _noseTipUp == _noseTipUp0) {
-                return ;
-            }
-            message = @"确认将鼻子参数恢复默认吗？" ;
-        }
-            break ;
+    NSUInteger skinIndex = [[FUManager shareInstance].skinColorArray indexOfObject:skinColor];
+    self.skinLevel = (double)skinIndex ;
+    self.skinColor = skinColor ;
+    
+    self.colorSlider.value = 0.0 ;
+    if ([self.delegate respondsToSelector:@selector(figureViewDidChangeSkinColor:)]) {
+        [self.delegate figureViewDidChangeSkinColor:skinColor];
     }
+}
+
+// 唇色点击
+- (void)colorCollectionDidSelectedLipsColor:(FUP2AColor *)lipsColor {
+    self.lipColor = lipsColor ;
+    if ([self.delegate respondsToSelector:@selector(figureViewDidChangeLipsColor:)]) {
+        [self.delegate figureViewDidChangeLipsColor:lipsColor];
+    }
+}
+
+// 瞳色点击
+- (void)colorCollectionDidSelectedIrisColor:(FUP2AColor *)irisColor {
+    self.irisColor = irisColor ;
+    if ([self.delegate respondsToSelector:@selector(figureViewDidChangeIrisColor:)]) {
+        [self.delegate figureViewDidChangeIrisColor:irisColor];
+    }
+}
+
+// skin slider changed
+- (IBAction)colorSliderChanged:(FUFigureSlider *)sender {
+    
+    FUP2AColor *skinColor = self.colorCollection.skinColor ;
+    NSInteger index = [[FUManager shareInstance].skinColorArray indexOfObject: skinColor];
+    FUP2AColor *nextColor = [[FUManager shareInstance].skinColorArray objectAtIndex:index + 1];
+    float scale = sender.value ;
+    
+    FUP2AColor *color = [FUP2AColor colorWithR:skinColor.r + scale * (nextColor.r - skinColor.r) g:skinColor.g + scale * (nextColor.g - skinColor.g) b:skinColor.b + scale * (nextColor.b - skinColor.b)];
+    
+    if ([self.delegate respondsToSelector:@selector(figureViewDidChangeSkinColor:)]) {
+        [self.delegate figureViewDidChangeSkinColor:color];
+    }
+}
+
+- (IBAction)resetSkinColor:(UIButton *)sender {
+    
+    if (self.skinLevel != _defaultSkinLevel) {
+        __weak typeof(self)weakSelf = self ;
+        [self showAlterWithMessage:@"确认将肤色恢复默认吗？" certainAction:^(UIAlertAction * _Nonnull action) {
+            
+            weakSelf.skinLevel = self->_defaultSkinLevel ;
+            weakSelf.skinColor = [FUManager shareInstance].skinColorArray[(int)self->_defaultSkinLevel] ;
+            
+            self.colorSlider.value = self->_defaultSkinLevel - (int)self->_defaultSkinLevel ;
+            
+            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeSkinColor:)]) {
+                [self.delegate figureViewDidChangeSkinColor:self.skinColor];
+            }
+            
+            self.colorCollection.skinColor = weakSelf.skinColor;
+        }];
+    }
+}
+
+- (void)showAlterWithMessage:(NSString *)message certainAction:(void (^)(UIAlertAction * _Nonnull action))action {
+    
     UIAlertController *alertC = [UIAlertController alertControllerWithTitle:message message:nil preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *cancle = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
     }];
     [cancle setValue:[UIColor colorWithRed:34/255.0 green:34/255.0 blue:34/255.0 alpha:1.0] forKey:@"titleTextColor"];
-    __weak typeof(self)weakSelf = self ;
-    UIAlertAction *certain = [UIAlertAction actionWithTitle:@"确认" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        [weakSelf certainResetParamsWithType:weakSelf.faceCollection.currentType];
-    }];
+    
+    
+    UIAlertAction *certain = [UIAlertAction actionWithTitle:@"确认" style:UIAlertActionStyleDefault handler:action];
     [certain setValue:[UIColor colorWithHexColorString:@"4C96FF"] forKey:@"titleTextColor"];
     [alertC addAction:cancle];
     [alertC addAction:certain];
@@ -740,384 +604,103 @@ FUFigureDecorationHorizCollectionDelegate
     }];
 }
 
-- (void)certainResetParamsWithType:(FUFigureFaceType)type {
-    switch (type) {
-        case FUFigureFaceTypeSkinColor:{            // 肤色重置
-            self.skinLevel = _defaultSkinLevel ;
-            self.skinColor = [FUManager shareInstance].skinColorArray[(int)_defaultSkinLevel] ;
-            self.faceSlider.type = FUFigureSliderTypeOther ;
-            self.faceSlider.value = _defaultSkinLevel - (int)_defaultSkinLevel ;
-            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeSkinColor:)]) {
-                [self.delegate figureViewDidChangeSkinColor:self.skinColor];
-            }
-            [self.faceCollection.selectedDic setObject:@(_defaultSkinLevel) forKey:@(type)];
-            [self.faceCollection reloadData];
-            [self.faceCollection scrollCurrentToCenterWithAnimation:YES];
+#pragma mark ----- FUFigureShapeCollectionDelegate
+
+- (void)shapeCollectionDidSelectIndex:(NSInteger)index {
+    
+    FUFigureShapeType type = 0;
+    switch (index) {
+        case 0:{        // 面部
+            type = self.faceBtn.selected ? FUFigureShapeTypeFaceSide : FUFigureShapeTypeFaceFront ;
         }
             break;
-        case FUFigureFaceTypeFace:{             // 面部
-            self.faceSliderView.hidden = YES ;
-            self.faceColorCollection.hidden = YES ;
-            [self.faceCollection.selectedDic setObject:@(-1) forKey:@(FUFigureFaceTypeFace)];
-            [self.faceCollection reloadData];
-            
-            self.headShrink = _headShrink0 ;
-            self.headBoneStretch = _headBoneStretch0 ;
-            self.cheekNarrow = _cheekNarrow0 ;
-            self.jawboneNarrow = _jawboneNarrow0 ;
-            self.jawLower = _jawLower0 ;
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"Head_shrink"        level: fabs(self.headShrink > 0 ? self.headShrink : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"Head_stretch"       level: fabs(self.headShrink > 0 ? 0 : self.headShrink )];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"HeadBone_stretch"   level: fabs(self.headShrink > 0 ? 0 : self.headShrink)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"HeadBone_shrink"    level: fabs(self.headShrink > 0 ? self.headShrink : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"Head_fat"           level: fabs(self.cheekNarrow > 0 ? 0 : self.cheekNarrow)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"cheek_narrow"       level: fabs(self.cheekNarrow > 0 ? self.cheekNarrow : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"jawbone_Narrow"     level: fabs(self.jawboneNarrow > 0 ? self.jawboneNarrow : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"jawbone_Wide"       level: fabs(self.jawboneNarrow > 0 ? 0 : self.jawboneNarrow )];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"jaw_lower"          level: fabs(self.jawLower > 0 ? self.jawLower : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"jaw_up"             level: fabs(self.jawLower > 0 ? 0 : self.jawLower)];
+        case 1:{        // 眼睛
+            type = self.faceBtn.selected ? FUFigureShapeTypeEyesSide : FUFigureShapeTypeEyesFront ;
         }
-            break ;
-        case FUFigureFaceTypeEyes:{             // 眼镜
-            self.faceSliderView.hidden = YES ;
-            self.faceColorCollection.hidden = YES ;
-            [self.faceCollection.selectedDic setObject:@(-1) forKey:@(FUFigureFaceTypeEyes)];
-            [self.faceCollection reloadData];
-            
-            self.eyeUp = _eyeUp0 ;
-            self.eyeOutterUp = _eyeOutterUp0 ;
-            self.eyeClose = _eyeClose0 ;
-            self.eyeBothIn = _eyeBothIn0 ;
-            
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"Eye_up"             level: fabs(self.eyeUp > 0 ? self.eyeUp : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"Eye_down"           level: fabs(self.eyeUp > 0 ? 0 : self.eyeUp)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"Eye_outter_up"      level: fabs(self.eyeOutterUp > 0 ? self.eyeOutterUp : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"Eye_outter_down"    level: fabs(self.eyeOutterUp > 0 ? 0 : self.eyeOutterUp)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"Eye_close"          level: fabs(self.eyeClose > 0 ? self.eyeClose : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"Eye_open"           level: fabs(self.eyeClose > 0 ? 0 : self.eyeClose )];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"Eye_both_in"        level: fabs(self.eyeBothIn > 0 ? self.eyeBothIn : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"Eye_both_out"       level: fabs(self.eyeBothIn > 0 ? 0 : self.eyeBothIn)];
+            break;
+        case 2:{        // 嘴巴
+            type = self.faceBtn.selected ? FUFigureShapeTypeLipsSide : FUFigureShapeTypeLipsFront ;
         }
-            break ;
-        case FUFigureFaceTypeLips:{             // 嘴唇
-            self.faceSliderView.hidden = YES ;
-            self.faceColorCollection.hidden = YES ;
-            [self.faceCollection.selectedDic setObject:@(-1) forKey:@(FUFigureFaceTypeLips)];
-            [self.faceCollection reloadData];
-            
-            self.mouthUp = _mouthUp0 ;
-            self.upperLipThick = _upperLipThick0 ;
-            self.lowerLipThick = _lowerLipThick0 ;
-            self.lipCornerIn = _lipCornerIn0 ;
-            
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"mouth_Up"           level: fabs(self.mouthUp > 0 ? self.mouthUp : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"mouth_Down"         level: fabs(self.mouthUp > 0 ? 0 : self.mouthUp)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"upperLip_Thick"     level: fabs(self.upperLipThick > 0 ? self.upperLipThick : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"upperLip_Thin"      level: fabs(self.upperLipThick > 0 ? 0 : self.upperLipThick )];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"lowerLip_Thick"     level: fabs(self.lowerLipThick > 0 ? self.lowerLipThick : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"lowerLip_Thin"      level: fabs(self.lowerLipThick > 0 ? 0 : self.lowerLipThick)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"lipCorner_In"       level: fabs(self.lipCornerIn > 0 ? self.lipCornerIn : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"lipCorner_Out"      level: fabs(self.lipCornerIn > 0 ? 0 : self.lipCornerIn)];
+            break;
+        case 3:{        // 鼻子
+            type = self.faceBtn.selected ? FUFigureShapeTypeNoseSide : FUFigureShapeTypeNoseFront ;
         }
-            break ;
-        case FUFigureFaceTypeNose:{             // 鼻子
-            self.faceSliderView.hidden = YES ;
-            self.faceColorCollection.hidden = YES ;
-            [self.faceCollection.selectedDic setObject:@(-1) forKey:@(FUFigureFaceTypeNose)];
-            [self.faceCollection reloadData];
-            
-            self.noseUp = _noseUp0 ;
-            self.nostrilIn = _nostrilIn0 ;
-            self.noseTipUp = _noseTipUp0 ;
-            
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"nose_UP"            level: fabs(self.noseUp > 0 ? self.noseUp : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"nose_Down"          level: fabs(self.noseUp > 0 ? 0 : self.noseUp)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"nostril_In"         level: fabs(self.nostrilIn > 0 ? self.nostrilIn : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"nostril_Out"        level: fabs(self.nostrilIn > 0 ? 0 : self.nostrilIn)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"noseTip_Up"         level: fabs(self.noseTipUp > 0 ? self.noseTipUp : 0)];
-            [self.delegate figureViewShapeParamsDidChangedWithKey:@"noseTip_Down"       level: fabs(self.noseTipUp > 0 ? 0 : self.noseTipUp)];
+            break;
+        default:{       // 取消
+            type = self.faceBtn.selected ? FUFigureShapeTypeNoneSide : FUFigureShapeTypeNoneFront ;
         }
-            break ;
+            break;
+    }
+    currentShapeType = type ;
+    if ([self.delegate respondsToSelector:@selector(figureViewDidSelectShapeView:)]) {
+        [self.delegate figureViewDidSelectShapeView:type];
     }
 }
 
-
-
-- (IBAction)faceSliderValueChange:(FUFigureSlider *)sender {
+- (IBAction)faceBtnAction:(UIButton *)sender {
+    sender.selected = !sender.selected ;
     
-    NSString *currentKey , *zeroKey ;
-    double level = sender.value ;
-    
-    switch (self.faceCollection.currentType) {
-        case FUFigureFaceTypeSkinColor:{
-            
-            FUP2AColor *color = self.faceCollection.currentSkinColor ;
-            NSInteger index = [[FUManager shareInstance].skinColorArray indexOfObject: color];
-            FUP2AColor *nextColor = [[FUManager shareInstance].skinColorArray objectAtIndex:index + 1];
-            float scale = sender.value ;
-            self.skinLevel = index + scale ;
-            FUP2AColor *c = [FUP2AColor colorWithR:color.r + scale * (nextColor.r - color.r) g:color.g + scale * (nextColor.g - color.g) b:color.b + scale * (nextColor.b - color.b)];
-            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeSkinColor:)]) {
-                [self.delegate figureViewDidChangeSkinColor:c];
+    FUFigureShapeType type ;
+    if (sender.selected) {
+        switch (self.shapeCollection.selectedIndex) {
+            case 0:{        // 面部侧面
+                type = FUFigureShapeTypeFaceSide ;
             }
-            return ;
-        }
-            break;
-        case FUFigureFaceTypeFace:
-        case FUFigureFaceTypeEyes:
-        case FUFigureFaceTypeLips:
-        case FUFigureFaceTypeNose:{
-            
-            switch (self.faceCollection.selectedType) {
-                    // face
-                case FigureShapeSelectedTypeHeadShrink:{ // 脸型长度
-                    self.headShrink = level ;
-                    currentKey = level > 0 ? @"Head_shrink" : @"Head_stretch" ;
-                    zeroKey    = level > 0 ? @"Head_stretch" : @"Head_shrink" ;
-                }
-                    break;
-                case FigureShapeSelectedTypeHeadBoneStretch:{ // 额头宽窄
-                    self.headBoneStretch = level ;
-                    currentKey = level > 0 ? @"Forehead_Wide" : @"Forehead_Narrow" ;
-                    zeroKey    = level > 0 ? @"Forehead_Narrow" : @"Forehead_Wide" ;
-                }
-                    break;
-                case FigureShapeSelectedTypeCheekNarrow:{ // 脸颊宽度
-                    self.cheekNarrow = level ;
-                    currentKey = level > 0 ? @"cheek_narrow" : @"Head_fat" ;
-                    zeroKey    = level > 0 ? @"Head_fat" : @"cheek_narrow" ;
-                }
-                    break;
-                case FigureShapeSelectedTypeJawboneNarrow:{ // 下颚宽度
-                    self.jawboneNarrow = level ;
-                    currentKey = level > 0 ? @"jawbone_Wide" : @"jawbone_Narrow" ;
-                    zeroKey    = level > 0 ? @"jawbone_Narrow" : @"jawbone_Wide" ;
-                }
-                    break;
-                case FigureShapeSelectedTypeJawLower:{ // 下巴高低
-                    self.jawLower = level ;
-                    currentKey = level > 0 ? @"jaw_lower" : @"jaw_up" ;
-                    zeroKey    = level > 0 ? @"jaw_up" : @"jaw_lower" ;
-                }
-                    break;
-                    
-                    // eye
-                case FigureShapeSelectedTypeEyeUp:{ // 眼镜位置
-                    self.eyeUp = level ;
-                    currentKey = level > 0 ? @"Eye_up" : @"Eye_down" ;
-                    zeroKey    = level > 0 ? @"Eye_down" : @"Eye_up" ;
-                }
-                    break ;
-                case FigureShapeSelectedTypeEyeOutterUp:{ // 眼角高低
-                    self.eyeOutterUp = level ;
-                    currentKey = level > 0 ? @"Eye_outter_up" : @"Eye_outter_down" ;
-                    zeroKey    = level > 0 ? @"Eye_outter_down" : @"Eye_outter_up" ;
-                }
-                    break ;
-                case FigureShapeSelectedTypeEyeClose:{ // 眼睛高低
-                    self.eyeClose = level ;
-                    currentKey = level > 0 ? @"Eye_close" : @"Eye_open" ;
-                    zeroKey    = level > 0 ? @"Eye_open" : @"Eye_close" ;
-                }
-                    break ;
-                case FigureShapeSelectedTypeEyeBothIn:{ // 眼睛宽窄
-                    self.eyeBothIn = level ;
-                    currentKey = level > 0 ? @"Eye_both_in" : @"Eye_both_out" ;
-                    zeroKey    = level > 0 ? @"Eye_both_out" : @"Eye_both_in" ;
-                }
-                    break ;
-                    
-                    // nose
-                case FigureShapeSelectedTypeNoseUp:{ // 👃位置
-                    self.noseUp = level ;
-                    currentKey = level > 0 ? @"nose_UP" : @"nose_Down" ;
-                    zeroKey    = level > 0 ? @"nose_Down" : @"nose_UP" ;
-                }
-                    break ;
-                case FigureShapeSelectedTypeNostrilIn:{ // 👃宽窄
-                    self.nostrilIn = level ;
-                    currentKey = level > 0 ? @"nostril_In" : @"nostril_Out" ;
-                    zeroKey    = level > 0 ? @"nostril_Out" : @"nostril_In" ;
-                }
-                    break ;
-                case FigureShapeSelectedTypeNoseTipUp:{ // 👃高低
-                    self.noseTipUp = level ;
-                    currentKey = level > 0 ? @"noseTip_Up" : @"noseTip_Down" ;
-                    zeroKey    = level > 0 ? @"noseTip_Down" : @"noseTip_Up" ;
-                }
-                    break ;
-                    
-                    // mouth
-                case FigureShapeSelectedTypeMouthUp:{  // 👄位置
-                    self.mouthUp = level ;
-                    currentKey = level > 0 ? @"mouth_Up" : @"mouth_Down" ;
-                    zeroKey    = level > 0 ? @"mouth_Down" : @"mouth_Up" ;
-                }
-                    break ;
-                case FigureShapeSelectedTypeUpperLipThick:{ // 上👄厚度
-                    self.upperLipThick = level ;
-                    currentKey = level > 0 ? @"upperLip_Thick" : @"upperLip_Thin" ;
-                    zeroKey    = level > 0 ? @"upperLip_Thin" : @"upperLip_Thick" ;
-                }
-                    break ;
-                case FigureShapeSelectedTypeLowerLipThick:{ // 下👄厚度
-                    self.lowerLipThick = level ;
-                    currentKey = level > 0 ? @"lowerLip_Thick" : @"lowerLip_Thin" ;
-                    zeroKey    = level > 0 ? @"lowerLip_Thin" : @"lowerLip_Thick" ;
-                }
-                    break ;
-                case FigureShapeSelectedTypeLipCornerIn:{ // 👄宽度
-                    self.lipCornerIn = level ;
-                    currentKey = level > 0 ? @"lipCorner_In" : @"lipCorner_Out" ;
-                    zeroKey    = level > 0 ? @"lipCorner_Out" : @"lipCorner_In" ;
-                }
-                    break ;
-                case FigureShapeSelectedTypeEyesColor:
-                case FigureShapeSelectedTypeLipsColor: {
-                    currentKey = @"" ;
-                    zeroKey    = @"" ;
-                    break;
-                }
+                break;
+            case 1:{        // 眼睛侧面
+                type = FUFigureShapeTypeEyesSide ;
             }
+                break;
+            case 2:{        // 嘴巴侧面
+                type = FUFigureShapeTypeLipsSide ;
+            }
+                break;
+            case 3:{        // 鼻子侧面
+                type = FUFigureShapeTypeNoseSide ;
+            }
+                break;
+            default:{        // 侧面无角度
+                type = FUFigureShapeTypeNoneSide ;
+            }
+                break;
         }
-            break ;
+    } else {
+        
+        switch (self.shapeCollection.selectedIndex) {
+            case 0:{        // 面部正面
+                type = FUFigureShapeTypeFaceFront ;
+            }
+                break;
+            case 1:{        // 眼睛正面
+                type = FUFigureShapeTypeEyesFront ;
+            }
+                break;
+            case 2:{        // 嘴巴正面
+                type = FUFigureShapeTypeLipsFront ;
+            }
+                break;
+            case 3:{        // 鼻子正面
+                type = FUFigureShapeTypeNoseFront ;
+            }
+                break;
+            default:{        // 正面无角度
+                type = FUFigureShapeTypeNoneFront ;
+            }
+                break;
+        }
     }
-    
-    if ([self.delegate respondsToSelector:@selector(figureViewShapeParamsDidChangedWithKey:level:)]) {
-        [self.delegate figureViewShapeParamsDidChangedWithKey:zeroKey level:0.0];
-        [self.delegate figureViewShapeParamsDidChangedWithKey:currentKey level:fabs(level)];
+    currentShapeType = type ;
+    if ([self.delegate respondsToSelector:@selector(figureViewDidSelectShapeView:)]) {
+        [self.delegate figureViewDidSelectShapeView:type];
     }
 }
 
-- (void)faceCollectionDidSelectedSkinIndex:(NSInteger)skinIndex {
-    if (skinIndex < [FUManager shareInstance].skinColorArray.count) {
-        self.skinLevel = skinIndex ;
-        self.faceSlider.value = 0.0 ;
-        self.skinColor = [FUManager shareInstance].skinColorArray[skinIndex];
-        if ([self.delegate respondsToSelector:@selector(figureViewDidChangeSkinColor:)]) {
-            [self.delegate figureViewDidChangeSkinColor:self.skinColor];
-        }
-    }
-}
-
-- (void)faceCollectionShapeParamChangedWithType:(FigureShapeSelectedType)type {
-    NSString *message ;
-    double level = 0.0 ;
+- (IBAction)faceShapeResetAction:(UIButton *)sender {
     
-    switch (type) {
-        case FigureShapeSelectedTypeEyesColor: {    // 瞳色
-            self.faceSliderView.hidden = YES ;
-            self.faceColorCollection.hidden = NO ;
-            self.faceColorCollection.currentType = FUFigureDecorationTypeIris ;
-            [self.faceColorCollection scrollCurrentToCenterWithAnimation:NO];
-            return ;
-        }
-            break;
-        case FigureShapeSelectedTypeLipsColor: {    // 唇色
-            self.faceSliderView.hidden = YES ;
-            self.faceColorCollection.hidden = NO ;
-            self.faceColorCollection.currentType = FUFigureDecorationTypeLips ;
-            [self.faceColorCollection scrollCurrentToCenterWithAnimation:NO];
-            return ;
-        }
-            break;
-            // face
-        case FigureShapeSelectedTypeHeadShrink:{ // 脸型长度
-            message = @"脸型长度" ;
-            level = self.headShrink ;
-        }
-            break;
-        case FigureShapeSelectedTypeHeadBoneStretch:{ // 额头宽窄
-            message = @"额头宽窄" ;
-            level = self.headBoneStretch ;
-        }
-            break;
-        case FigureShapeSelectedTypeCheekNarrow:{ // 脸颊宽度
-            message = @"脸颊宽度" ;
-            level = self.cheekNarrow ;
-        }
-            break;
-        case FigureShapeSelectedTypeJawboneNarrow:{ // 下颚宽度
-            message = @"下颚宽度" ;
-            level = self.jawboneNarrow ;
-        }
-            break;
-        case FigureShapeSelectedTypeJawLower:{ // 下巴高低
-            message = @"下巴高低" ;
-            level = self.jawLower ;
-        }
-            break;
-            
-            // eye
-        case FigureShapeSelectedTypeEyeUp:{ // 眼镜位置
-            message = @"眼睛位置" ;
-            level = self.eyeUp ;
-        }
-            break ;
-        case FigureShapeSelectedTypeEyeOutterUp:{ // 眼角上下
-            message = @"眼角高低" ;
-            level = self.eyeOutterUp ;
-        }
-            break ;
-        case FigureShapeSelectedTypeEyeClose:{ // 眼睛高低
-            message = @"眼睛高低" ;
-            level = self.eyeClose ;
-        }
-            break ;
-        case FigureShapeSelectedTypeEyeBothIn:{ // 眼睛宽窄
-            message = @"眼睛宽窄" ;
-            level = self.eyeBothIn ;
-        }
-            break ;
-            
-            // nose
-        case FigureShapeSelectedTypeNoseUp:{ // 👃位置
-            message = @"鼻子位置" ;
-            level = self.noseUp ;
-        }
-            break ;
-        case FigureShapeSelectedTypeNostrilIn:{ // 👃宽窄
-            message = @"鼻翼宽窄" ;
-            level = self.nostrilIn ;
-        }
-            break ;
-        case FigureShapeSelectedTypeNoseTipUp:{ // 👃高低
-            message = @"鼻头高低" ;
-            level = self.noseTipUp ;
-        }
-            break ;
-            
-            // mouth
-        case FigureShapeSelectedTypeMouthUp:{  // 👄位置
-            message = @"嘴部位置" ;
-            level = self.mouthUp ;
-        }
-            break ;
-        case FigureShapeSelectedTypeUpperLipThick:{ // 上👄厚度
-            message = @"上唇厚度" ;
-            level = self.upperLipThick ;
-        }
-            break ;
-        case FigureShapeSelectedTypeLowerLipThick:{ // 下👄厚度
-            message = @"下唇厚度" ;
-            level = self.lowerLipThick ;
-        }
-            break ;
-        case FigureShapeSelectedTypeLipCornerIn:{ // 👄宽度
-            message = @"嘴唇宽度" ;
-            level = self.lipCornerIn ;
-        }
-            break ;
+    NSInteger typeIndex = self.shapeCollection.selectedIndex ;
+    if ([self.delegate respondsToSelector:@selector(figureViewShouldResetParamWithType:)]) {
+        [self.delegate figureViewShouldResetParamWithType:typeIndex];
     }
-    
-    self.faceCollection.selectedType = type ;
-    self.middleLabelLeft.active = YES ;
-    self.middleSliderLeft.active = NO ;
-    self.faceSliderView.hidden = NO ;
-    self.faceColorCollection.hidden = YES ;
-    self.sliderLabel.text = message ;
-    self.faceSlider.value = level ;
-    self.faceSlider.type = FUFigureSliderTypeShape ;
 }
 
 #pragma mark -----  FUFigureDecorationHorizCollectionDelegate
@@ -1138,6 +721,19 @@ FUFigureDecorationHorizCollectionDelegate
         }
     }
     return YES ;
+}
+
+- (FUP2AColor *)getColorOfColorList:(NSArray *)list color:(FUP2AColor *)color {
+    NSInteger index = 0 ;
+    for (FUP2AColor *c in list) {
+        if (c.r == color.r
+            && c.g == color.g
+            && c.b == color.b) {
+            index = [list indexOfObject:c];
+            break ;
+        }
+    }
+    return [list objectAtIndex:index] ;
 }
 
 @end

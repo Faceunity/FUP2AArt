@@ -127,6 +127,10 @@ extern "C"{
 */
 FUNAMA_API int fuSetup(float* v3data,float* ardata,void* authdata,int sz_authdata);
 /**
+\brief if nama is inited return 1,else return 0.
+*/
+FUNAMA_API int fuGetNamaInited();
+/**
 \brief Call this function when the GLES context has been lost and recreated.
 	That isn't a normal thing, so this function could leak resources on each call.
 */
@@ -589,6 +593,12 @@ FUNAMA_API void fuSetDefaultRotationMode(int rotationMode);
 \return The permission code
 */
 FUNAMA_API int fuGetModuleCode(int i);
+
+/**
+\brief Turn on or turn off Tongue Tracking, used in trackface.
+\param enable > 0 means turning on, enable <= 0 means turning off
+*/
+FUNAMA_API int fuSetTongueTracking(int enable);
 
 /**
 \brief Turn on or turn off async track face

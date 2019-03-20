@@ -33,12 +33,11 @@
 
 - (void)changeCameraInputDeviceisFront:(BOOL)isFront;
 
-- (UIImage *)imageFromPixelBuffer:(CVPixelBufferRef)pixelBufferRef mirr:(BOOL)mirr;
 - (UIImage *)getSquareImageFromBuffer:(CVPixelBufferRef)pixelBufferRef ;
+
 // 设置采集方向
 - (void)setCaptureVideoOrientation:(AVCaptureVideoOrientation)orientation;
 
 // 拍照
 - (void)takePhoto:(BOOL)mirr;
-
 @end

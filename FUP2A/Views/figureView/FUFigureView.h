@@ -8,6 +8,19 @@
 
 #import <UIKit/UIKit.h>
 
+typedef enum : NSInteger {
+    FUFigureShapeTypeNoneFront      = 0,
+    FUFigureShapeTypeNoneSide,
+    FUFigureShapeTypeFaceFront,
+    FUFigureShapeTypeFaceSide,
+    FUFigureShapeTypeEyesFront,
+    FUFigureShapeTypeEyesSide,
+    FUFigureShapeTypeLipsFront,
+    FUFigureShapeTypeLipsSide,
+    FUFigureShapeTypeNoseFront,
+    FUFigureShapeTypeNoseSide,
+} FUFigureShapeType;
+
 @class FUP2AColor ;
 @protocol FUFigureViewDelegate <NSObject>
 
@@ -50,6 +63,10 @@
 - (void)figureViewDidSelectedTypeWithIndex:(NSInteger)typeIndex;
 // 隐藏全部子页面
 - (void)figureViewDidHiddenAllTypeViews;
+// 捏脸点击页面
+- (void)figureViewDidSelectShapeView:(FUFigureShapeType)shapeType ;
+// 捏脸重置
+- (void)figureViewShouldResetParamWithType:(NSInteger)typeIndex ;
 @end
 
 
@@ -76,34 +93,12 @@
 @property (nonatomic, strong) FUP2AColor *glassesFrameColor ;
 @property (nonatomic, copy) NSString *currentGlasses ;
 
-@property (nonatomic, strong) FUP2AColor *beardColor ;
+//@property (nonatomic, strong) FUP2AColor *beardColor ;
 @property (nonatomic, strong) FUP2AColor *hatColor ;
-
-// face shape value
-@property (nonatomic, assign) double headShrink ;
-@property (nonatomic, assign) double headBoneStretch  ;
-@property (nonatomic, assign) double cheekNarrow ;
-@property (nonatomic, assign) double jawboneNarrow ;
-@property (nonatomic, assign) double jawLower ;
-// eye shape value
-@property (nonatomic, assign) double eyeUp ;
-@property (nonatomic, assign) double eyeOutterUp  ;
-@property (nonatomic, assign) double eyeClose ;
-@property (nonatomic, assign) double eyeBothIn ;
-// mouth shape value
-@property (nonatomic, assign) double mouthUp ;
-@property (nonatomic, assign) double upperLipThick  ;
-@property (nonatomic, assign) double lowerLipThick ;
-@property (nonatomic, assign) double lipCornerIn ;
-// nose shape value
-@property (nonatomic, assign) double noseUp ;
-@property (nonatomic, assign) double nostrilIn  ;
-@property (nonatomic, assign) double noseTipUp ;
 
 // defauly value
 @property (nonatomic, assign) double defaultSkinLevel ;
 
 - (void)setupFigureView ;
 
-- (BOOL)figureViewIsChange ;
 @end

@@ -16,8 +16,8 @@
 #import "FUSceneryModel.h"
 #import <SVProgressHUD.h>
 #import "FUGroupImageController.h"
-#import "WCLRecordEncoder.h"
-#import "FUGifManager.h"
+#import "CRender.h"
+#import <FUP2AHelper/FUP2AHelper.h>
 
 typedef enum : NSUInteger {
     GroupSelectedRunModeCommon          = 0,
@@ -25,25 +25,30 @@ typedef enum : NSUInteger {
     GroupSelectedRunModeVideoRecord,
 } GroupSelectedRunMode;
 
-@interface FUGroupSelectedController ()<FUCameraDelegate>
+@interface FUGroupSelectedController ()
+<
+FUCameraDelegate,
+UIImagePickerControllerDelegate,
+UINavigationControllerDelegate
+>
+
 {
     NSInteger modelCount ;
     NSMutableArray *selectedIndex ;
     
     GroupSelectedRunMode renderMode ;
     int animationFrameCount ;
+    
+    BOOL customRenderBackground ;
+    
+    __block NSString *gifPath ;
 }
 @property (weak, nonatomic) IBOutlet UIButton *nextBtn;
 
 @property (nonatomic, strong) FUCamera *camera ;
 @property (weak, nonatomic) IBOutlet FUOpenGLView *glView;
-@property (weak, nonatomic) IBOutlet UIView *loadingView;
-@property (weak, nonatomic) IBOutlet UIImageView *loadingImage;
-@property (weak, nonatomic) IBOutlet UILabel *pointLabel;
-@property (nonatomic, strong) NSTimer *pointTimer ;
 
 @property (weak, nonatomic) IBOutlet UILabel *tipLabel;
-@property (strong, nonatomic) WCLRecordEncoder *recordEncoder;//录制编码
 @property (nonatomic, strong) dispatch_semaphore_t signal ;
 @end
 
@@ -69,6 +74,21 @@ typedef enum : NSUInteger {
     [[FUManager shareInstance] removeRenderAvatar:avatar];
     
     [self showDefaultTips];
+    
+    customRenderBackground = NO ;
+    
+    [self.camera startCapture ];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    [self.camera startCapture];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self.camera stopCapture];
 }
 
 - (void)showDefaultTips {
@@ -90,10 +110,23 @@ typedef enum : NSUInteger {
     self.tipLabel.text = message ;
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
+- (IBAction)changeBackgroundImage:(UIButton *)sender {
     
-    [self.camera startCapture ];
+    UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+
+    picker.delegate = self;
+    picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    picker.allowsEditing = NO;
+
+    [self.camera stopCapture];
+
+    if (self.sceneryModel == FUSceneryModeAnimation && [FUManager shareInstance].currentAvatars.count != 0) {
+        renderMode = GroupSelectedRunModeCommon;
+        [[FUP2AHelper shareInstance] cancleRecord];
+        [self setNextBtnEnable:NO];
+    }
+
+    [self presentViewController:picker animated:YES completion:nil];
 }
 
 - (IBAction)backAction:(UIButton *)sender {
@@ -107,7 +140,13 @@ typedef enum : NSUInteger {
         }
     }
     
-    [self removeVideo];
+    [[FUP2AHelper shareInstance] cancleRecord];
+    
+    if (![[FUManager shareInstance] isBackgroundItemExist]) {
+        
+        NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"bg.bundle" ofType:nil];
+        [[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
+    }
     
     [self.navigationController popViewControllerAnimated:YES];
 }
@@ -141,15 +180,7 @@ typedef enum : NSUInteger {
             
             [self.camera stopCapture];
             
-            [self startLoadingAnimation];
-            
-            __weak typeof(self)weakSelf = self ;
-            [FUGifManager createGIFFromVideoWithPath:VideoPath completion:^(NSString *gifPath) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [weakSelf stopLoadingAnimation];
-                    [weakSelf performSegueWithIdentifier:@"FUGroupImageController" sender:gifPath];
-                });
-            }];
+            [self performSegueWithIdentifier:@"FUGroupImageController" sender:gifPath];
         }
             break ;
     }
@@ -181,6 +212,10 @@ typedef enum : NSUInteger {
     
     CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemWithPixelBuffer:pixelBuffer RenderMode:FURenderCommonMode Landmarks:nil];
     
+    if (customRenderBackground) {
+        buffer = [[CRender shareRenderer] mergeBgImageToBuffer:buffer];
+    }
+    
     [self.glView displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:YES];
     
     switch (renderMode) {
@@ -188,7 +223,7 @@ typedef enum : NSUInteger {
             break;
         case GroupSelectedRunModePhotoTake:{
             renderMode = GroupSelectedRunModeCommon ;
-            UIImage *image = [self.camera imageFromPixelBuffer:buffer mirr:YES];
+            UIImage *image = [[FUP2AHelper shareInstance] createImageWithBuffer:buffer mirr:YES];
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self.camera stopCapture];
                 [self performSegueWithIdentifier:@"FUGroupImageController" sender:image];
@@ -196,40 +231,21 @@ typedef enum : NSUInteger {
         }
             break ;
         case GroupSelectedRunModeVideoRecord:{
-            
-            if (self.recordEncoder == nil) {
-                
-                float frameWidth = CVPixelBufferGetWidth(buffer);
-                float frameHeight = CVPixelBufferGetHeight(buffer);
-                
-                if (frameWidth != 0 && frameHeight != 0) {
-                    
-                    self.recordEncoder = [WCLRecordEncoder encoderForPath:VideoPath Height:frameHeight width:frameWidth channels:1 samples:44100];
-                    
-                    dispatch_semaphore_signal(self.signal) ;
-                    return ;
-                }
-            }
-            CFRetain(sampleBuffer);
-            [self.recordEncoder encodeFrame:sampleBuffer pixelBuffer:buffer isVideo:YES];
-            CFRelease(sampleBuffer);
-            
+
+            [[FUP2AHelper shareInstance] recordBufferWithType:FUP2AHelperRecordTypeGIF buffer:buffer sampleBuffer:sampleBuffer];
+
             FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
             int index = [avatar getCurrentAnimationFrameIndex];
             if (index == animationFrameCount - 1) {
                 renderMode = GroupSelectedRunModeCommon ;
-                
-                if (self.recordEncoder.writer.status == AVAssetWriterStatusUnknown) {
-                    self.recordEncoder = nil;
-                }else{
-                    __weak typeof(self)weakSelf = self ;
-                    [self.recordEncoder finishWithCompletionHandler:^{
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [weakSelf setNextBtnEnable:YES];
-                            weakSelf.recordEncoder = nil ;
-                        }) ;
-                    }];
-                }
+
+                __weak typeof(self)weakSelf = self ;
+                [[FUP2AHelper shareInstance] stopRecordWithType:FUP2AHelperRecordTypeGIF Completion:^(NSString *retPath) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [weakSelf setNextBtnEnable:YES];
+                        self->gifPath = retPath ;
+                    });
+                }];
             }
         }
             break ;
@@ -353,14 +369,17 @@ typedef enum : NSUInteger {
         
         renderMode = GroupSelectedRunModeCommon ;
         
-        self.recordEncoder = nil ;
-        
-        [self removeVideo];
-        
         switch (self.sceneryModel) {
-            case FUSceneryModeSingle:
-            case FUSceneryModeAnimation:
+            case FUSceneryModeSingle:{
                 [self showDefaultTips];
+            }
+                break ;
+            case FUSceneryModeAnimation:{
+                
+                [self showDefaultTips];
+                
+                [[FUP2AHelper shareInstance] cancleRecord];
+            }
                 break;
             case FUSceneryModeMultiple:{
                 if (selectedIndex.count == 0) {
@@ -383,7 +402,6 @@ typedef enum : NSUInteger {
     
     int messageCode = [self shouldAddCurrentAvatar:avatar];
     if (messageCode != 0) {
-//        [SVProgressHUD showErrorWithStatus:[self getErrorMessageWithCode:messageCode]];
         collectionView.userInteractionEnabled = YES ;
         return ;
     }
@@ -454,6 +472,8 @@ typedef enum : NSUInteger {
                     self.tipLabel.text = @"完美" ;
                 });
                 
+                [[FUP2AHelper shareInstance] startRecordWithType:FUP2AHelperRecordTypeGIF];
+                
                 self->renderMode = GroupSelectedRunModeVideoRecord ;
             }
                 break;
@@ -472,12 +492,6 @@ typedef enum : NSUInteger {
     self.nextBtn.selected = enable ;
 }
 
-- (void)removeVideo {
-    if ([[NSFileManager defaultManager] fileExistsAtPath:VideoPath]) {
-        [[NSFileManager defaultManager] removeItemAtPath:VideoPath error:nil];
-    }
-}
-
 #pragma mark ---- loading
 
 -(FUCamera *)camera {
@@ -488,53 +502,6 @@ typedef enum : NSUInteger {
         [_camera changeCameraInputDeviceisFront:YES];
     }
     return _camera ;
-}
-
-- (void)startLoadingAnimation {
-    self.loadingView.hidden = NO ;
-    [self.view bringSubviewToFront:self.loadingView];
-    NSMutableArray *images = [NSMutableArray arrayWithCapacity:1];
-    for (int i = 1; i < 33; i ++) {
-        NSString *imageName = [NSString stringWithFormat:@"loading%d.png", i];
-        NSString *imagePath = [[NSBundle mainBundle] pathForResource:imageName ofType:nil];
-        UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
-        [images addObject:image ];
-    }
-    self.loadingImage.animationImages = images ;
-    self.loadingImage.animationRepeatCount = 0 ;
-    self.loadingImage.animationDuration = 2.0 ;
-    [self.loadingImage startAnimating];
-    
-    self.pointTimer = [NSTimer timerWithTimeInterval:0.5 target:self selector:@selector(labelAnimation) userInfo:nil repeats:YES];
-    [[NSRunLoop currentRunLoop] addTimer:self.pointTimer forMode:NSRunLoopCommonModes];
-}
-
-- (void)labelAnimation {
-    self.pointLabel.hidden = NO ;
-    static int count = 1 ;
-    count ++ ;
-    if (count == 4) {
-        count = 1 ;
-    }
-    NSMutableString *str = [@"" mutableCopy];
-    for (int i = 0 ; i < count; i ++) {
-        [str appendString:@"."] ;
-    }
-    self.pointLabel.text = str ;
-    
-}
-
-- (void)stopLoadingAnimation {
-    self.loadingView.hidden = YES ;
-    [self.view sendSubviewToBack:self.loadingView];
-    [self.pointTimer invalidate];
-    self.pointTimer = nil ;
-    [self.loadingImage stopAnimating ];
-}
-
-- (void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-    [self.camera stopCapture];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -571,9 +538,48 @@ typedef enum : NSUInteger {
 }
 
 
+#pragma mark ---- select images
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info {
+    // 关闭相册
+    [picker dismissViewControllerAnimated:YES completion:nil];
+    
+    UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
+    
+    [self.camera startCapture];
+    
+    if (image) {
+        
+        [self exchangeRenderBackgroundWithImage:image];
+    }
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    // 关闭相册
+    [picker dismissViewControllerAnimated:YES completion:nil];
+    [self.camera startCapture];
+}
+
+- (void)exchangeRenderBackgroundWithImage:(UIImage *)image {
+    
+    [[FUManager shareInstance] reloadBackGroundWithFilePath:nil];
+    
+    [CRender shareRenderer].bgImage = image;
+    
+    customRenderBackground = YES ;
+    
+    if (self.sceneryModel == FUSceneryModeAnimation && [FUManager shareInstance].currentAvatars.count != 0) {
+        
+        FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject ;
+        
+        [avatar restartAnimation];
+        
+        renderMode = GroupSelectedRunModeVideoRecord ;
+        [[FUP2AHelper shareInstance] startRecordWithType:FUP2AHelperRecordTypeGIF];
+    }
+}
+
+
 @end
-
-
 
 @implementation FUGroupSelectedCell
 

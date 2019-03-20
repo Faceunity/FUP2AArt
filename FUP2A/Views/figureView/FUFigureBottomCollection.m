@@ -37,7 +37,7 @@
 
 -(void)setIsMale:(BOOL)isMale {
     _isMale = isMale ;
-    self.dataArray = isMale ? @[@"发型", @"肤色", @"面部", @"眼睛", @"嘴唇", @"鼻子", @"胡子", @"眉毛", @"眼镜", @"帽子", @"衣服"] : @[@"发型", @"肤色", @"面部", @"眼睛", @"嘴唇", @"鼻子", @"眉毛", @"睫毛", @"眼镜", @"帽子", @"衣服"] ;
+    self.dataArray = isMale ? @[@"发型", @"肤色", @"捏脸", @"瞳色", @"唇色", @"胡子", @"眉毛", @"眼镜", @"帽子", @"衣服"] : @[@"发型", @"肤色", @"捏脸", @"瞳色", @"唇色", @"眉毛", @"睫毛", @"眼镜", @"帽子", @"衣服"] ;
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {

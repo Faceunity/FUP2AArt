@@ -17,6 +17,9 @@
     return _color ;
 }
 
+/*
+ */
+
 - (BOOL)colorIsEqualTo:(FUP2AColor *)color {
     
     if (self.r == color.r && self.g == color.g && self.b == color.b) {

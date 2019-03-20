@@ -498,6 +498,8 @@ typedef enum {
 + (void)setDefaultRotationMode:(float)mode;
 
 + (void)setAsyncTrackFaceEnable:(int)enable;
+
++ (void)setTongueTrackingEnable:(int)enable;
  
 + (int)loadTongueModel:(void*)model size:(int)size;
 @end

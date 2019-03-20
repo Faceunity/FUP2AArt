@@ -57,6 +57,11 @@
     [[FUManager shareInstance] addRenderAvatar:self.currentAvatar];
     [self.currentAvatar loadStandbyAnimation];
     
+    if (![[FUManager shareInstance] isBackgroundItemExist]) {
+        NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"bg.bundle" ofType:nil];
+        [[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
+    }
+    
     [self.navigationController popToRootViewControllerAnimated:YES];
 }
 

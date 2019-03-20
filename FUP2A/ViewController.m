@@ -17,8 +17,6 @@
 #import "FUTakePhotoController.h"
 #import "FUEditViewController.h"
 #import "FURequestManager.h"
-
-// views
 #import "FUHomeBarView.h"
 #import "FUHistoryViewController.h"
 
@@ -47,7 +45,6 @@ FUHistoryViewControllerDelegate
 @property (weak, nonatomic) IBOutlet UILabel *appVersionLabel;
 @property (weak, nonatomic) IBOutlet UILabel *sdkVersionLabel;
 @property (weak, nonatomic) IBOutlet UIView *debugView;
-
 @end
 
 @implementation ViewController
@@ -89,6 +86,7 @@ FUHistoryViewControllerDelegate
         });
         firstLoad = NO ;
     }else {
+        
         [self.homeBar reloadModeData];
         [self.camera startCapture ];
     }
@@ -115,7 +113,7 @@ FUHistoryViewControllerDelegate
     }
 }
 
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender{
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     
     NSString *identifier = segue.identifier ;
     if ([identifier isEqualToString:@"FUHomeBar"]) {
@@ -128,7 +126,6 @@ FUHistoryViewControllerDelegate
         [self.camera stopCapture];
     }else if ([identifier isEqualToString:@"PushToEditView"]){      // 形象页
         [self.camera stopCapture];
-        
         
     }else if ([identifier isEqualToString:@"PushToARView"]){        // AR
         [self.camera stopCapture];
@@ -151,11 +148,11 @@ FUHistoryViewControllerDelegate
 
 - (void)loadDefaultAvatar {
     loadingBundles = YES ;
-    
+
     FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
     [[FUManager shareInstance] reloadRenderAvatar:avatar];
     [avatar loadStandbyAnimation];
-    
+
     loadingBundles = NO ;
 }
 
@@ -184,13 +181,13 @@ FUHistoryViewControllerDelegate
     sender.selected = !sender.selected ;
     self.preView.hidden = !sender.selected ;
     renderMode = sender.selected ? FURenderPreviewMode : FURenderCommonMode ;
-    
+
     FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
-    
+
     if (sender.selected) {
         [avatar loadTrackFaceModePose];
         [avatar enterTrackFaceMode];
-        
+
     }else{
         [avatar quitTrackFaceMode];
         [avatar loadStandbyAnimation];
@@ -251,6 +248,7 @@ FUHistoryViewControllerDelegate
 - (void)homeBarViewDidSelectedAvatar:(FUAvatar *)avatar {
     
     self->loadingBundles = YES ;
+    
     [[FUManager shareInstance] reloadRenderAvatar:avatar];
     
     switch (self->renderMode) {

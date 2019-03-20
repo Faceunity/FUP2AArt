@@ -75,6 +75,9 @@ static CRender *_shareRenderer = nil;
     int outImgHeight ;
     
     GLKTextureInfo *bgTextureInfo;
+    CGSize bgTextureSize ;
+    
+    dispatch_semaphore_t signal ;
 }
 
 + (CRender *)shareRenderer
@@ -98,6 +101,7 @@ static CRender *_shareRenderer = nil;
         
         [self setupGL];
         
+        signal = dispatch_semaphore_create(1) ;
         self.bgImage = [UIImage imageNamed:@"bgImage.png"];
     }
     return self;
@@ -565,29 +569,6 @@ static CRender *_shareRenderer = nil;
         glVertexAttribPointer(rgbPositionAttribute, 2, GL_FLOAT, 0, 0, vertices);
         glEnableVertexAttribArray(rgbPositionAttribute);
         
-//        // 更新纹理坐标
-//        CGFloat sizeDf = size.width / size.height ;
-//        CGFloat frameDf = (CGFloat)frameWidth / (CGFloat)frameHeight ;
-//
-//        CGFloat dw ;
-//        CGFloat dh ;
-//
-//        if (sizeDf > frameDf) {
-//
-//            dw = 1;
-//            dh = frameDf / sizeDf;
-//        }else {
-//
-//            dw = sizeDf / frameDf;
-//            dh = 1 ;
-//        }
-//
-//        GLfloat quadTextureData[] =  {
-//            (1-dw)/2.0, (1-dh)/2.0,// 00
-//            dw + (1-dw)/2.0, (1-dh)/2.0,// 10
-//            (1-dw)/2.0, dh + (1-dh)/2.0,// 01
-//            dw + (1-dw)/2.0, dh + (1-dh)/2.0,// 11
-//        };
         GLfloat quadTextureData[] =  {
             rect.origin.x / (float)frameWidth,rect.origin.y / (float)frameHeight,                                           // 01
             (rect.origin.x + rect.size.width) / (float)frameWidth,rect.origin.y / (float)frameHeight,                       // 11
@@ -607,16 +588,42 @@ static CRender *_shareRenderer = nil;
 }
 
 -(void)setBgImage:(UIImage *)bgImage {
-    _bgImage = bgImage ;
     
-    bgTextureInfo = [GLKTextureLoader textureWithCGImage:bgImage.CGImage options:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], GLKTextureLoaderOriginBottomLeft, nil] error:nil];
+    // 图片修正
+    NSData *fixImageData = UIImageJPEGRepresentation([self fixImageOrientationWithImage:bgImage], 1.0);
+    UIImage *fixImage = [UIImage imageWithData:fixImageData];
+    
+    _bgImage = fixImage ;
+    
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER) ;
+    
+    if ([EAGLContext currentContext] != _context) {
+        [EAGLContext setCurrentContext:_context];
+    }
+    
+    GLKTextureInfo *texture = [GLKTextureLoader textureWithCGImage:fixImage.CGImage options:[NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], GLKTextureLoaderOriginBottomLeft, nil] error:nil];
+    
+    if (bgTextureInfo) {
+        GLuint name = bgTextureInfo.name ;
+        glDeleteTextures(1, &name) ;
+    }
+    
+    bgTextureInfo = texture;
+    
+    bgTextureSize = CGSizeMake(CGImageGetWidth(fixImage.CGImage), CGImageGetHeight(fixImage.CGImage)) ;
+    
+    dispatch_semaphore_signal(signal) ;
 }
+
+
 
 -(CVPixelBufferRef)mergeBgImageToBuffer:(CVPixelBufferRef)pixelBuffer {
     
     if (pixelBuffer == NULL || !_videoTextureCache) {
         return pixelBuffer ;
     }
+    
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER) ;
     
     if ([EAGLContext currentContext] != _context) {
         [EAGLContext setCurrentContext:_context];
@@ -625,11 +632,18 @@ static CRender *_shareRenderer = nil;
     frameWidth = (int)CVPixelBufferGetWidth(pixelBuffer) ;
     frameHeight = (int)CVPixelBufferGetHeight(pixelBuffer) ;
     
+    if (!renderTarget) {
+        [self setupBufferWithSize:CGSizeMake(frameWidth, frameHeight)];
+        dispatch_semaphore_signal(signal) ;
+        return nil;
+    }
+    
     int renderframeWidth = (int)CVPixelBufferGetWidth(renderTarget);
     int renderframeHeight = (int)CVPixelBufferGetHeight(renderTarget);
     
     if (frameHeight != renderframeHeight || frameWidth != renderframeWidth) {
         [self setupBufferWithSize:CGSizeMake(frameWidth, frameHeight)];
+        dispatch_semaphore_signal(signal) ;
         return nil;
     }
     OSType type = CVPixelBufferGetPixelFormatType(pixelBuffer);
@@ -642,6 +656,7 @@ static CRender *_shareRenderer = nil;
         
         if (!_texture || err) {
             NSLog(@"Camera CVOpenGLESTextureCacheCreateTextureFromImage failed (error: %d)", err);
+            dispatch_semaphore_signal(signal) ;
             return pixelBuffer;
         }
         
@@ -679,28 +694,51 @@ static CRender *_shareRenderer = nil;
         glVertexAttribPointer(rgbPositionAttribute, 2, GL_FLOAT, 0, 0, vertices);
         glEnableVertexAttribArray(rgbPositionAttribute);
         
-        //  贴图
-        GLfloat quadTextureData1[] =  {
-            1.0f, 1.0f,
-            0.0f, 1.0f,
-            1.0f, 0.0f,
-            0.0f, 0.0f,
-        };
-        glVertexAttribPointer(rgbTextureCoordinateAttribute, 2, GL_FLOAT, 0, 0, quadTextureData1);
-        glViewport(0 , 0, frameWidth, frameHeight) ;
+       //   贴图
+        float width , height ;
+        width = bgTextureInfo.width ;
+        height = bgTextureInfo.height ;
+        
+        float df      = (float)frameWidth / (float)frameHeight;
+        float db      = width  / height;
+        
+        float sw, w, sh, h;
+        
+        if (df > db) {      // 以宽为主
+            
+            sw  = 0.0 ;
+            w   = 1.0 ;
+            h   = bgTextureSize.width / df / bgTextureSize.height ;
+            sh  = (1 - h) / 2.0 ;
+        }else {             // 以高为主
+
+            sh  = 0.0 ;
+            h   = 1.0 ;
+            w   = bgTextureSize.height * df / bgTextureSize.width;
+            sw  = (1 - w) / 2.0 ;
+        }
+        
+        GLfloat bgTextureData[8] = {
+            w + sw, h + sh,
+                sw, h + sh,
+            w + sw,     sh,
+                sw,     sh,
+        } ;
+        
+        glVertexAttribPointer(rgbTextureCoordinateAttribute, 2, GL_FLOAT, 0, 0, bgTextureData);
+        glViewport(0.0, 0.0, frameWidth, frameHeight) ;
+        
         glEnableVertexAttribArray(rgbPositionAttribute);
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, bgTextureInfo.name);
         glUniform1i(displayInputTextureUniform, 4);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         
-        
-        // 更新纹理数据
         GLfloat quadTextureData[] =  {
-            0, 0,
-            1, 0,
-            0, 1,
-            1, 1,
+            0.0f, 0.0f,
+            1.0f, 0.0f,
+            0.0f, 1.0f,
+            1.0f, 1.0f,
         };
         
         glVertexAttribPointer(rgbTextureCoordinateAttribute, 2, GL_FLOAT, 0, 0, quadTextureData);
@@ -715,8 +753,80 @@ static CRender *_shareRenderer = nil;
         glFinish();
     }
     
-
+    dispatch_semaphore_signal(signal) ;
+    
     return renderTarget ;
+}
+
+
+- (UIImage *)fixImageOrientationWithImage:(UIImage *)image {
+    if (image.imageOrientation == UIImageOrientationUp) return image;
+    
+    CGAffineTransform transform = CGAffineTransformIdentity;
+    
+    switch (image.imageOrientation) {
+        case UIImageOrientationDown:
+        case UIImageOrientationDownMirrored:
+            transform = CGAffineTransformTranslate(transform, image.size.width, image.size.height);
+            transform = CGAffineTransformRotate(transform, M_PI);
+            break;
+            
+        case UIImageOrientationLeft:
+        case UIImageOrientationLeftMirrored:
+            transform = CGAffineTransformTranslate(transform, image.size.width, 0);
+            transform = CGAffineTransformRotate(transform, M_PI_2);
+            break;
+            
+        case UIImageOrientationRight:
+        case UIImageOrientationRightMirrored:
+            transform = CGAffineTransformTranslate(transform, 0, image.size.height);
+            transform = CGAffineTransformRotate(transform, -M_PI_2);
+            break;
+            
+        default:
+            break;
+    }
+    
+    switch (image.imageOrientation) {
+        case UIImageOrientationUpMirrored:
+        case UIImageOrientationDownMirrored:
+            transform = CGAffineTransformTranslate(transform, image.size.width, 0);
+            transform = CGAffineTransformScale(transform, -1, 1);
+            break;
+            
+        case UIImageOrientationLeftMirrored:
+        case UIImageOrientationRightMirrored:
+            transform = CGAffineTransformTranslate(transform, image.size.height, 0);
+            transform = CGAffineTransformScale(transform, -1, 1);
+            break;
+            
+        default:
+            break;
+    }
+    
+    CGContextRef ctx = CGBitmapContextCreate(NULL, image.size.width, image.size.height,
+                                             CGImageGetBitsPerComponent(image.CGImage), 0,
+                                             CGImageGetColorSpace(image.CGImage),
+                                             CGImageGetBitmapInfo(image.CGImage));
+    CGContextConcatCTM(ctx, transform);
+    switch (image.imageOrientation) {
+        case UIImageOrientationLeft:
+        case UIImageOrientationLeftMirrored:
+        case UIImageOrientationRight:
+        case UIImageOrientationRightMirrored:
+            CGContextDrawImage(ctx, CGRectMake(0, 0, image.size.height, image.size.width), image.CGImage);
+            break;
+            
+        default:
+            CGContextDrawImage(ctx, CGRectMake(0, 0, image.size.width, image.size.height), image.CGImage);
+            break;
+    }
+    
+    CGImageRef cgimg = CGBitmapContextCreateImage(ctx);
+    UIImage *img = [UIImage imageWithCGImage:cgimg];
+    CGContextRelease(ctx);
+    CGImageRelease(cgimg);
+    return img;
 }
 
 @end

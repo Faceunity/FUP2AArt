@@ -6,45 +6,37 @@
 //  Copyright © 2018年 L. All rights reserved.
 //
 
-typedef enum : NSInteger {
+
+typedef NS_ENUM(NSInteger, FUGender){
     FUGenderMale           = 0,
     FUGenderFemale         = 1,
     FUGenderUnKnow         = -1,
-} FUGender;
+};
 
-typedef enum : NSInteger {
+typedef NS_ENUM(NSInteger, FURenderMode){
     FURenderCommonMode             = 0,
     FURenderPreviewMode            = 1,
-} FURenderMode;
+};
 
-typedef enum : NSInteger {
+typedef NS_ENUM(NSInteger, FUSceneryMode) {
     FUSceneryModeSingle             = 0,
     FUSceneryModeMultiple           = 1,
     FUSceneryModeAnimation          = 2,
-} FUSceneryMode;
+};
 
-typedef enum : NSInteger {
-    FUItemTypeController        = 0,
-    FUItemTypeHead,
-    FUItemTypeBody,
-    FUItemTypeHair,
-    FUItemTypeClothes,
-    FUItemTypeGlasses,
-    FUItemTypeBeard,
-    FUItemTypeHat,
-    FUItemTypeAnimation,
-    FUItemTypeEyeLash,
-    FUItemTypeEyeBrow,
-} FUItemType;
+typedef NS_ENUM(NSInteger, FUMeshPiontDirection) {
+    FUMeshPiontDirectionHorizontal       = 0,   // 左右
+    FUMeshPiontDirectionVertical         = 1,   // 上下
+    FUMeshPiontDirectionAll              = 2,   // 0 && 1
+};
 
-#define URL     @"https://api2.faceunity.com:2339/api/upload/image"
-//#define URL     @"http://192.168.0.86:20181/upload_nama"
+#define TOKENURL        @"https://api2.faceunity.com:7070/token?company=faceunity"
+#define UPLOADURL       @"https://api.faceunity.com/api/p2a/upload"
+#define DOWNLOADURL     @"https://api.faceunity.com/api/p2a/download"
 
 #define documentPath    NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject
 
 #define AvatarListPath  [documentPath stringByAppendingPathComponent:@"Avatars"]
-
-#define VideoPath  [documentPath stringByAppendingPathComponent:@"video.mp4"]
 
 #define DefaultAvatarNum    2
 

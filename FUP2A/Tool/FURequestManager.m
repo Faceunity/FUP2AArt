@@ -9,11 +9,10 @@
 #import "FURequestManager.h"
 #import <AFNetworking.h>
 
-
 @interface FURequestManager()
 
 @property (nonatomic, strong) AFHTTPSessionManager *requestManager;
-
+@property(nonatomic,copy) void(^requestResultBlock)(NSData *data, NSError *error);
 @end
 
 static FURequestManager *sharedInstance;
@@ -36,6 +35,8 @@ static FURequestManager *sharedInstance;
     
     if (self) {
         
+        self.requestResultBlock = nil ;
+        
         AFSecurityPolicy *policy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeNone];
         policy.allowInvalidCertificates = YES;
         policy.validatesDomainName = NO;
@@ -52,7 +53,7 @@ static FURequestManager *sharedInstance;
         [_requestManager.responseSerializer setAcceptableContentTypes:mset];
         
         __weak typeof(self)weakSelf = self;
-        
+
         //https客户端证书设置
         [_requestManager setSessionDidReceiveAuthenticationChallengeBlock:^NSURLSessionAuthChallengeDisposition(NSURLSession*session, NSURLAuthenticationChallenge *challenge, NSURLCredential *__autoreleasing*_credential) {
             NSURLSessionAuthChallengeDisposition disposition = NSURLSessionAuthChallengePerformDefaultHandling;
@@ -74,15 +75,12 @@ static FURequestManager *sharedInstance;
                 SecTrustRef trust = NULL;
                 NSString *p12 = [[NSBundle mainBundle] pathForResource:@"p2a_demo" ofType:@"p12"];
                 NSFileManager *fileManager =[NSFileManager defaultManager];
-                
-                if(![fileManager fileExistsAtPath:p12])
-                {
+
+                if(![fileManager fileExistsAtPath:p12]) {
                     NSLog(@"client.p12:not exist");
-                }
-                else
-                {
+                } else {
                     NSData *PKCS12Data = [NSData dataWithContentsOfFile:p12];
-                    
+
                     if ([[weakSelf class] extractIdentity:&identity andTrust:&trust fromPKCS12Data:PKCS12Data])
                     {
                         SecCertificateRef certificate = NULL;
@@ -127,30 +125,80 @@ static FURequestManager *sharedInstance;
 }
 
 - (void)createQAvatarWithImage:(UIImage *)image Params:(NSDictionary *)params CompletionWithData:(void (^)(NSData *data, NSError *error))handle {
+    if (handle) {
+        self.requestResultBlock = handle ;
+    }
     
-    NSData *imageData = UIImageJPEGRepresentation(image, 1.0) ;
-    
-    CFAbsoluteTime startUpdateTime = CFAbsoluteTimeGetCurrent() ;
-    
-    [_requestManager POST:URL parameters:params constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
+    __weak typeof(self)weakSelf = self ;
+    [_requestManager GET:TOKENURL parameters:nil progress:^(NSProgress * _Nonnull downloadProgress) {
+    } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
         
-        [formData appendPartWithFileData:imageData name:@"input" fileName:@"image" mimeType:@"image/jpeg"];
+        NSString *ret = [[NSString alloc] initWithData:responseObject encoding:NSUTF8StringEncoding];
+        NSLog(@"====== ret: %@", ret);
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf uploadImageWith:image params:params token:ret];
+        });
+        
+    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+        weakSelf.requestResultBlock(nil, error) ;
+        weakSelf.requestResultBlock = nil ;
+    }];
+}
+
+- (void)uploadImageWith:(UIImage *)image params:(NSDictionary *)params token:(NSString *)token {
+    
+    NSData *imageData = UIImagePNGRepresentation(image) ;
+    
+    NSString *url = [[UPLOADURL stringByAppendingString:@"?access_token="] stringByAppendingString:token];
+    __weak typeof(self)weakSelf = self ;
+    [_requestManager POST:url parameters:params constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
+        [formData appendPartWithFileData:imageData name:@"image" fileName:@"image" mimeType:@"image/jpeg"];
     } progress:^(NSProgress * _Nonnull uploadProgress) {
         
         if (uploadProgress.completedUnitCount == uploadProgress.totalUnitCount) {
-            NSLog(@"------------ upload image time: %f ms", (CFAbsoluteTimeGetCurrent() - startUpdateTime) * 1000.0);
+            NSLog(@"------------ upload image completed ~");
         }
         
     } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
         
-        NSData *data = (NSData *)responseObject ;
-        NSLog(@"------------ server time: %f ms", (CFAbsoluteTimeGetCurrent() - startUpdateTime) * 1000.0);
-        handle(data, nil) ;
+        NSData *responData = (NSData *)responseObject ;
+        
+        NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:responData options:NSJSONReadingAllowFragments error:nil];
+        NSLog(@"====== dict: %@", dict);
+        
+        NSString *taskid = dict[@"data"][@"taskid"] ;
+        NSLog(@"====== task_id: %@", taskid);
+        
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [weakSelf downloadDataWithTask:taskid token:token];
+        });
         
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        
-        handle(nil, error) ;
+        weakSelf.requestResultBlock(nil, error) ;
+        weakSelf.requestResultBlock = nil ;
     }];
 }
 
+- (void)downloadDataWithTask:(NSString *)taskID token:(NSString *)token {
+    NSDictionary *params = @{@"taskid":taskID};
+    
+    NSString *url = [[DOWNLOADURL stringByAppendingString:@"?access_token="] stringByAppendingString:token];
+    __weak typeof(self)weakSelf = self ;
+    [_requestManager POST:url parameters:params progress:^(NSProgress * _Nonnull uploadProgress) {
+    } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+        NSData *jsonData = (NSData *)responseObject ;
+        
+        NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingAllowFragments error:nil];
+        NSLog(@"====== dict: %@", dict);
+        
+        NSString *dataString = dict[@"data"];
+        
+        NSData *data = [[NSData alloc] initWithBase64EncodedString:dataString options:NSDataBase64DecodingIgnoreUnknownCharacters] ;
+        
+        weakSelf.requestResultBlock(data, nil) ;
+        
+    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+    }];
+}
 @end

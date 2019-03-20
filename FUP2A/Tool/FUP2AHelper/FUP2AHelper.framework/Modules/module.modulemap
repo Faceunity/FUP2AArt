@@ -1,0 +1,6 @@
+framework module FUP2AHelper {
+  umbrella header "FUP2AHelper.h"
+
+  export *
+  module * { export * }
+}

@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #import "FUP2ADefine.h"
 
 @class FUP2AColor ;
@@ -42,6 +43,7 @@
 @property (nonatomic, strong) FUP2AColor *glassFrameColor ;
 @property (nonatomic, strong) FUP2AColor *beardColor ;
 @property (nonatomic, strong) FUP2AColor *hatColor ;
+
 
 /**
  用 JSON 文件初始化 avatar
@@ -138,6 +140,16 @@
 - (void)reloadAnimationWithPath:(NSString *)animationPath ;
 
 /**
+ 添加 Camera 道具
+ */
+- (void)loadCamera ;
+
+/**
+ 去除 Camera 道具
+ */
+- (void)removeCamera ;
+
+/**
  更换睫毛
  
  @param eyelashPath 新睫毛所在路径
@@ -179,6 +191,16 @@
  缩放至面部
  */
 - (void)resetScaleToFace ;
+
+/**
+ 捏脸模式缩放至面部正面
+ */
+- (void)resetScaleToShapeFaceFront ;
+
+/**
+ 捏脸模式缩放至面部侧面
+ */
+- (void)resetScaleToShapeFaceSide ;
 
 /**
  缩放至全身
@@ -241,6 +263,14 @@
  退出捏脸模式
  */
 - (void)quitFacepupMode ;
+
+/**
+ 获取 mesh 顶点的坐标
+
+ @param index   顶点序号
+ @return        顶点坐标
+ */
+- (CGPoint)getMeshPointOfIndex:(NSInteger)index ;
 
 /**
  设置捏脸参数
@@ -318,6 +348,11 @@
  @return    当前动画播放的位置
  */
 - (int)getCurrentAnimationFrameIndex ;
+
+/**
+ 重新开始播放动画
+ */
+- (void)restartAnimation ;
 
 @end
 

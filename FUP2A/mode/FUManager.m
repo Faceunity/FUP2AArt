@@ -13,6 +13,7 @@
 #import "FURequestManager.h"
 #import "FUAvatar.h"
 #import "FUP2AColor.h"
+#import <FUP2AHelper/FUP2AHelper.h>
 
 @interface FUManager ()
 {
@@ -46,24 +47,27 @@ static FUManager *fuManager = nil ;
 -(instancetype)init {
     self = [super init];
     if (self) {
-        
+
         [self initFaceUnity];
-        
-        [self loadTongueMode];
-        
+
         [self creatPixelBuffer];
-        
+
+        [self loadTongueMode];
+
         // p2a bin
-        NSString *dataPath = [[NSBundle mainBundle] pathForResource:@"p2a_client_q" ofType:@"bin"];
-        NSData *data = [NSData dataWithContentsOfFile:dataPath];
-        [FUP2AClient setupWithClientData:data];
+        NSString *corePath = [[NSBundle mainBundle] pathForResource:@"p2a_client_core" ofType:@"bin"];
+        NSString *qPath = [[NSBundle mainBundle] pathForResource:@"p2a_client_q" ofType:@"bin"];
+        [[FUP2AClient shareInstance] setupClientWithCoreDataPath:corePath customDataPath:qPath authPackage:&g_auth_package authSize:sizeof(g_auth_package)];
         
+        [[FUP2AHelper shareInstance] setupHelperWithAuthPackage:&g_auth_package authSize:sizeof(g_auth_package)];
+
         [self loadFxaa];
-        
-        [self loadBackgroundItem];
-        
+
+        NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"bg" ofType:@"bundle"];
+        [self reloadBackGroundWithFilePath:bgPath];
+
         [self loadSubData];
-        
+
         self.currentAvatars = [NSMutableArray arrayWithCapacity:1];
         
         if (![[NSFileManager defaultManager] fileExistsAtPath:AvatarListPath]) {
@@ -88,12 +92,6 @@ static FUManager *fuManager = nil ;
 - (void)creatPixelBuffer {
     
     CGSize size = [UIScreen mainScreen].currentMode.size;
-    if (size.width > 800) {
-        CGFloat a = 0.7;
-        CGFloat w = (((int)(size.width*a) + 3)>>2) * 4;
-        CGFloat h = (((int)(size.height*a) + 3)>>2) * 4;
-        size = CGSizeMake(w, h);
-    }
     
     if (!renderTarget) {
         NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
@@ -122,20 +120,49 @@ static FUManager *fuManager = nil ;
     mItems[0] = [FURenderer itemWithContentsOfFile:filePath];
 }
 
-//加载背景道具
-- (void)loadBackgroundItem {
-    NSString *filePath = [[NSBundle mainBundle] pathForResource:@"bg" ofType:@"bundle"];
+/**
+ 加载背景道具
+ 
+ @param filePath 背景道具所在路径
+ */
+- (void)reloadBackGroundWithFilePath:(NSString *)filePath {
+    
+    if (filePath == nil) {
+        
+        if (mItems[1] != 0) {
+            [FURenderer destroyItem:mItems[1]];
+            mItems[1] = 0 ;
+        }
+        return ;
+    }
+    
+    int destroyItem = mItems[1] ;
+    
     mItems[1] = [FURenderer itemWithContentsOfFile:filePath];
+    
+    if (destroyItem != 0) {
+        
+        [FURenderer destroyItem:destroyItem];
+        destroyItem = 0 ;
+    }
 }
 
+/**
+ 背景道具是否存在
+ 
+ @return 是否存在
+ */
+- (BOOL)isBackgroundItemExist {
+    return mItems[1] != 0 ;
+}
 
 #pragma mark ----- 以下数据
 -(NSString *)appVersion {
-    return @"DigiMe Art v1.3.0" ;
+    return @"DigiMe Art v1.4.0" ;
 }
 
 -(NSString *)sdkVersion {
-    NSString *version = [FUP2AClient getClientVersion];
+    NSString *version = [[FUP2AClient shareInstance] getClientVersion];
     return [NSString stringWithFormat:@"SDK v%@", version] ;
 }
 
@@ -302,6 +329,13 @@ static FUManager *fuManager = nil ;
             self.hatColorArray = [tmpArray copy];
         }
     }
+    
+    // mesh points
+    NSData *meshData = [[NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"MeshPoints" ofType:@"json"] encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *meshDict = [NSJSONSerialization JSONObjectWithData:meshData options:NSJSONReadingMutableContainers error:nil];
+    
+    self.maleMeshPoints = meshDict[@"male"] ;
+    self.femaleMeshPoints = meshDict[@"female"] ;
 }
 
 -(NSMutableArray *)avatarList {
@@ -557,13 +591,13 @@ static int frameId = 0 ;
         [FURenderer getFaceInfo:0 name:@"rotation" pret:rotation number:4];
         [FURenderer getFaceInfo:0 name:@"rotation_mode" pret:rotation_mode number:1];
         [FURenderer getFaceInfo:0 name:@"pupil_pos" pret:pupil_pos number:2];
-        
         [FURenderer getFaceInfo:0 name:@"landmarks" pret:landmarks number:150];
+        
         CVPixelBufferUnlockBaseAddress(pixelBuffer, 0) ;
         
         is_valid = [FURenderer isTracking];
     }
-    
+
     TAvatarInfo info;
     info.p_translation = translation;
     info.p_rotation = rotation;
@@ -630,11 +664,11 @@ static int ARFilterID = 0 ;
     avatar.gender = gender ;
     
     // create head
-    NSData *finalBundleData = [FUP2AClient createAvatarHeadWithData:data];
+    NSData *finalBundleData = [[FUP2AClient shareInstance] createAvatarHeadWithData:data];
     [finalBundleData writeToFile:[[avatar filePath] stringByAppendingPathComponent:@"head.bundle"] atomically:YES];
     
     // 头发
-    int hairLabel = [FUP2AClient getIntParamWithData:data key:@"hair_label"];
+    int hairLabel = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"hair_label"];
     avatar.hairLabel = hairLabel ;
     NSString *defaultHair = [self gethairNameWithNum:hairLabel];
     if ([defaultHair isEqualToString:@"hair-noitem"]) {
@@ -643,7 +677,7 @@ static int ARFilterID = 0 ;
     avatar.hair = defaultHair ;
     
     NSData *baseHairData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:defaultHair ofType:@"bundle"]];
-    NSData *defaultHairData = [FUP2AClient createAvatarHairWithServerData:data defaultHairData:baseHairData];
+    NSData *defaultHairData = [[FUP2AClient shareInstance] createAvatarHairWithServerData:data defaultHairData:baseHairData];
     NSString *defaultHairPath = [[[avatar filePath] stringByAppendingPathComponent:defaultHair] stringByAppendingString:@".bundle"];
     [defaultHairData writeToFile:defaultHairPath atomically:YES];
     
@@ -651,13 +685,20 @@ static int ARFilterID = 0 ;
     avatar.clothes = gender == FUGenderMale ? @"male_clothes_1" : @"female_clothes_1" ;
     
     // 胡子
-    int beardLabel = [FUP2AClient getIntParamWithData:data key:@"beard_label"];
+    int beardLabel = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"beard_label"];
     avatar.bearLabel = beardLabel ;
     avatar.beard = gender == FUGenderMale ? [self getBeardNameWithNum:beardLabel] : @"beard-noitem";
     
-    // 眼镜
-    int hasGlass = [FUP2AClient getIntParamWithData:data key:@"has_glasses"];
-    avatar.glasses = hasGlass == 0 ? @"glasses-noitem" : (gender == FUGenderMale ? @"male_glass_1" : @"female_glass_1");
+//    // 眼镜
+    int hasGlass = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"has_glasses"];
+    if (hasGlass == 0) {
+        avatar.glasses = @"glasses-noitem" ;
+    }else {
+        int shapeGlasses = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"shape_glasses"];
+        int rimGlasses = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"rim_glasses"];
+        NSString *glassName = [self getGlassesNameWithShape:shapeGlasses rim:rimGlasses male:gender == FUGenderMale];
+        avatar.glasses = glassName ;
+    }
     
     avatar.hat = @"hat-noitem" ;
     
@@ -689,10 +730,7 @@ static int ARFilterID = 0 ;
             NSString *hairPath = [[NSBundle mainBundle] pathForResource:hairName ofType:@"bundle"];
             NSData *d0 = [NSData dataWithContentsOfFile:hairPath];
             
-//            CFAbsoluteTime startProcessHair1 = CFAbsoluteTimeGetCurrent() ;
-            
-            NSData *d1 = [FUP2AClient createAvatarHairWithServerData:data defaultHairData:d0];
-//            NSLog(@"------------ process hair time: %f ms - hair name: %@", (CFAbsoluteTimeGetCurrent() - startProcessHair1) * 1000.0, hairName);
+            NSData *d1 = [[FUP2AClient shareInstance] createAvatarHairWithServerData:data defaultHairData:d0];
             if (d1 == nil) {
                 NSLog(@"---- error path: %@", hairPath);
             }
@@ -719,7 +757,7 @@ static int ARFilterID = 0 ;
     NSData *headData = [NSData dataWithContentsOfFile:[[currentAvatar filePath] stringByAppendingPathComponent:@"head.bundle"]];
     
     if (deform) {
-        headData = [FUP2AClient deformAvatarHeadWithHeadData:headData deformParams:coeffi paramsSize:38];
+        headData = [[FUP2AClient shareInstance] deformAvatarHeadWithHeadData:headData deformParams:coeffi paramsSize:69];
     }
     
     NSString *avatarName = currentAvatar.defaultModel ? [NSString stringWithFormat:@"%.0f", [[NSDate date] timeIntervalSince1970]] : currentAvatar.name ;
@@ -754,21 +792,21 @@ static int ARFilterID = 0 ;
         NSData *avatarInfoData ;
         for (NSDictionary *avatarInfo in avatarsArray) {
             if ([avatarInfo[@"name"] isEqualToString:currentAvatar.name]) {
-                
+
                 [avatarInfo setValue:avatar.name forKey:@"name"];
                 [avatarInfo setValue:@(0) forKey:@"default"];
                 avatarInfoData = [NSJSONSerialization dataWithJSONObject:avatarInfo options:NSJSONWritingPrettyPrinted error:nil];
                 break ;
             }
         }
-        
+
         NSString *jsonPath = [[AvatarListPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
         [avatarInfoData writeToFile:jsonPath atomically:YES];
-        
+
         // copy resource
         NSString *hairPath = [[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Resource"] stringByAppendingPathComponent:currentAvatar.name];
         NSMutableArray *hairArr = [NSMutableArray arrayWithCapacity:1];
-        
+
         for (NSString *hair in hairs) {
             if ([hair isEqualToString:@"hair-noitem"]) {
                 continue ;
@@ -1009,6 +1047,21 @@ static float CenterScale = 0.3 ;
         index -- ;
     }
     return list[index] ;
+}
+
+// 获取默认眼镜
+- (NSString *)getGlassesNameWithShape:(int)shape rim:(int)rim male:(BOOL)male{
+    
+    if (shape == 1 && rim == 0) {
+        return male ? @"male_glass_1" : @"female_glass_1" ;
+    }else if (shape == 0 && rim == 0){
+        return male ? @"male_glass_2" : @"female_glass_2" ;
+    }else if (shape == 1 && rim == 1){
+        return male ? @"male_glass_8" : @"female_glass_8" ;
+    }else if (shape == 1 && rim == 2){
+        return male ? @"male_glass_15" : @"female_glass_15" ;
+    }
+    return @"glasses-noitem" ;
 }
 
 @end

@@ -4,3 +4,6 @@ repo2/*
 fastlane/*
 Gemfile
 Gemfile.lock
+FUP2A.app.dSYM.zip
+FUP2A.ipa
+fastlane.sh
