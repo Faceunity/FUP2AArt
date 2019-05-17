@@ -37,14 +37,6 @@ __脸型__：
 
 | param              | 含义         |
 | ------------------ | ------------ |
-| "HeadBone_stretch" | 头骨纵向拉伸 |
-| "HeadBone_shrink"  | 头骨纵向缩短 |
-| "HeadBone_wide"    | 头骨水平变宽 |
-| "HeadBone_narrow"  | 头骨水平变窄 |
-| "Head_wide"        | 头型变宽     |
-| "Head_narrow"      | 头型变窄     |
-| "head_shrink"      | 头部缩短     |
-| "head_stretch"     | 头部拉长     |
 | "head_fat"         | 胖           |
 | "head_thin"        | 瘦           |
 | "cheek_wide"       | 颊变宽       |
