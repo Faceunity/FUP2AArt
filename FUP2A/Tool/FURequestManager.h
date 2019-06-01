@@ -14,6 +14,9 @@
 
 + (FURequestManager *)sharedInstance;
 
-- (void)createQAvatarWithImage:(UIImage *)image Params:(NSDictionary *)params CompletionWithData:(void (^)(NSData *data, NSError *error))handle ;
+@property (nonatomic, copy) NSString *servicerString ;
 
+@property (nonatomic, copy) NSString *serverShortString ;
+
+- (void)createQAvatarWithImage:(UIImage *)image Params:(NSDictionary *)params CompletionWithData:(void (^)(NSData *data, NSError *error))handle ;
 @end

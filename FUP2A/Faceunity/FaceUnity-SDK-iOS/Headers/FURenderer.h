@@ -37,11 +37,13 @@ typedef enum {
      - 使用该接口进行初始化的话，需要在代码中配置 EAGLContext 环境，并且保证我们的接口是在同一个 EAGLContext 下调用的
  
  @param data v3.bundle 对应的二进制数据地址
+ @param dataSize v3.bundle 数据的字节数
  @param ardata 该参数已舍弃，传 NULL 即可
  @param package 密钥数组，必须配置好密钥，SDK 才能正常工作
  @param size 密钥数组大小
+ @return 初始化结果，为0则初始化失败，大于0则初始化成功
  */
-- (void)setupWithData:(void *)data ardata:(void *)ardata authPackage:(void *)package authSize:(int)size;
+- (int)setupWithData:(void *)data dataSize:(int)dataSize ardata:(void *)ardata authPackage:(void *)package authSize:(int)size;
 
 /**
  初始化接口2：
@@ -49,12 +51,14 @@ typedef enum {
      - 与 初始化接口1 相比此接口新增 shouldCreate 参数，如果传入YES我们将在内部创建并持有一个 EAGLContext，无需外部再创建 EAGLContext 环境。
  
  @param data v3.bundle 对应的二进制数据地址
+ @param dataSize v3.bundle 数据的字节数
  @param ardata 该参数已废弃，传 NULL 即可
  @param package 密钥数组，必须配置好密钥，SDK 才能正常工作
  @param size 密钥数组大小
  @param shouldCreate 如果设置为 YES，我们会在内部创建并持有一个 EAGLContext，此时必须使用OC层接口
+ @return 初始化结果，为0则初始化失败，大于0则初始化成功
  */
-- (void)setupWithData:(void *)data ardata:(void *)ardata authPackage:(void *)package authSize:(int)size shouldCreateContext:(BOOL)shouldCreate;
+- (int)setupWithData:(void *)data dataSize:(int)dataSize ardata:(void *)ardata authPackage:(void *)package authSize:(int)size shouldCreateContext:(BOOL)shouldCreate;
 
 /**
  初始化接口3：
@@ -65,8 +69,9 @@ typedef enum {
  @param package 密钥数组，必须配置好密钥，SDK 才能正常工作
  @param size 密钥数组大小
  @param shouldCreate  如果设置为 YES，我们会在内部创建并持有一个 EAGLContext，此时必须使用OC层接口
+ @return 初始化结果，为0则初始化失败，大于0则初始化成功
  */
-- (void)setupWithDataPath:(NSString *)v3path authPackage:(void *)package authSize:(int)size shouldCreateContext:(BOOL)shouldCreate;
+- (int)setupWithDataPath:(NSString *)v3path authPackage:(void *)package authSize:(int)size shouldCreateContext:(BOOL)shouldCreate;
 
 /**
  视频处理接口1：
@@ -502,4 +507,10 @@ typedef enum {
 + (void)setTongueTrackingEnable:(int)enable;
  
 + (int)loadTongueModel:(void*)model size:(int)size;
+
+
+/**
+ 释放nama资源
+ */
++(void)namaLibDestroy;
 @end

@@ -1,28 +1,50 @@
  [
-      {
-          "gender" : 0,
-          "glasses" : "glasses-noitem",
-          "hair_label" : 1,
-          "beard_label" : 0,
-          "beard" : "beard-noitem",
-          "hair" : "male_hair_1",
-          "matchLabel" : 0,
-          "clothes" : "male_clothes_1",
-          "hat" : "hat-noitem",
-          "name" : "1",
-          "default" : 1
-      },
-      {
-          "gender" : 1,
-          "glasses" : "glasses-noitem",
-          "hair_label" : 16,
-          "beard_label" : 0,
-          "beard" : "beard-noitem",
-          "hair" : "female_hair_16",
-          "matchLabel" : 3,
-          "clothes" : "female_clothes_1",
-          "hat" : "hat-noitem",
-          "name" : "2",
-          "default" : 1
-      }
-  ]
+  {
+      "beard_label" : 0,
+      "glasses" : "glasses-noitem",
+      "default" : 1,
+      "hair_label" : 1,
+      "hat" : "hat-noitem",
+      "beard" : "beard-noitem",
+      "q_type" : false,
+      "clothes" : "male_clothes_1",
+      "hair" : "male_hair_1",
+      "gender" : 0,
+      "name" : "1"
+  },
+  {
+      "beard_label" : 0,
+      "glasses" : "glasses-noitem",
+      "default" : 1,
+      "hair_label" : 16,
+      "hat" : "hat-noitem",
+      "beard" : "beard-noitem",
+      "q_type" : false,
+      "clothes" : "female_clothes_1",
+      "hair" : "female_hair_16",
+      "gender" : 1,
+      "name" : "2"
+  },
+  {
+      "gender" : 0,
+      "default" : 1,
+      "q_type" : true,
+      "hair_label" : 1,
+      "glasses" : "glasses-noitem",
+      "hair" : "male_hair_q_0",
+      "clothes" : "mid_cloth0",
+      "hat" : "hat-noitem",
+      "name" : "3",
+  },
+  {
+      "gender" : 1,
+      "default" : 1,
+      "q_type" : true,
+      "hair_label" : 16,
+      "glasses" : "glasses-noitem",
+      "hair" : "female_hair_q_7",
+      "clothes" : "mid_cloth0",
+      "hat" : "hat-noitem",
+      "name" : "4",
+  }
+]

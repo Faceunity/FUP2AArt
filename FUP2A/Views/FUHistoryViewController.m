@@ -34,7 +34,10 @@
     [super viewDidLoad];
     
     self.dataSource = [NSMutableArray arrayWithCapacity:1];
-    NSArray *array = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:AvatarListPath error:nil];
+    
+    NSString *sourcePath = [FUManager shareInstance].avatarStyle == FUAvatarStyleNormal ? AvatarListPath : AvatarQPath ;
+    
+    NSArray *array = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:sourcePath error:nil] ;
     array = [array sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
         return [obj2 compare:obj1 options:NSNumericSearch] ;
     }];
@@ -42,7 +45,7 @@
         if (![jsonName hasSuffix:@".json"]) {
             continue ;
         }
-        NSString *jsonPath = [AvatarListPath stringByAppendingPathComponent:jsonName];
+        NSString *jsonPath = [sourcePath stringByAppendingPathComponent:jsonName];
         NSData *jsonData = [[NSString stringWithContentsOfFile:jsonPath encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
         NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:nil];
         
@@ -105,7 +108,8 @@
                     [fileManager removeItemAtPath:filePath error:nil];
                 }
                 // delete avatar info
-                NSString *jsonPath = [[AvatarListPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
+                NSString *rootPath = avatar.isQType ? AvatarQPath : AvatarListPath ;
+                NSString *jsonPath = [[rootPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
                 if ([fileManager fileExistsAtPath:jsonPath]) {
                     [fileManager removeItemAtPath:jsonPath error:nil];
                 }

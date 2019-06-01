@@ -26,6 +26,7 @@
 
 @property (weak, nonatomic) IBOutlet UICollectionView *modeCollection;
 @property (weak, nonatomic) IBOutlet UIView *bottomView;
+@property (weak, nonatomic) IBOutlet UIView *optionView;
 @end
 
 @implementation FUHomeBarView
@@ -44,12 +45,12 @@
     self.modeCollection.dataSource = self ;
     self.modeCollection.delegate = self ;
     
-    selectedIndex = 2 ;
+    selectedIndex = 0 ;
     [self.modeCollection reloadData];
     
     CGFloat height = [[FUTool getPlatformType] isEqualToString:@"iPhone X"] ? self.frame.size.height + 34 : self.frame.size.height;
     self.modeCollection.transform = CGAffineTransformMakeTranslation(0, height) ;
-    self.modeCollection.hidden = YES ;
+    self.optionView.transform = CGAffineTransformMakeTranslation(0, height) ;
 }
 
 // Avatar 缩放
@@ -102,9 +103,11 @@
             [self.delegate homeBarViewShouldShowTopView:YES];
         }
         self.modeCollection.hidden = NO ;
+        self.optionView.hidden = NO ;
         self.bottomView.hidden = YES ;
         [UIView animateWithDuration:0.35 animations:^{
             self.modeCollection.transform = CGAffineTransformIdentity ;
+            self.optionView.transform = CGAffineTransformIdentity ;
         }completion:^(BOOL finished) {
             if (!self.modeBtn.isSelected) {
                 self.modeBtn.selected = YES ;
@@ -118,8 +121,10 @@
         CGFloat height = [[FUTool getPlatformType] isEqualToString:@"iPhone X"] ? self.frame.size.height + 34 : self.frame.size.height;
         [UIView animateWithDuration:0.35 animations:^{
             self.modeCollection.transform = CGAffineTransformMakeTranslation(0, height) ;
+            self.optionView.transform = CGAffineTransformMakeTranslation(0, height) ;
         } completion:^(BOOL finished) {
             self.modeCollection.hidden = YES ;
+            self.optionView.hidden = YES ;
             self.bottomView.hidden = NO ;
             if (self.modeBtn.isSelected) {
                 self.modeBtn.selected = NO ;
@@ -150,36 +155,45 @@
 // 刷新模型页
 - (void)reloadModeData {
     
-    selectedIndex = [[FUManager shareInstance].avatarList indexOfObject:[FUManager shareInstance].currentAvatars.firstObject] + 2;
+    selectedIndex = [[FUManager shareInstance].avatarList indexOfObject:[FUManager shareInstance].currentAvatars.firstObject];
     [self.modeCollection reloadData];
 }
+
+// 风格切换
+- (IBAction)changeStyleAction:(FUHomeBarBtn *)sender {
+    if ([self.delegate respondsToSelector:@selector(homeBarViewChangeAvatarStyle)]) {
+        [self.delegate homeBarViewChangeAvatarStyle];
+    }
+}
+
+// create avatar
+- (IBAction)modelAddAction:(UIButton *)sender {
+    if ([self.delegate respondsToSelector:@selector(homeBarViewShouldCreateAvatar)]) {
+        [self.delegate homeBarViewShouldCreateAvatar];
+    }
+}
+
+// 批量删除
+- (IBAction)deleteAction:(FUHomeBarBtn *)sender {
+    if ([self.delegate respondsToSelector:@selector(homeBarViewShouldDeleteAvatar)]) {
+        [self.delegate homeBarViewShouldDeleteAvatar];
+    }
+}
+
+
 #pragma mark ---   UICollectionViewDataSource && UICollectionViewDelegate
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return [FUManager shareInstance].avatarList.count + 2;
+    return [FUManager shareInstance].avatarList.count;
 }
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     
     FUHomeBarCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"FUHomeBarCell" forIndexPath:indexPath];
     
+    FUAvatar *avatar = [FUManager shareInstance].avatarList[indexPath.row];
+    UIImage *image = [UIImage imageWithContentsOfFile:avatar.imagePath];
     
-    UIImage *image ;
-    switch (indexPath.row) {
-        case 0:{
-            image = [UIImage imageNamed:@"homeBar-add"];
-        }
-            break;
-        case 1:{
-            image = [UIImage imageNamed:@"homeBar-delete"];
-        }
-            break ;
-        default:{
-            FUAvatar *avatar = [FUManager shareInstance].avatarList[indexPath.row - 2];
-            image = [UIImage imageWithContentsOfFile:avatar.imagePath];
-        }
-            break;
-    }
     cell.imageView.image = image ;
     cell.showBorder = selectedIndex == indexPath.row ;
     
@@ -188,72 +202,54 @@
 
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     
-    switch (indexPath.row) {
-        case 0:{
-            if (self.delegate && [self.delegate respondsToSelector:@selector(homeBarViewShouldCreateAvatar)]) {
-                [self.delegate homeBarViewShouldCreateAvatar];
-            }
-        }
-            break;
-        case 1:{
-            if (self.delegate && [self.delegate respondsToSelector:@selector(homeBarViewShouldDeleteAvatar)]) {
-                [self.delegate homeBarViewShouldDeleteAvatar];
-            }
-        }
-            break;
-            
-        default:{
-            
-            if (indexPath.row == selectedIndex) {
-                return ;
-            }
-            selectedIndex = indexPath.row ;
-            [collectionView reloadData];
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                FUAvatar *avatar = [FUManager shareInstance].avatarList[indexPath.row - 2];
-                if (self.delegate && [self.delegate respondsToSelector:@selector(homeBarViewDidSelectedAvatar:)]) {
-                    [self.delegate homeBarViewDidSelectedAvatar:avatar];
-                }
-            });
-        }
-            break;
-    }
-}
-
-- (void)collectionView:(UICollectionView *)collectionView didHighlightItemAtIndexPath:(NSIndexPath *)indexPath {
     
-    switch (indexPath.row) {
-        case 0:{
-            FUHomeBarCell *cell = (FUHomeBarCell *)[collectionView cellForItemAtIndexPath:indexPath];
-            cell.imageView.image = [UIImage imageNamed:@"homeBar-add-pressed"];
-        }
-            break;
-        case 1:{
-            FUHomeBarCell *cell = (FUHomeBarCell *)[collectionView cellForItemAtIndexPath:indexPath];
-            cell.imageView.image = [UIImage imageNamed:@"homeBar-delete-pressed"];
-        }
-            
-        default:
-            break;
+    if (indexPath.row == selectedIndex) {
+        return ;
     }
-}
-- (void)collectionView:(UICollectionView *)collectionView didUnhighlightItemAtIndexPath:(NSIndexPath *)indexPath {
-    
-    switch (indexPath.row) {
-        case 0:{
-            FUHomeBarCell *cell = (FUHomeBarCell *)[collectionView cellForItemAtIndexPath:indexPath];
-            cell.imageView.image = [UIImage imageNamed:@"homeBar-add"];
+    selectedIndex = indexPath.row ;
+    [collectionView reloadData];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        FUAvatar *avatar = [FUManager shareInstance].avatarList[indexPath.row];
+        if (self.delegate && [self.delegate respondsToSelector:@selector(homeBarViewDidSelectedAvatar:)]) {
+            [self.delegate homeBarViewDidSelectedAvatar:avatar];
         }
-            break;
-        case 1:{
-            FUHomeBarCell *cell = (FUHomeBarCell *)[collectionView cellForItemAtIndexPath:indexPath];
-            cell.imageView.image = [UIImage imageNamed:@"homeBar-delete"];
-        }
-            
-        default:
-            break;
-    }
+    });
 }
+//
+//- (void)collectionView:(UICollectionView *)collectionView didHighlightItemAtIndexPath:(NSIndexPath *)indexPath {
+//
+//    switch (indexPath.row) {
+//        case 0:{
+//            FUHomeBarCell *cell = (FUHomeBarCell *)[collectionView cellForItemAtIndexPath:indexPath];
+//            cell.imageView.image = [UIImage imageNamed:@"homeBar-add-pressed"];
+//        }
+//            break;
+//        case 1:{
+//            FUHomeBarCell *cell = (FUHomeBarCell *)[collectionView cellForItemAtIndexPath:indexPath];
+//            cell.imageView.image = [UIImage imageNamed:@"homeBar-delete-pressed"];
+//        }
+//
+//        default:
+//            break;
+//    }
+//}
+//- (void)collectionView:(UICollectionView *)collectionView didUnhighlightItemAtIndexPath:(NSIndexPath *)indexPath {
+//
+//    switch (indexPath.row) {
+//        case 0:{
+//            FUHomeBarCell *cell = (FUHomeBarCell *)[collectionView cellForItemAtIndexPath:indexPath];
+//            cell.imageView.image = [UIImage imageNamed:@"homeBar-add"];
+//        }
+//            break;
+//        case 1:{
+//            FUHomeBarCell *cell = (FUHomeBarCell *)[collectionView cellForItemAtIndexPath:indexPath];
+//            cell.imageView.image = [UIImage imageNamed:@"homeBar-delete"];
+//        }
+//
+//        default:
+//            break;
+//    }
+//}
 @end
 
 @implementation FUHomeBarCell

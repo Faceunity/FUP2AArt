@@ -20,17 +20,19 @@ typedef enum : NSInteger {
     FUItemTypeGlasses,
     FUItemTypeBeard,
     FUItemTypeHat,
+    FUItemTypeShoes,
     FUItemTypeAnimation,
-    FUItemTypeCamera,
     FUItemTypeEyeLash,
     FUItemTypeEyeBrow,
+    FUItemTypeCamera,
+    FUItemTypeTmp,
 } FUItemType;
 
 
 @interface FUAvatar ()
 {
     // 句柄数组
-    int items[11] ;
+    int items[14] ;
     // 同步信号量
     dispatch_semaphore_t signal;
 }
@@ -60,19 +62,29 @@ typedef enum : NSInteger {
     avatar.name = dict[@"name"];
     avatar.gender = (FUGender)[dict[@"gender"] intValue] ;
     avatar.defaultModel = [dict[@"default"] boolValue] ;
+    avatar.isQType = [dict[@"q_type"] integerValue];
     
     avatar.hair = dict[@"hair"] ;
     avatar.clothes = dict[@"clothes"] ;
     avatar.glasses = dict[@"glasses"] ;
+    avatar.shoes = dict[@"shoes"];
     avatar.beard = dict[@"beard"] ;
     avatar.hat = dict[@"hat"] ;
     avatar.eyeLash = dict[@"eyeLash"] ;
     avatar.eyeBrow = dict[@"eyeBrow"] ;
     
+    avatar.face = dict[@"face"] ;
+    avatar.eyes = dict[@"eyes"] ;
+    avatar.mouth = dict[@"mouth"] ;
+    avatar.nose = dict[@"nose"] ;
+    
     avatar.hairLabel = [dict[@"hair_label"] intValue];
     avatar.bearLabel = [dict[@"beard_label"] intValue];
     
     avatar.skinLevel = [dict[@"skin_level"] doubleValue];
+    avatar.irisLevel = [dict[@"iris_level"] doubleValue];
+    avatar.lipsLevel = [dict[@"lips_level"] doubleValue];
+    
     avatar.skinColor = [FUP2AColor colorWithDict:dict[@"skin_color"]] ;
     avatar.lipColor = [FUP2AColor colorWithDict:dict[@"lip_color"]] ;
     avatar.irisColor = [FUP2AColor colorWithDict:dict[@"iris_color"]] ;
@@ -126,7 +138,8 @@ typedef enum : NSInteger {
     
     // load controller
     if (items[FUItemTypeController] == 0) {
-        NSString *controllerPath = [[NSBundle mainBundle] pathForResource:@"controller" ofType:@"bundle"];
+        NSString *controller = self.isQType ? @"q_controller.bundle" : @"controller.bundle" ;
+        NSString *controllerPath = [[NSBundle mainBundle] pathForResource:controller ofType:nil];
         [self loadItemWithtype:FUItemTypeController filePath:controllerPath];
     }
 
@@ -135,7 +148,7 @@ typedef enum : NSInteger {
     [self loadItemWithtype:FUItemTypeHead filePath:headPath];
 
     // load Body
-    NSString *bodyPath = self.gender == FUGenderMale ? [[NSBundle mainBundle] pathForResource:@"male_body" ofType:@"bundle"] : [[NSBundle mainBundle] pathForResource:@"female_body" ofType:@"bundle"] ;
+    NSString *bodyPath = self.isQType ? [[NSBundle mainBundle] pathForResource:@"mid_body.bundle" ofType:nil] : (self.gender == FUGenderMale ? [[NSBundle mainBundle] pathForResource:@"male_body" ofType:@"bundle"] : [[NSBundle mainBundle] pathForResource:@"female_body" ofType:@"bundle"]) ;
     [self loadItemWithtype:FUItemTypeBody filePath:bodyPath];
 
     // load hair
@@ -152,23 +165,32 @@ typedef enum : NSInteger {
     NSString *glassesPath = [[NSBundle mainBundle] pathForResource:glasses ofType: nil];
     [self reloadGlassesWithPath:glassesPath];
 
-    // load beard
-    NSString *beard = [self.beard stringByAppendingString:@".bundle"] ;
-    NSString *beardPath = [[NSBundle mainBundle] pathForResource:beard ofType:nil];
-    [self reloadBeardWithPath:beardPath];
-
     // load hat
     NSString *hat = [self.hat stringByAppendingString:@".bundle"];
     NSString *hatPath = [[NSBundle mainBundle] pathForResource:hat ofType:nil];
     [self reloadHatWithPath:hatPath];
 
-    // eyelash
-    NSString *lashPath = [[NSBundle mainBundle] pathForResource:[self.eyeLash stringByAppendingString:@".bundle"] ofType:nil];
-    [self reloadEyeBrowWithPath:lashPath];
+    // load beard
+    NSString *beard = [self.beard stringByAppendingString:@".bundle"] ;
+    NSString *beardPath = [[NSBundle mainBundle] pathForResource:beard ofType:nil];
+    [self reloadBeardWithPath:beardPath];
+    
+    if (self.isQType){
+//
+//        // load shoes
+//        NSString *shoes = [self.shoes stringByAppendingString:@".bundle"] ;
+//        NSString *shoesPath = [[NSBundle mainBundle] pathForResource:shoes ofType:nil];
+//        [self reloadShoesWithPath:shoesPath];
+    }else {
+        // eyelash
+        NSString *lashPath = [[NSBundle mainBundle] pathForResource:[self.eyeLash stringByAppendingString:@".bundle"] ofType:nil];
+        [self reloadEyeBrowWithPath:lashPath];
 
-    // eyebrow
-    NSString *browPath = [[NSBundle mainBundle] pathForResource:[self.eyeBrow stringByAppendingString:@".bundle"] ofType:nil];
-    [self reloadEyeBrowWithPath:browPath];
+        // eyebrow
+        NSString *browPath = [[NSBundle mainBundle] pathForResource:[self.eyeBrow stringByAppendingString:@".bundle"] ofType:nil];
+        [self reloadEyeBrowWithPath:browPath];
+    }
+
 
     // set colors
     [self setAvatarColors];
@@ -257,7 +279,12 @@ typedef enum : NSInteger {
  加载待机动画
  */
 - (void)loadStandbyAnimation {
-    NSString *animationPath = self.gender == FUGenderMale ? [[NSBundle mainBundle] pathForResource:@"male_animation" ofType:@"bundle"] : [[NSBundle mainBundle] pathForResource:@"female_animation" ofType:@"bundle"] ;
+    NSString *animationPath ;
+    if (self.isQType) {
+        animationPath = [[NSBundle mainBundle] pathForResource:@"ani_idle.bundle" ofType:nil];
+    }else {
+        animationPath = self.gender == FUGenderMale ? [[NSBundle mainBundle] pathForResource:@"male_animation" ofType:@"bundle"] : [[NSBundle mainBundle] pathForResource:@"female_animation" ofType:@"bundle"] ;
+    }
     [self loadItemWithtype:FUItemTypeAnimation filePath:animationPath];
 }
 
@@ -265,7 +292,12 @@ typedef enum : NSInteger {
  人脸追踪时加载 Pose
  */
 - (void)loadTrackFaceModePose {
-    NSString *animationPath = self.gender == FUGenderMale ? [[NSBundle mainBundle] pathForResource:@"male_pose" ofType:@"bundle"] : [[NSBundle mainBundle] pathForResource:@"female_pose" ofType:@"bundle"] ;
+    NSString *animationPath;
+    if (self.isQType) {
+        animationPath = [[NSBundle mainBundle] pathForResource:@"ani_pose.bundle" ofType:nil];
+    }else {
+        animationPath = self.gender == FUGenderMale ? [[NSBundle mainBundle] pathForResource:@"male_pose" ofType:@"bundle"] : [[NSBundle mainBundle] pathForResource:@"female_pose" ofType:@"bundle"] ;
+    }
     [self loadItemWithtype:FUItemTypeAnimation filePath:animationPath];
 }
 
@@ -276,21 +308,6 @@ typedef enum : NSInteger {
  */
 - (void)reloadAnimationWithPath:(NSString *)animationPath {
     [self loadItemWithtype:FUItemTypeAnimation filePath:animationPath];
-}
-
-/**
- 添加 Camera 道具
- */
-- (void)loadCamera {
-    NSString *path = [[NSBundle mainBundle] pathForResource:@"qiuhun_ani_cam" ofType:@"bundle"];
-    [self loadItemWithtype:FUItemTypeCamera filePath:path];
-}
-
-/**
- 去除 Camera 道具
- */
-- (void)removeCamera {
-    [self destroyItemWithType:FUItemTypeCamera];
 }
 
 /**
@@ -309,6 +326,32 @@ typedef enum : NSInteger {
  */
 - (void)reloadEyeBrowWithPath:(NSString *)eyebrowPath {
     [self loadItemWithtype:FUItemTypeEyeBrow filePath:eyebrowPath];
+}
+
+/**
+ 更换鞋子
+ -- Q版专有
+ 
+ @param shoesPath 新眉毛所在路径
+ */
+- (void)reloadShoesWithPath:(NSString *)shoesPath {
+//    [self loadItemWithtype:FUItemTypeShoes filePath:shoesPath];
+}
+/**
+ 更新辅助道具
+ 
+ @param tmpPath 辅助道具路径
+ */
+- (void)reloadTmpItemWithPath:(NSString *)tmpPath {
+    [self loadItemWithtype:FUItemTypeTmp filePath:tmpPath];
+}
+/**
+ 更新Cam道具
+ 
+ @param camPath 辅助道具路径
+ */
+- (void)reloadCamItemWithPath:(NSString *)camPath {
+    [self loadItemWithtype:FUItemTypeCamera filePath:camPath];
 }
 
 // 加载普通道具
@@ -388,8 +431,8 @@ typedef enum : NSInteger {
  缩放至面部正面
  */
 - (void)resetScaleToFace {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(20)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(5)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(50)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(12)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0.0)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
     
@@ -402,9 +445,14 @@ typedef enum : NSInteger {
  捏脸模式缩放至面部正面
  */
 - (void)resetScaleToShapeFaceFront {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(-10)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(-10)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(-2.0)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0.0)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(3)];
+    
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(30)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(-2.0)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0.0)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(3)];
 }
 
@@ -412,9 +460,14 @@ typedef enum : NSInteger {
  捏脸模式缩放至面部侧面
  */
 - (void)resetScaleToShapeFaceSide {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(-10)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(-10)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(-2.0)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(-1.0)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(3)];
+    
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(30)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(-2.0)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(-1.0)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(-1)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(3)];
 }
 
@@ -422,8 +475,13 @@ typedef enum : NSInteger {
  缩放至全身
  */
 - (void)resetScaleToBody {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(220)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(70)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(220)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(70)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
+    
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(50)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(5)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
 }
 
@@ -431,11 +489,26 @@ typedef enum : NSInteger {
  缩放至小比例的全身
  */
 - (void)resetScaleToSmallBody {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(350)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(120)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(350)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(120)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
+    
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(220)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(70)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
 }
 
+/**
+ 缩放至显示 Q 版的鞋子
+ */
+- (void)resetScaleToShowShoes {
+    
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(30)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(150)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
+}
 #pragma mark --- 以下面部追踪模式
 
 /**
@@ -465,9 +538,12 @@ typedef enum : NSInteger {
     
     // load controller
     if (items[FUItemTypeController] == 0) {
-        NSString *controllerPath = [[NSBundle mainBundle] pathForResource:@"controller" ofType:@"bundle"];
+        NSString *controllerName = self.isQType ? @"q_controller.bundle" : @"controller.bundle" ;
+        NSString *controllerPath = [[NSBundle mainBundle] pathForResource:controllerName ofType:nil];
         [self loadItemWithtype:FUItemTypeController filePath:controllerPath];
     }
+    
+    // 主要是设置参数，只要设置一次就好
     [self enterARMode];
 
     // load Head

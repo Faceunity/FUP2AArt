@@ -9,7 +9,6 @@
 #import "FUCamera.h"
 #import <UIKit/UIKit.h>
 #import <SVProgressHUD/SVProgressHUD.h>
-//#import "FUP2AHelper.h"
 #import <FUP2AHelper/FUP2AHelper.h>
 
 typedef enum : NSUInteger {
@@ -59,7 +58,6 @@ typedef enum : NSUInteger {
 }
 
 - (void)startCapture{
-    
     if (![self.captureSession isRunning] && !hasStarted) {
         hasStarted = YES;
         [self.captureSession startRunning];
@@ -344,6 +342,7 @@ typedef enum : NSUInteger {
     CIImage *ciImage = [CIImage imageWithCVPixelBuffer:pixelBufferRef];
     
     CIContext *temporaryContext = [CIContext contextWithOptions:nil];
+    // fromRect 是截图的位置和大小，这里是满屏的图，可以根据之前计算出来的人脸矩形框，截某一块图像出来
     CGImageRef videoImage = [temporaryContext createCGImage:ciImage fromRect:CGRectMake(0, 0, width, height)];
     
     UIImage *image = [UIImage imageWithCGImage:videoImage];

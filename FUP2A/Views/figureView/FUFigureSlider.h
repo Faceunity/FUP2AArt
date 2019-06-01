@@ -10,5 +10,4 @@
 
 @interface FUFigureSlider : UISlider
 
-//@property (nonatomic, assign) FUFigureSliderType type ;
 @end

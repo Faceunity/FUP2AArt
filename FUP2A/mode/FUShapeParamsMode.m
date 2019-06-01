@@ -216,6 +216,7 @@ static FUShapeParamsMode *model = nil ;
     }
     return [dict copy];
 }
+
 - (NSDictionary *)resetEyesParams {
     NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
     for (NSString *propertyName in self.propertyNames) {
@@ -247,4 +248,15 @@ static FUShapeParamsMode *model = nil ;
     return [params copy];
 }
 
+- (BOOL)shouldDeformHair {
+    NSArray *array = @[@"HeadBone_stretch", @"HeadBone_shrink", @"HeadBone_wide", @"HeadBone_narrow", @"Head_wide", @"Head_narrow", @"head_shrink", @"head_stretch"];
+    for (NSString *key in array) {
+        double value1 = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
+        double value0 = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
+        if (value0 != value1) {
+            return YES ;
+        }
+    }
+    return NO ;
+}
 @end

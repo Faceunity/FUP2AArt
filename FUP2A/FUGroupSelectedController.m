@@ -89,6 +89,8 @@ UINavigationControllerDelegate
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     [self.camera stopCapture];
+    NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"background" ofType:@"bundle"];
+    [[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
 }
 
 - (void)showDefaultTips {
@@ -144,7 +146,7 @@ UINavigationControllerDelegate
     
     if (![[FUManager shareInstance] isBackgroundItemExist]) {
         
-        NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"bg.bundle" ofType:nil];
+        NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"background.bundle" ofType:nil];
         [[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
     }
     
@@ -218,6 +220,7 @@ UINavigationControllerDelegate
     
     [self.glView displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:YES];
     
+//    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
     switch (renderMode) {
         case GroupSelectedRunModeCommon:
             break;
@@ -255,6 +258,10 @@ UINavigationControllerDelegate
 }
 
 - (int)shouldAddCurrentAvatar:(FUAvatar *)avatar {
+    
+    if (avatar.isQType) {
+        return 0 ;
+    }
     
     switch (_sceneryModel) {
         case FUSceneryModeSingle:
@@ -336,6 +343,11 @@ UINavigationControllerDelegate
         case FUSceneryModeAnimation:
         {
             FUSingleModel *model = self.sceneryModel == FUSceneryModeSingle ? self.singleModel : self.animationModel ;
+            
+            if ([FUManager shareInstance].avatarStyle == FUAvatarStyleQ) {
+                cell.maskImage.hidden = (selectedIndex.count != modelCount || selected) ;
+                return cell ;
+            }
             cell.maskImage.hidden = (model.gender == avatar.gender) && (selectedIndex.count != modelCount || selected) ;
         }
             break;
@@ -382,10 +394,18 @@ UINavigationControllerDelegate
             }
                 break;
             case FUSceneryModeMultiple:{
+                
+                FUAvatar *curAva = [FUManager shareInstance].currentAvatars.firstObject ;
+                
+                if (curAva.isQType) {
+                    self.tipLabel.text = @"请选择一个模型" ;
+                    break ;
+                }
+                
                 if (selectedIndex.count == 0) {
                     self.tipLabel.text = @"请选择一男一女模型" ;
                 }else {
-                    NSString *message = [FUManager shareInstance].currentAvatars.firstObject.gender == FUGenderFemale ? @"请选择一个男模型" : @"请选择一个女模型";
+                    NSString *message = curAva.gender == FUGenderFemale ? @"请选择一个男模型" : @"请选择一个女模型";
                     self.tipLabel.text = message ;
                 }
             }
@@ -466,6 +486,34 @@ UINavigationControllerDelegate
             case FUSceneryModeAnimation: {
                 NSString *animationPath = [[NSBundle mainBundle] pathForResource:self.animationModel.animationName ofType:@"bundle"];
                 [avatar reloadAnimationWithPath:animationPath];
+                
+                if ([self.animationModel.animationName isEqualToString:@"ani_dance"]) {
+                    
+                    NSString *tmpPath = [[NSBundle mainBundle] pathForResource:@"ani_dace_cam" ofType:@"bundle"];
+                    [avatar reloadCamItemWithPath:tmpPath];
+                    NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"ani_dace_bg" ofType:@"bundle"];
+                    [[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
+                }else if ([self.animationModel.animationName isEqualToString:@"ani_LRPP"]){
+                    
+                    NSString *tmpPath = [[NSBundle mainBundle] pathForResource:@"ani_LRPP_shanzi" ofType:@"bundle"];
+                    [avatar reloadTmpItemWithPath:tmpPath];
+                    NSString *camPath = [[NSBundle mainBundle] pathForResource:@"ani_LRPP_cam" ofType:@"bundle"];
+                    [avatar reloadCamItemWithPath:camPath];
+                    NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"ani_LRPP_bg" ofType:@"bundle"];
+                    [[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
+                }else if ([self.animationModel.animationName isEqualToString:@"ani_SJG"]){
+                    
+                    NSString *tmpPath = [[NSBundle mainBundle] pathForResource:@"ani_SJG_sjg" ofType:@"bundle"];
+                    [avatar reloadTmpItemWithPath:tmpPath];
+                    NSString *camPath = [[NSBundle mainBundle] pathForResource:@"ani_SJG_cam" ofType:@"bundle"];
+                    [avatar reloadCamItemWithPath:camPath];
+                    NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"ani_SJG_bg" ofType:@"bundle"];
+                    [[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
+                }else if ([self.animationModel.animationName isEqualToString:@"ani_SZW"]){
+                    
+                    NSString *camPath = [[NSBundle mainBundle] pathForResource:@"ani_SZW_cam" ofType:@"bundle"];
+                    [avatar reloadCamItemWithPath:camPath];
+                }
                 
                 self->animationFrameCount = [avatar getAnimationFrameCount];
                 dispatch_async(dispatch_get_main_queue(), ^{

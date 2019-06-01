@@ -17,6 +17,9 @@
 @property (nonatomic, assign) FUGender gender ;
 @property (nonatomic, copy) NSString *imagePath ;
 
+// 是否是新版本
+@property (nonatomic, assign) BOOL isQType ;
+
 // 是否是预置模型
 @property (nonatomic, assign) BOOL defaultModel ;
 
@@ -25,6 +28,12 @@
 @property (nonatomic, copy) NSString *glasses ;
 @property (nonatomic, copy) NSString *beard ;
 @property (nonatomic, copy) NSString *hat ;
+@property (nonatomic, copy) NSString *shoes ;
+
+@property (nonatomic, copy) NSString *face ;
+@property (nonatomic, copy) NSString *eyes ;
+@property (nonatomic, copy) NSString *mouth ;
+@property (nonatomic, copy) NSString *nose ;
 // make up
 @property (nonatomic, copy) NSString *eyeLash ;
 @property (nonatomic, copy) NSString *eyeBrow ;
@@ -35,6 +44,8 @@
 
 // colors
 @property (nonatomic, assign) double skinLevel ;
+@property (nonatomic, assign) double irisLevel ;
+@property (nonatomic, assign) double lipsLevel ;
 @property (nonatomic, strong) FUP2AColor *skinColor ;
 @property (nonatomic, strong) FUP2AColor *lipColor ;
 @property (nonatomic, strong) FUP2AColor *irisColor ;
@@ -43,7 +54,6 @@
 @property (nonatomic, strong) FUP2AColor *glassFrameColor ;
 @property (nonatomic, strong) FUP2AColor *beardColor ;
 @property (nonatomic, strong) FUP2AColor *hatColor ;
-
 
 /**
  用 JSON 文件初始化 avatar
@@ -140,16 +150,6 @@
 - (void)reloadAnimationWithPath:(NSString *)animationPath ;
 
 /**
- 添加 Camera 道具
- */
-- (void)loadCamera ;
-
-/**
- 去除 Camera 道具
- */
-- (void)removeCamera ;
-
-/**
  更换睫毛
  
  @param eyelashPath 新睫毛所在路径
@@ -162,6 +162,28 @@
  @param eyebrowPath 新眉毛所在路径
  */
 - (void)reloadEyeBrowWithPath:(NSString *)eyebrowPath ;
+
+/**
+ 更换鞋子
+    -- Q版专有
+ 
+ @param shoesPath 新眉毛所在路径
+ */
+- (void)reloadShoesWithPath:(NSString *)shoesPath ;
+
+/**
+ 更新辅助道具
+
+ @param tmpPath 辅助道具路径
+ */
+- (void)reloadTmpItemWithPath:(NSString *)tmpPath ;
+
+/**
+ 更新Cam道具
+ 
+ @param camPath 辅助道具路径
+ */
+- (void)reloadCamItemWithPath:(NSString *)camPath ;
 
 #pragma mark ----- 以下缩放位移
 
@@ -212,6 +234,10 @@
  */
 - (void)resetScaleToSmallBody ;
 
+/**
+ 缩放至显示 Q 版的鞋子
+ */
+- (void)resetScaleToShowShoes ;
 
 #pragma mark ----- 以下面部追踪模式
 

@@ -28,6 +28,13 @@
                            authSize:(int)size;
 
 /**
+ *  切换 FUP2AClient data
+ 
+ @param customDataPath  customData 文件路径
+ */
+- (void)reSetupCustomData:(NSString *)customDataPath ;
+
+/**
  *  生成 head.bundle
      - 根据服务端传回的数据流生成 Avatar 的头部模型
  
@@ -91,6 +98,12 @@
 
 - (NSArray *)getParamsArrayWithData:(NSData *)data key:(NSString *)key ;
 
+
+/**
+ *  释放 client 数据
+    - 释放 client 全部数据，重新加载 client 之前需要释放数据
+ */
+- (void)releaseClientData ;
 
 /**
  *  获取 FUClient 版本号

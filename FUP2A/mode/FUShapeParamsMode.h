@@ -13,29 +13,29 @@
 
 + (instancetype)shareInstance ;
 
-//- (void)resetDefaultParamsWithAvatar:(FUAvatar *)avatar ;
+// 重置此模型全部捏脸参数
 - (void)resetDefaultParamsWithAvatar:(FUAvatar *)avatar ;
-
+// 记录某个捏脸参数的改变
 - (void)recordParam:(NSString *)key value:(double)value ;
-
+// 获取某个已经修改过的捏脸参数
 - (double)valueWithKey:(NSString *)key ;
-
+// 参数是否有修改
 - (BOOL)propertiesIsChanged ;
-
+// 头/嘴/眼/鼻 参数是否有改变
 - (BOOL)headParamsIsChanged ;
 - (BOOL)mouthParamsIsChanged ;
 - (BOOL)noseParamsIsChanged ;
 - (BOOL)eyesParamsIsChanged ;
-
+// 重置 头/嘴/眼/鼻 参数 - 返回重置之后的参数s值
 - (NSDictionary *)resetHeadParams;
 - (NSDictionary *)resetMouthParams;
 - (NSDictionary *)resetNoseParams;
 - (NSDictionary *)resetEyesParams;
 
-//- (void)setAllPropertiesToDefault ;
-
+// 最终捏脸参数列表
 - (NSArray *)finalShapeParams ;
 
+- (BOOL)shouldDeformHair ;
 
  @property (nonatomic, assign) double HeadBone_stretch ;
  @property (nonatomic, assign) double HeadBone_shrink ;

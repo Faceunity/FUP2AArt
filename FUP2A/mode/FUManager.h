@@ -17,8 +17,10 @@
 @property (nonatomic, copy, readonly) NSString *appVersion ;
 @property (nonatomic, copy, readonly) NSString *sdkVersion ;
 
-// 数据模型
+@property (nonatomic, assign) FUAvatarStyle avatarStyle ;
+
 @property (nonatomic, strong) NSMutableArray *avatarList ;
+// 数据模型
 @property (nonatomic, strong) NSArray *femaleHairs ;
 @property (nonatomic, strong) NSArray *maleHairs ;
 @property (nonatomic, strong) NSArray *femaleGlasses ;
@@ -28,10 +30,24 @@
 @property (nonatomic, strong) NSArray *maleBeards ;
 @property (nonatomic, strong) NSArray *femaleHats ;
 @property (nonatomic, strong) NSArray *maleHats ;
-//
 @property (nonatomic, strong) NSArray *femaleEyeLashs ;
 @property (nonatomic, strong) NSArray *femaleEyeBrows ;
 @property (nonatomic, strong) NSArray *maleEyeBrows ;
+
+// Q数据模型
+@property (nonatomic, strong) NSArray *qHairs ;
+@property (nonatomic, strong) NSArray *qGlasses ;
+@property (nonatomic, strong) NSArray *qClothes ; ;
+@property (nonatomic, strong) NSArray *qHats ;
+@property (nonatomic, strong) NSArray *qShoes ;
+@property (nonatomic, strong) NSArray *qEyeBrow ;
+@property (nonatomic, strong) NSArray *qEyeLash ;
+@property (nonatomic, strong) NSArray *qBeard ;
+
+@property (nonatomic, strong) NSArray *qFaces ;
+@property (nonatomic, strong) NSArray *qEyes ;
+@property (nonatomic, strong) NSArray *qMouths ;
+@property (nonatomic, strong) NSArray *qNoses ;
 
 // 颜色值
 @property (nonatomic, strong) NSArray *skinColorArray ;
@@ -45,11 +61,19 @@
 
 @property (nonatomic, strong) NSDictionary *maleMeshPoints ;
 @property (nonatomic, strong) NSDictionary *femaleMeshPoints ;
+@property (nonatomic, strong) NSDictionary *qMeshPoints ;
 
 // 当前 avatar
 @property (nonatomic, strong) NSMutableArray <FUAvatar *>*currentAvatars ;
 
 + (instancetype)shareInstance ;
+
+/**
+ 加载 client data
+ 
+ @param firstSetup 是否初次 setup
+ */
+- (void)loadClientDataWithFirstSetup:(BOOL)firstSetup ;
 
 /**
  加载背景道具
@@ -142,6 +166,13 @@
  @return        生成的 Avatar
  */
 - (FUAvatar *)createAvatarWithData:(NSData *)data avatarName:(NSString *)name gender:(FUGender)gender ;
+
+/**
+ 是否正在生成 Avatar 模型
+
+ @return 是否正在生成
+ */
+- (BOOL)isCreatingAvatar ;
 
 /**
  捏脸之后生成新的 Avatar

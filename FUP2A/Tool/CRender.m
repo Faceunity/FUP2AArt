@@ -492,6 +492,10 @@ static CRender *_shareRenderer = nil;
         glFinish();
         
     }
+    
+//    [self copyBuffer:renderTarget toBuffer:pixelBuffer];
+//    return pixelBuffer ;
+    
     return renderTarget;
 }
 
@@ -584,6 +588,10 @@ static CRender *_shareRenderer = nil;
         glFinish();
         
     }
+    
+//    [self copyBuffer:renderTarget toBuffer:pixelBuffer];
+//    return pixelBuffer ;
+    
     return renderTarget;
 }
 
@@ -753,11 +761,32 @@ static CRender *_shareRenderer = nil;
         glFinish();
     }
     
+//    [self copyBuffer:renderTarget toBuffer:pixelBuffer];
     dispatch_semaphore_signal(signal) ;
+    
+//    return pixelBuffer ;
     
     return renderTarget ;
 }
 
+// copy data
+// ensure the width and height of sourceBuffer and destBuffer is equal
+- (void)copyBuffer:(CVPixelBufferRef)sourceBuffer toBuffer:(CVPixelBufferRef)destBuffer {
+    
+    CVPixelBufferLockBaseAddress(destBuffer, 0) ;
+    CVPixelBufferLockBaseAddress(sourceBuffer, 0) ;
+
+    size_t stride = CVPixelBufferGetBytesPerRow(sourceBuffer) ;
+    size_t height = CVPixelBufferGetHeight(sourceBuffer) ;
+
+    uint8_t *sourBytes = CVPixelBufferGetBaseAddress(sourceBuffer) ;
+    uint8_t *destBytes = CVPixelBufferGetBaseAddress(destBuffer) ;
+
+    memcpy(destBytes, sourBytes, stride * height) ;
+
+    CVPixelBufferUnlockBaseAddress(sourceBuffer, 0) ;
+    CVPixelBufferUnlockBaseAddress(destBuffer, 0) ;
+}
 
 - (UIImage *)fixImageOrientationWithImage:(UIImage *)image {
     if (image.imageOrientation == UIImageOrientationUp) return image;

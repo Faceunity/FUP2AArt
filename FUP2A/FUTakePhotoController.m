@@ -19,6 +19,7 @@
 #import "CRender.h"
 #import "FULoadingView.h"
 #import <FUP2AHelper/FUP2AHelper.h>
+#import "FURenderer.h"
 
 typedef enum : NSInteger {
     FUCurrentViewTypeNone,
@@ -75,6 +76,33 @@ FULoadingViewDelegate
     [self.camera startCapture ];
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
+//    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+//    [avatar destroyAvatar];
+//
+//    UIImage *image = [UIImage imageNamed:@"bgImage.png"];
+//    NSData *imageData = UIImagePNGRepresentation(image);
+//
+//    for(int i = 0 ; i < 3 ; i ++) {
+//        [[FURenderer shareRenderer] renderItems:imageData.bytes inFormat:FU_FORMAT_BGRA_BUFFER outPtr:imageData.bytes outFormat:FU_FORMAT_BGRA_BUFFER width:image.size.width height:image.size.height frameId:i items:nil itemCount:0 flipx:NO];
+//    }
+//
+//    [FURenderer destroyAllItems];
+}
+
+-(void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self.backAlter dismissViewControllerAnimated:YES completion:nil];
+    currentType = FUCurrentViewTypeNone ;
+//
+//    NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"bg" ofType:@"bundle"];
+//    [[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
+//    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+//    [[FUManager shareInstance] reloadRenderAvatar:avatar];
+}
+
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"FULoadingView"]) {
         UIViewController *vc = segue.destinationViewController ;
@@ -119,12 +147,6 @@ FULoadingViewDelegate
         }
             break ;
     }
-}
-
--(void)viewWillDisappear:(BOOL)animated {
-    [super viewWillDisappear:animated];
-    [self.backAlter dismissViewControllerAnimated:YES completion:nil];
-    currentType = FUCurrentViewTypeNone ;
 }
 
 // 切换
@@ -278,16 +300,12 @@ static int frameID = 0;
 - (void)createAvatarWithGender:(FUGender)gender {
     
     currentType = FUCurrentViewTypeCreating ;
-//
-//    NSDictionary *params = @{
-//                             @"gender":@(gender),
-//                             @"is_q": @(1),
-//                             };
     
     NSDictionary *params = @{
                              @"gender":@(gender),
-                             @"version": @"1.0.2",
+                             @"is_q": @(1),
                              };
+    
     NSTimeInterval time = [[NSDate date] timeIntervalSince1970];
     NSString *fileName = [NSString stringWithFormat:@"%.0f", time];
     NSString *filePath = [documentPath stringByAppendingPathComponent:fileName];
@@ -311,7 +329,7 @@ static int frameID = 0;
                 [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
                 return ;
             }
-
+            
             FUAvatar *avatar = [[FUManager shareInstance] createAvatarWithData:data avatarName:fileName gender:gender];
 
             if (avatar) {
@@ -320,10 +338,10 @@ static int frameID = 0;
                     [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
                     return ;
                 }
-
+                
                 [[FUManager shareInstance] reloadRenderAvatar:avatar];
                 [avatar loadStandbyAnimation];
-
+                
                 [[FUManager shareInstance].avatarList insertObject:avatar atIndex:DefaultAvatarNum];
 
                 // 避免 body 还没有加载完成。闪现上一个模型的画面。

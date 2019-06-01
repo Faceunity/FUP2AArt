@@ -7,6 +7,7 @@
 //
 
 #import "ViewController.h"
+#import <SVProgressHUD.h>
 #import "FUP2ADefine.h"
 #import "FUCamera.h"
 #import "FUOpenGLView.h"
@@ -17,6 +18,8 @@
 #import "FUTakePhotoController.h"
 #import "FUEditViewController.h"
 #import "FURequestManager.h"
+
+// views
 #import "FUHomeBarView.h"
 #import "FUHistoryViewController.h"
 
@@ -41,11 +44,18 @@ FUHistoryViewControllerDelegate
 @property (nonatomic, strong) FUHomeBarView *homeBar ;
 @property (weak, nonatomic) IBOutlet UIButton *trackBtn;
 
+@property (weak, nonatomic) IBOutlet UIView *loadingView;
+@property (weak, nonatomic) IBOutlet UIImageView *loadingImage;
+@property (weak, nonatomic) IBOutlet UILabel *pointLabel;
+@property (nonatomic, strong) NSTimer *labelTimer ;
+
+
 // 版本号 debug view
 @property (weak, nonatomic) IBOutlet UILabel *appVersionLabel;
 @property (weak, nonatomic) IBOutlet UILabel *sdkVersionLabel;
-@property (weak, nonatomic) IBOutlet UIView *debugView;
 @end
+
+
 
 @implementation ViewController
 {
@@ -62,12 +72,6 @@ FUHistoryViewControllerDelegate
     [self addObserver];
     
     firstLoad = YES ;
-    
-    [[FUManager shareInstance] setMaxFaceNum:1];
-
-    [self loadDefaultAvatar];
-    
-    [self setLanchImage];
     
     renderMode = FURenderCommonMode ;
     [self.camera startCapture ];
@@ -109,7 +113,6 @@ FUHistoryViewControllerDelegate
         
         self.appVersionLabel.hidden = NO ;
         self.sdkVersionLabel.hidden = NO ;
-        self.debugView.hidden = NO ;
     }
 }
 
@@ -132,27 +135,14 @@ FUHistoryViewControllerDelegate
     }
 }
 
-- (void)setLanchImage {
-    
-    CGFloat scale = [UIScreen mainScreen].scale;
-    int width = (int)(self.view.frame.size.width * scale);
-    int height = (int)(self.view.frame.size.height * scale);
-    
-    NSString *imageName = [NSString stringWithFormat:@"LanchImage%dx%d", width, height];
-    
-    UIImage *image = [UIImage imageNamed:imageName];
-    self.lanchImage.image = image ;
-    self.lanchImage.hidden = NO ;
-    [self.view bringSubviewToFront:self.lanchImage];
-}
-
 - (void)loadDefaultAvatar {
     loadingBundles = YES ;
-
     FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
     [[FUManager shareInstance] reloadRenderAvatar:avatar];
     [avatar loadStandbyAnimation];
-
+    
+    [avatar resetScaleToBody];
+    
     loadingBundles = NO ;
 }
 
@@ -194,7 +184,6 @@ FUHistoryViewControllerDelegate
     }
     self.appVersionLabel.hidden = sender.selected ;
     self.sdkVersionLabel.hidden = sender.selected ;
-    self.debugView.hidden = sender.selected ;
 }
 
 #pragma mark ---- loading
@@ -211,10 +200,13 @@ FUHistoryViewControllerDelegate
 
 #pragma mark ---- FUCameraDelegate
 
+static int frameIndex = 0 ;
 -(void)didOutputVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer {
     if (loadingBundles) {
         return ;
     }
+    
+    frameIndex ++ ;
     
     CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
     
@@ -245,11 +237,49 @@ FUHistoryViewControllerDelegate
     [self presentViewController:historyView animated:YES completion:nil];
 }
 
+// 风格切换
+- (void)homeBarViewChangeAvatarStyle {
+    
+    if ([[FUManager shareInstance] isCreatingAvatar]) {
+        [SVProgressHUD showInfoWithStatus:@"正在生成模型，不能切换风格~"];
+        return ;
+    }
+    
+    [self startLoadingAnimation];
+    [self.camera stopCapture];
+    
+    __weak typeof(self)weakSelf = self ;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0) , ^{
+        
+        // 销毁道具
+        for (FUAvatar *avatar in [FUManager shareInstance].currentAvatars) {
+            [avatar destroyAvatar];
+        }
+        
+        // 切换 client 和数据源
+        int num = [FUManager shareInstance].avatarStyle;
+        num ++ ;
+        num = num % 2 ;
+        [[FUManager shareInstance] setAvatarStyle:(FUAvatarStyle)num];
+        
+        [[FUManager shareInstance] loadClientDataWithFirstSetup:NO];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf loadDefaultAvatar];
+            [weakSelf.homeBar reloadModeData];
+            [weakSelf stopLoadingAnimation];
+            [weakSelf.camera startCapture];
+        });
+    }) ;
+}
+
 - (void)homeBarViewDidSelectedAvatar:(FUAvatar *)avatar {
     
     self->loadingBundles = YES ;
     
     [[FUManager shareInstance] reloadRenderAvatar:avatar];
+    
+    [avatar resetScaleToBody];
     
     switch (self->renderMode) {
         case FURenderCommonMode:
@@ -260,7 +290,6 @@ FUHistoryViewControllerDelegate
             [avatar enterTrackFaceMode];
             break ;
     }
-    
     self->loadingBundles = NO ;
 }
 
@@ -288,6 +317,7 @@ FUHistoryViewControllerDelegate
 }
 - (void)homeBarSelectedActionWithAR:(BOOL)isAR {
     if (isAR) {     // AR 滤镜
+        
         FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
         [avatar quitTrackFaceMode];
         [self performSegueWithIdentifier:@"PushToARView" sender:nil];
@@ -301,6 +331,7 @@ FUHistoryViewControllerDelegate
     [self performSegueWithIdentifier:@"showGroupPhotoController" sender:nil];
 }
 
+
 // zoom
 - (void)homeBarViewReceiveZoom:(float)zoomScale {
     FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
@@ -311,6 +342,50 @@ FUHistoryViewControllerDelegate
 -(void)historyViewDidDeleteCurrentItem {
     [self loadDefaultAvatar];
     [self.homeBar reloadModeData];
+}
+
+#pragma mark ---- loading action ~
+
+- (void)startLoadingAnimation {
+    self.loadingView.hidden = NO ;
+    [self.view bringSubviewToFront:self.loadingView];
+    NSMutableArray *images = [NSMutableArray arrayWithCapacity:1];
+    for (int i = 1; i < 33; i ++) {
+        NSString *imageName = [NSString stringWithFormat:@"loading%d.png", i];
+        NSString *imagePath = [[NSBundle mainBundle] pathForResource:imageName ofType:nil];
+        UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
+        [images addObject:image ];
+    }
+    self.loadingImage.animationImages = images ;
+    self.loadingImage.animationRepeatCount = 0 ;
+    self.loadingImage.animationDuration = 2.0 ;
+    [self.loadingImage startAnimating];
+    
+    self.labelTimer = [NSTimer timerWithTimeInterval:0.5 target:self selector:@selector(labelAnimation) userInfo:nil repeats:YES];
+    [[NSRunLoop currentRunLoop] addTimer:self.labelTimer forMode:NSRunLoopCommonModes];
+}
+
+- (void)labelAnimation {
+    self.pointLabel.hidden = NO ;
+    static int count = 1 ;
+    count ++ ;
+    if (count == 4) {
+        count = 1 ;
+    }
+    NSMutableString *str = [@"" mutableCopy];
+    for (int i = 0 ; i < count; i ++) {
+        [str appendString:@"."] ;
+    }
+    self.pointLabel.text = str ;
+    
+}
+
+- (void)stopLoadingAnimation {
+    self.loadingView.hidden = YES ;
+    [self.view sendSubviewToBack:self.loadingView];
+    [self.labelTimer invalidate];
+    self.labelTimer = nil ;
+    [self.loadingImage stopAnimating ];
 }
 
 #pragma mark --- Observer
@@ -341,5 +416,4 @@ FUHistoryViewControllerDelegate
         [self.camera startCapture];
     }
 }
-
 @end

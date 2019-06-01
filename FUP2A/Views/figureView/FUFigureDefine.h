@@ -6,24 +6,27 @@
 //  Copyright © 2019年 L. All rights reserved.
 //
 
-typedef enum : NSInteger {
-    FUFigureDecorationTypeHair          = 1,
-    FUFigureDecorationTypeBeard,
-    FUFigureDecorationTypeEyeBrow,
-    FUFigureDecorationTypeEyeLash,
-    FUFigureDecorationTypeHat,
-    FUFigureDecorationTypeClothes,
-    FUFigureDecorationTypeIris,
-    FUFigureDecorationTypeLips,
-    FUFigureDecorationTypeGlassesFrame,
-    FUFigureDecorationTypeGlasses,
-} FUFigureDecorationType;
+typedef NS_ENUM(NSInteger, FUFigureDecorationCollectionType){
+    FUFigureDecorationCollectionTypeHair                     = 0,
+    FUFigureDecorationCollectionTypeFace,
+    FUFigureDecorationCollectionTypeEyes,
+    FUFigureDecorationCollectionTypeMouth,
+    FUFigureDecorationCollectionTypeNose,
+    FUFigureDecorationCollectionTypeBeard,
+    FUFigureDecorationCollectionTypeEyeBrow,
+    FUFigureDecorationCollectionTypeEyeLash,
+    FUFigureDecorationCollectionTypeHat,
+    FUFigureDecorationCollectionTypeClothes,
+    FUFigureDecorationCollectionTypeShoes,
+} ;
 
-typedef enum : NSInteger {
-    FUFigureColorTypeSkinColor          = 1,
-    FUFigureColorTypeLipsColor,
+typedef NS_ENUM(NSInteger, FUFigureColorType){
+    FUFigureColorTypeHairColor                = 0,
+    FUFigureColorTypeSkinColor,
     FUFigureColorTypeirisColor,
-} FUFigureColorType;
-
-//typedef enum : NSInteger {
-//} FUFigureShapeType;
+    FUFigureColorTypeLipsColor,
+    FUFigureColorTypeBeardColor,
+    FUFigureColorTypeHatColor,
+    FUFigureColorTypeGlassesColor,
+    FUFigureColorTypeGlassesFrameColor,
+} ;

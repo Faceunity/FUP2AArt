@@ -1,69 +1,47 @@
 //
 //  FUFigureView.m
-//  EditView
+//  FUFigureView
 //
-//  Created by L on 2018/11/2.
-//  Copyright © 2018年 L. All rights reserved.
+//  Created by L on 2019/4/8.
+//  Copyright © 2019 L. All rights reserved.
 //
 
 #import "FUFigureView.h"
-#import "UIColor+FU.h"
 #import "FUP2AColor.h"
-#import "FUManager.h"
-#import "FUAvatar.h"
-#import <SVProgressHUD.h>
-
 #import "FUFigureBottomCollection.h"
 #import "FUFigureDecorationCollection.h"
-#import "FUFigureDecorationColorCollection.h"
-#import "FUFigureSlider.h"
-#import "FUFigureDecorationHorizCollection.h"
 #import "FUFigureColorCollection.h"
-#import "FUFigureShapeCollection.h"
+#import "FUFigureHorizCollection.h"
+#import "FUFigureSlider.h"
+
 
 @interface FUFigureView ()
 <
 UIGestureRecognizerDelegate,
 FUFigureBottomCollectionDelegate,
 FUFigureDecorationCollectionDelegate,
-FUFigureDecorationColorCollectionDelegate,
-FUFigureDecorationHorizCollectionDelegate,
 FUFigureColorCollectionDelegate,
-FUFigureShapeCollectionDelegate
+FUFigureHorizCollectionDelegate
 >
 {
-    BOOL isMale ;
-    
     CGFloat preScale; // 捏合比例
-    
-    FUFigureShapeType currentShapeType ;
 }
 
+@property (weak, nonatomic) IBOutlet UIView *bottomView;
 @property (weak, nonatomic) IBOutlet FUFigureBottomCollection *bottomCollection;
 
 @property (weak, nonatomic) IBOutlet UIView *decorationView;
 @property (weak, nonatomic) IBOutlet FUFigureDecorationCollection *decorationCollection;
-@property (weak, nonatomic) IBOutlet FUFigureDecorationColorCollection *decorationColorCollection;
+@property (weak, nonatomic) IBOutlet FUFigureColorCollection *decorationColorCollection;
 
 @property (weak, nonatomic) IBOutlet UIView *glassesView;
-@property (weak, nonatomic) IBOutlet FUFigureDecorationHorizCollection *glassesCollection;
-@property (weak, nonatomic) IBOutlet UIView *glassesColorView;
-@property (weak, nonatomic) IBOutlet FUFigureDecorationColorCollection *glassesFrameColorCollection;
-@property (weak, nonatomic) IBOutlet FUFigureDecorationColorCollection *glassesColorCollection;
+@property (weak, nonatomic) IBOutlet FUFigureHorizCollection *glassesCollection;
+@property (weak, nonatomic) IBOutlet FUFigureColorCollection *glassesColorCollection;
+@property (weak, nonatomic) IBOutlet FUFigureColorCollection *glassesFrameCollection;
+@property (weak, nonatomic) IBOutlet UILabel *glassesLabel;
+@property (weak, nonatomic) IBOutlet UILabel *glassesFrameLabel;
 
-// color collection
-@property (weak, nonatomic) IBOutlet UIView *colorView;
-@property (weak, nonatomic) IBOutlet NSLayoutConstraint *colorCollectionLeft;
-@property (weak, nonatomic) IBOutlet FUFigureColorCollection *colorCollection;
-@property (weak, nonatomic) IBOutlet UIView *colorSliderView;
 @property (weak, nonatomic) IBOutlet FUFigureSlider *colorSlider;
-
-// shape collection
-@property (weak, nonatomic) IBOutlet FUFigureShapeCollection *shapeCollection;
-@property (weak, nonatomic) IBOutlet UIButton *faceBtn;
-
-@property (weak, nonatomic) IBOutlet UIView *shapeView;
-
 @end
 
 @implementation FUFigureView
@@ -71,10 +49,9 @@ FUFigureShapeCollectionDelegate
 - (void)awakeFromNib {
     [super awakeFromNib];
     
-    currentShapeType = FUFigureShapeTypeNoneFront ;
 }
 
-- (void)setupFigureView  {
+- (void)setupFigureView {
     
     UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(zoomAction:)];
     [self addGestureRecognizer:pinchGesture];
@@ -84,95 +61,7 @@ FUFigureShapeCollectionDelegate
     tapGesture.delegate = self ;
     [pinchGesture requireGestureRecognizerToFail:tapGesture];
     
-    [self loadData];
-}
-
-- (void)tapClick:(UITapGestureRecognizer *)tap {
-    
-    [self.bottomCollection hiddenSelectedItem];
-    
-    if (!self.decorationView.hidden || !self.glassesView.hidden) {
-        if ([self.delegate respondsToSelector:@selector(figureViewDidHiddenAllTypeViews)]) {
-            [self.delegate figureViewDidHiddenAllTypeViews];
-        }
-    }
-    
-    [self hiddenAllTopViewsWithAnimation:YES];
-}
-
-- (void)loadData {
-    
-    FUAvatar *currentAvatar = [FUManager shareInstance].currentAvatars.firstObject;
-    isMale = currentAvatar.gender == FUGenderMale ;
-    
-    // bottom collection
-    self.bottomCollection.isMale = isMale ;
-    self.bottomCollection.mDelegate = self ;
-    
-    // middle decoration
-    self.decorationCollection.mDelegate = self ;
-    
-    // middld decoration color
-    self.decorationColorCollection.mDelegate = self ;
-    self.decorationColorCollection.currentType = FUFigureDecorationTypeHair ;
-    self.decorationColorCollection.hidden = [self.currentHair isEqualToString:@"hair-noitem"];
-    
-    // glasses collection
-    self.glassesCollection.mDelegate = self ;
-    if (currentAvatar.glasses && ![currentAvatar.glasses isEqualToString:@"glasses-noitem"]) {
-        self.glassesCollection.glassesName = currentAvatar.glasses ;
-        self.glassesColorView.hidden = NO ;
-    }else {
-        self.glassesColorView.hidden = YES ;
-    }
-    self.currentGlasses = currentAvatar.glasses ;
-    self.glassesFrameColorCollection.mDelegate = self ;
-    self.glassesColorCollection.mDelegate = self ;
-    
-    
-    self.colorCollection.mDelegate = self ;
-    
-    // skin color
-    self.colorCollection.skinColorArray = [FUManager shareInstance].skinColorArray;
-    if (currentAvatar.skinLevel != 0.0) {
-        self.defaultSkinLevel = currentAvatar.skinLevel ;
-        self.skinColor = currentAvatar.skinColor ;
-        self.skinLevel = currentAvatar.skinLevel ;
-
-        FUP2AColor *color = [FUManager shareInstance].skinColorArray[(int)self.skinLevel];
-        self.colorCollection.skinColor = color ;
-        
-        self.colorSlider.value = self.skinLevel - (int)self.skinLevel ;
-    }else {
-
-        self.defaultSkinLevel = [currentAvatar facePupGetColorIndexWithKey:@"skin_color_index"];
-        self.skinColor = [FUManager shareInstance].skinColorArray[(int)_defaultSkinLevel] ;
-        self.skinLevel = _defaultSkinLevel ;
-        
-        currentAvatar.skinLevel = self.skinLevel ;
-        currentAvatar.skinColor = self.skinColor ;
-        self.colorCollection.skinColor = _skinColor ;
-        
-        self.colorSlider.value = 0.0 ;
-    }
-    
-    // iris color
-    self.colorCollection.irisColorArray = [FUManager shareInstance].irisColorArray;
-    if (currentAvatar.irisColor == nil) {
-        currentAvatar.irisColor = [FUManager shareInstance].irisColorArray[0];
-    }
-    self.colorCollection.irisColor = [self getColorOfColorList:[FUManager shareInstance].irisColorArray color:currentAvatar.irisColor] ;
-    
-    // lips color
-    self.colorCollection.lipsColorArray = [FUManager shareInstance].lipColorArray;
-    if (currentAvatar.lipColor == nil) {
-        currentAvatar.lipColor = [FUManager shareInstance].lipColorArray[0];
-    }
-    self.colorCollection.lipsColor = [self getColorOfColorList:[FUManager shareInstance].lipColorArray color:currentAvatar.lipColor] ; ;
-    
-    self.colorCollection.type = FUFigureColorTypeSkinColor ;
-    
-    self.shapeCollection.mDelegate = self ;
+    [self loadSubViewData];
 }
 
 - (void)zoomAction:(UIPinchGestureRecognizer *)gesture {
@@ -196,80 +85,305 @@ FUFigureShapeCollectionDelegate
     }
 }
 
-#pragma mark ---- bottom delegate
+- (void)tapClick:(UITapGestureRecognizer *)tap {
+    
+    [self.bottomCollection hiddenSelectedItem];
+    
+    if (!self.decorationView.hidden) {
+        if ([self.delegate respondsToSelector:@selector(figureViewDidHiddenAllTypeViews)]) {
+            [self.delegate figureViewDidHiddenAllTypeViews];
+        }
+    }
+    [self hiddenAllTopViewsWithAnimation:YES];
+}
 
-// 显示上半部
-- (void)bottomCollectionDidSelectedIndex:(NSInteger)index show:(BOOL)show animation:(BOOL)animation {
+
+- (void)loadSubViewData {
+    
+    self.bottomCollection.mDelegate = self ;
+    
+    // decorations
+    self.decorationCollection.hairArray = self.hairArray;
+    self.decorationCollection.hair = self.hair ;
+    
+    self.decorationCollection.beardArray = self.beardArray ;
+    self.decorationCollection.beard = self.beard ;
+    
+    self.decorationCollection.eyeBrowArray = self.eyeBrowArray ;
+    self.decorationCollection.eyeBrow = self.eyeBrow ;
+    
+    self.decorationCollection.eyeLashArray = self.eyeLashArray ;
+    self.decorationCollection.eyeLash = self.eyeLash ;
+    
+    self.decorationCollection.hatArray = self.hatArray ;
+    self.decorationCollection.hat = self.hat ;
+    
+    self.decorationCollection.clothesArray = self.clothesArray ;
+    self.decorationCollection.clothes = self.clothes ;
+    
+    self.decorationCollection.shoesArray = self.shoesArray ;
+    self.decorationCollection.shoes = self.shoes ;
+    
+    // face shape
+    self.decorationCollection.faceArray = self.faceArray ;
+    self.decorationCollection.face = self.face ;
+    
+    self.decorationCollection.eyesArray = self.eyeArray ;
+    self.decorationCollection.eyes = self.eyes ;
+    
+    self.decorationCollection.mouthArray = self.mouthArray ;
+    self.decorationCollection.mouth = self.mouth ;
+    
+    self.decorationCollection.noseArray = self.noseArray ;
+    self.decorationCollection.nose = self.nose ;
+    
+    self.decorationCollection.currentType = FUFigureDecorationCollectionTypeHair ;
+
+    [self.decorationCollection loadDecorationData];
+    
+    self.decorationCollection.mDelegate = self ;
+    self.decorationCollection.currentType = FUFigureDecorationCollectionTypeHair ;
+    
+    // color
+    self.decorationColorCollection.hairColorArray = self.hairColorArray ;
+    self.decorationColorCollection.hairColor = self.hairColor ;
+    
+    self.decorationColorCollection.skinColorArray = self.skinColorArray ;
+    self.decorationColorCollection.skinColor = self.skinColorArray[(int)self.skinLevel] ;
+    
+    self.decorationColorCollection.irisColorArray = self.irisColorArray ;
+    self.decorationColorCollection.irisColor = self.irisColorArray[(int)self.irisLevel] ;
+    
+    self.decorationColorCollection.lipsColorArray = self.lipsColorArray ;
+    self.decorationColorCollection.lipsColor = self.lipsColorArray[(int)self.lipLevel] ;
+    
+    self.decorationColorCollection.beardColorArray = self.beardColorArray ;
+    self.decorationColorCollection.beardColor = self.beardColor ;
+    
+    self.decorationColorCollection.hatColorArray = self.hatColorArray ;
+    self.decorationColorCollection.hatColor = self.hatColor ;
+//
+//    self.decorationColorCollection.glassesColorArray = self.glassesColorArray ;
+//    self.decorationColorCollection.glassesColor = self.glassesColor ;
+//
+//    self.decorationColorCollection.glassesFrameColorArray = self.glassesFrameColorArray ;
+//    self.decorationColorCollection.glassesFrameColor = self.glassesFrameColor ;
+//
+    [self.decorationColorCollection loadColorData];
+    
+    self.decorationColorCollection.mDelegate = self ;
+    self.decorationColorCollection.currentType = FUFigureColorTypeHairColor ;
+    
+    self.decorationColorCollection.hidden = [self.hairArray indexOfObject:self.hair] == 0 ;
+    
+    
+    self.glassesView.hidden = YES ;
+    
+    // glasses
+    self.glassesCollection.glassesArray = self.glassesArray ;
+    self.glassesCollection.glasses = self.glasses ;
+    [self.glassesCollection loadCollectionData];
+    self.glassesCollection.mDelegate = self ;
+    
+    // glasses color
+    self.glassesColorCollection.glassesColorArray = self.glassesColorArray ;
+    self.glassesColorCollection.glassesColor = self.glassesColor ;
+    [self.glassesColorCollection loadColorData];
+    self.glassesColorCollection.mDelegate = self ;
+    self.glassesColorCollection.currentType = FUFigureColorTypeGlassesColor ;
+    
+    self.glassesFrameCollection.glassesFrameColorArray = self.glassesFrameColorArray ;
+    self.glassesFrameCollection.glassesFrameColor = self.glassesFrameColor ;
+    [self.glassesFrameCollection loadColorData];
+    self.glassesFrameCollection.mDelegate = self ;
+    self.glassesFrameCollection.currentType = FUFigureColorTypeGlassesFrameColor ;
+}
+
+#pragma mark -- FUFigureBottomCollectionDelegate
+
+-(void)bottomCollectionDidSelectedIndex:(NSInteger)index show:(BOOL)show animation:(BOOL)animation {
     
     [self hiddenAllTopViewsWithAnimation:NO];
     
     UIView *subView = nil ;
     switch (index) {
-        case 0:{     // 发型
+        case 0:{    // 发型
             subView = self.decorationView ;
-            self.decorationCollection.currentType = FUFigureDecorationTypeHair ;
-            self.decorationColorCollection.hidden = [self.currentHair isEqualToString:@"hair-noitem"];
-            self.decorationColorCollection.currentType = FUFigureDecorationTypeHair ;
+            self.decorationCollection.currentType = FUFigureDecorationCollectionTypeHair ;
+            self.decorationColorCollection.hidden = NO ;
+            self.decorationColorCollection.currentType = FUFigureColorTypeHairColor ;
+            self.colorSlider.hidden = YES ;
         }
             break;
-        case 1:{     // 肤色
-            subView = self.colorView ;
-            self.colorCollection.type = FUFigureColorTypeSkinColor ;
-            self.colorCollectionLeft.constant = 70.0 ;
-            [self.colorView layoutIfNeeded];
-            self.colorSliderView.hidden = NO ;
+        case 1:{    // 脸型
+            subView = self.decorationView ;
+            self.decorationCollection.currentType = FUFigureDecorationCollectionTypeFace ;
+            self.decorationColorCollection.hidden = NO ;
+            self.decorationColorCollection.currentType = FUFigureColorTypeSkinColor ;
+            self.colorSlider.hidden = NO ;
+            self.colorSlider.value = self.skinLevel - (int)self.skinLevel ;
         }
             break;
-        case 2:{     // 捏脸
-            subView = self.shapeView ;
-            if ([self.delegate respondsToSelector:@selector(figureViewDidSelectShapeView:)]) {
-                [self.delegate figureViewDidSelectShapeView:currentShapeType];
+        case 2:{    // 眼型
+            subView = self.decorationView ;
+            self.decorationCollection.currentType = FUFigureDecorationCollectionTypeEyes ;
+            self.decorationColorCollection.hidden = NO ;
+            self.decorationColorCollection.currentType = FUFigureColorTypeirisColor ;
+            self.colorSlider.hidden = NO ;
+            self.colorSlider.value = self.irisLevel - (int)self.irisLevel ;
+        }
+            break;
+        case 3:{    // 嘴型
+            subView = self.decorationView ;
+            self.decorationCollection.currentType = FUFigureDecorationCollectionTypeMouth ;
+            self.decorationColorCollection.hidden = NO ;
+            self.decorationColorCollection.currentType = FUFigureColorTypeLipsColor ;
+            self.colorSlider.hidden = NO ;
+            self.colorSlider.value = self.lipLevel - (int)self.lipLevel ;
+        }
+            break;
+        case 4:{    // 鼻子
+            subView = self.decorationView ;
+            self.decorationCollection.currentType = FUFigureDecorationCollectionTypeNose ;
+            self.colorSlider.hidden = YES ;
+        }
+            break;
+        case 5:{    // Q/male: 胡子 female:眉毛
+            subView = self.decorationView ;
+            self.colorSlider.hidden = YES ;
+            if (self.avatarStyle == FUAvatarStyleNormal && self.avatarIsMale == NO) {
+                self.decorationCollection.currentType = FUFigureDecorationCollectionTypeEyeBrow ;
+            }else {
+                self.decorationCollection.currentType = FUFigureDecorationCollectionTypeBeard ;
             }
         }
             break;
-        case 3:{     // 瞳色
-            subView = self.colorView ;
-            self.colorCollection.type = FUFigureColorTypeirisColor ;
-            self.colorCollectionLeft.constant = 0.0 ;
-            [self.colorView layoutIfNeeded];
-            self.colorSliderView.hidden = YES ;
+        case 6:{    // Q/male: 眉毛 female:睫毛
+//            subView = self.decorationView ;
+//            self.colorSlider.hidden = YES ;
+//            self.decorationCollection.currentType = self.avatarStyle == FUAvatarStyleNormal && self.avatarIsMale == NO ? FUFigureDecorationCollectionTypeEyeLash : FUFigureDecorationCollectionTypeEyeBrow ;
+            if (self.avatarStyle == FUAvatarStyleQ) {// Q:眼镜
+                subView = self.glassesView ;
+                if ([self.glassesArray indexOfObject:self.glasses] != 0) {
+                    self.glassesFrameCollection.hidden = NO ;
+                    self.glassesColorCollection.hidden = NO ;
+                    self.glassesLabel.hidden = NO ;
+                    self.glassesFrameLabel.hidden = NO ;
+                }
+            }else { // male: 眉毛 female:睫毛
+                subView = self.decorationView ;
+                self.colorSlider.hidden = YES ;
+                self.decorationCollection.currentType = self.avatarStyle == FUAvatarStyleNormal && self.avatarIsMale == NO ? FUFigureDecorationCollectionTypeEyeLash : FUFigureDecorationCollectionTypeEyeBrow ;
+            }
         }
             break;
-        case 4:{     // 唇色
-            subView = self.colorView ;
-            self.colorCollection.type = FUFigureColorTypeLipsColor ;
-            self.colorCollectionLeft.constant = 0.0 ;
-            [self.colorView layoutIfNeeded];
-            self.colorSliderView.hidden = YES ;
+        case 7:{    // Q: 睫毛 normal: 眼镜
+//            if (self.avatarStyle == FUAvatarStyleQ) {
+//                subView = self.decorationView ;
+//                self.decorationCollection.currentType = FUFigureDecorationCollectionTypeEyeLash ;
+//                self.colorSlider.hidden = YES ;
+//            }else {     // normal galsses
+//                subView = self.glassesView ;
+//                if ([self.glassesArray indexOfObject:self.glasses] != 0) {
+//                    self.glassesFrameCollection.hidden = NO ;
+//                    self.glassesColorCollection.hidden = NO ;
+//                    self.glassesLabel.hidden = NO ;
+//                    self.glassesFrameLabel.hidden = NO ;
+//                }
+//            }
+            if (self.avatarStyle == FUAvatarStyleQ) {   // Q: 帽子
+                subView = self.decorationView ;
+                self.colorSlider.hidden = YES ;
+                self.decorationCollection.currentType = FUFigureDecorationCollectionTypeHat ;
+                if ([self.hatArray indexOfObject:self.hat] != 0) {
+                    self.decorationColorCollection.hidden = NO ;
+                    self.decorationColorCollection.currentType = FUFigureColorTypeHatColor ;
+                }
+            }else { //  normal: 眼镜
+                subView = self.glassesView ;
+                if ([self.glassesArray indexOfObject:self.glasses] != 0) {
+                    self.glassesFrameCollection.hidden = NO ;
+                    self.glassesColorCollection.hidden = NO ;
+                    self.glassesLabel.hidden = NO ;
+                    self.glassesFrameLabel.hidden = NO ;
+                }
+            }
         }
             break;
-        case 5:{     // 男胡子 && 女眉毛
+        case 8:{    // Q: 眼镜 normal: 帽子
+            
+//            if (self.avatarStyle == FUAvatarStyleQ) {   // Q :glasses
+//                subView = self.glassesView ;
+//                if ([self.glassesArray indexOfObject:self.glasses] != 0) {
+//                    self.glassesFrameCollection.hidden = NO ;
+//                    self.glassesColorCollection.hidden = NO ;
+//                    self.glassesLabel.hidden = NO ;
+//                    self.glassesFrameLabel.hidden = NO ;
+//                }
+//            }else {     // normal hats
+//                subView = self.decorationView ;
+//                self.colorSlider.hidden = YES ;
+//                self.decorationCollection.currentType = FUFigureDecorationCollectionTypeHat ;
+//                if ([self.hatArray indexOfObject:self.hat] != 0) {
+//                    self.decorationColorCollection.hidden = NO ;
+//                    self.decorationColorCollection.currentType = FUFigureColorTypeHatColor ;
+//                }
+//            }
+            
+            if (self.avatarStyle == FUAvatarStyleQ) {   // Q:衣服
+                self.colorSlider.hidden = YES ;
+                subView = self.decorationView ;
+                self.decorationCollection.currentType = FUFigureDecorationCollectionTypeClothes ;
+            }else { // 帽子
+                subView = self.decorationView ;
+                self.colorSlider.hidden = YES ;
+                self.decorationCollection.currentType = FUFigureDecorationCollectionTypeHat ;
+                if ([self.hatArray indexOfObject:self.hat] != 0) {
+                    self.decorationColorCollection.hidden = NO ;
+                    self.decorationColorCollection.currentType = FUFigureColorTypeHatColor ;
+                }
+            }
+        }
+            break;
+        case 9:{    // Q: 帽子 normal: 衣服
+//            subView = self.decorationView ;
+//            self.colorSlider.hidden = YES ;
+//            switch (self.avatarStyle) {
+//                case FUAvatarStyleQ:{
+//                    self.decorationCollection.currentType = FUFigureDecorationCollectionTypeHat ;
+//                    if ([self.hatArray indexOfObject:self.hat] != 0) {
+//                        self.decorationColorCollection.hidden = NO ;
+//                        self.decorationColorCollection.currentType = FUFigureColorTypeHatColor ;
+//                    }
+//                }
+//                    break ;
+//                case FUAvatarStyleNormal:{
+//                    self.decorationCollection.currentType = FUFigureDecorationCollectionTypeClothes ;
+//                }
+//                    break;
+//            }
+            
+            if (self.avatarStyle == FUAvatarStyleQ) {   // Q:鞋子
+                self.colorSlider.hidden = YES ;
+                subView = self.decorationView ;
+                self.decorationCollection.currentType = FUFigureDecorationCollectionTypeShoes ;
+            }else { // 衣服
+                subView = self.decorationView ;
+                self.colorSlider.hidden = YES ;
+                self.decorationCollection.currentType = FUFigureDecorationCollectionTypeClothes ;
+            }
+        }
+            break;
+        case 10:{    // Q: 衣服
+            self.colorSlider.hidden = YES ;
             subView = self.decorationView ;
-            self.decorationCollection.currentType = isMale ? FUFigureDecorationTypeBeard : FUFigureDecorationTypeEyeBrow ;
-            self.decorationColorCollection.hidden = YES;
+            self.decorationCollection.currentType = FUFigureDecorationCollectionTypeClothes ;
         }
             break;
-        case 6:{     // 男眉毛 && 女睫毛
+        case 11:{    // Q：鞋子
+            self.colorSlider.hidden = YES ;
             subView = self.decorationView ;
-            self.decorationCollection.currentType = isMale ? FUFigureDecorationTypeEyeBrow : FUFigureDecorationTypeEyeLash ;
-            self.decorationColorCollection.hidden = YES;
-        }
-            break;
-        case 7:{     // 眼镜
-            subView = self.glassesView ;
-        }
-            break;
-        case 8:{     // 帽子
-            subView = self.decorationView ;
-            self.decorationCollection.currentType = FUFigureDecorationTypeHat ;
-            self.decorationColorCollection.hidden = [self.currentHat isEqualToString:@"hat-noitem"];
-            self.decorationColorCollection.currentType = FUFigureDecorationTypeHat ;
-        }
-            break;
-        case 9:{    // 衣服
-            subView = self.decorationView ;
-            self.decorationCollection.currentType = FUFigureDecorationTypeClothes ;
-            self.decorationColorCollection.hidden = YES;
+            self.decorationCollection.currentType = FUFigureDecorationCollectionTypeShoes ;
         }
             break;
             
@@ -278,25 +392,22 @@ FUFigureShapeCollectionDelegate
     }
     
     subView.hidden = NO ;
-    if (!show) {
-        
-        if (index != 2) {
-            if ([self.delegate respondsToSelector:@selector(figureViewDidHiddenAllTypeViews)]) {
-                [self.delegate figureViewDidHiddenAllTypeViews];
-            }
-        }
+    
+    if (!show) {    // 隐藏
         
         subView.transform = CGAffineTransformIdentity ;
         [UIView animateWithDuration:0.35 animations:^{
             subView.transform = CGAffineTransformMakeTranslation(0, subView.frame.size.height) ;
-        }completion:^(BOOL finished) {
+        } completion:^(BOOL finished) {
             subView.hidden = YES ;
         }];
-    }else {
+        
+    }else {     // 显示
         
         if ([self.delegate respondsToSelector:@selector(figureViewDidSelectedTypeWithIndex:)]) {
-            [self.delegate figureViewDidSelectedTypeWithIndex:index];
+            [self.delegate figureViewDidSelectedTypeWithIndex:index] ;
         }
+        
         if (animation) {
             subView.transform = CGAffineTransformMakeTranslation(0, subView.frame.size.height) ;
             [UIView animateWithDuration:0.35 animations:^{
@@ -311,429 +422,291 @@ FUFigureShapeCollectionDelegate
 - (void)hiddenAllTopViewsWithAnimation:(BOOL)animation {
     
     if (animation) {
+        
         [UIView animateWithDuration:0.35 animations:^{
-            self.decorationView.transform = CGAffineTransformMakeTranslation(0, self.decorationView.frame.size.height) ;
-            self.colorView.transform = CGAffineTransformMakeTranslation(0, self.colorView.frame.size.height) ;
+            
+            self.decorationView.transform = CGAffineTransformMakeTranslation(0, self.decorationView.frame.size.height);
             self.glassesView.transform = CGAffineTransformMakeTranslation(0, self.glassesView.frame.size.height) ;
-            self.shapeView.transform = CGAffineTransformMakeTranslation(0, self.shapeView.frame.size.height) ;
         }completion:^(BOOL finished) {
             self.decorationView.hidden = YES ;
-            self.colorView.hidden = YES ;
+            self.decorationColorCollection.hidden = YES ;
             self.glassesView.hidden = YES ;
-            self.shapeView.hidden = YES ;
         }];
+        
     }else {
+        self.decorationColorCollection.hidden = YES ;
         self.decorationView.hidden = YES ;
-        self.colorView.hidden = YES ;
         self.glassesView.hidden = YES ;
-        self.shapeView.hidden = YES ;
     }
 }
 
-#pragma mark ----- FUFigureDecorationCollectionDelegate
 
--(NSString *)currentHair {
-    return self.decorationCollection.hair ;
-}
--(NSString *)currentBeard {
-    return self.decorationCollection.beard ;
-}
--(NSString *)currentEyeBrow {
-    return self.decorationCollection.eyeBrow ;
-}
--(NSString *)currentEyeLash {
-    return self.decorationCollection.eyeLash ;
-}
--(NSString *)currentHat {
-    return self.decorationCollection.hat ;
-}
--(NSString *)currentCloth {
-    return self.decorationCollection.clothes ;
-}
+#pragma mark --- FUFigureDecorationCollectionDelegate
 
--(FUP2AColor *)hairColor {
-    return self.decorationColorCollection.hairColor ;
-}
--(FUP2AColor *)irisColor {
-    return self.colorCollection.irisColor ;
-}
--(FUP2AColor *)lipColor {
-    return self.colorCollection.lipsColor ;
-}
-- (FUP2AColor *)hatColor {
-    return self.decorationColorCollection.hatColor ;
-}
-- (FUP2AColor *)glassesColor {
-    return self.glassesColorCollection.glassesColor ;
-}
--(FUP2AColor *)glassesFrameColor{
-    return self.glassesFrameColorCollection.glassesFrameColor ;
-}
-//- (FUP2AColor *)beardColor {
-//    return self.decorationColorCollection.beardColor ;
-//}
-
-- (BOOL)decorationCollectionDidSelectedType:(FUFigureDecorationType)type itemName:(NSString *)itemName {
+- (void)decorationCollectionDidSelectedItem:(NSString *)itemName index:(NSInteger)index decorationType:(FUFigureDecorationCollectionType)type {
+    
     switch (type) {
-        case FUFigureDecorationTypeHair:{
-            
-            NSArray *noArray = @[@"male_hair_t_2", @"male_hair_t_3", @"male_hair_t_4", @"female_hair_12", @"female_hair_t_1"];
-            if (self.currentHat && ![self.currentHat isEqualToString:@"hat-noitem"] && [noArray containsObject:itemName]) {
-                [SVProgressHUD dismiss];
-                [SVProgressHUD showInfoWithStatus:@"此发型暂不支持帽子哦"];
-                return NO;
-            }
-            
-            self.decorationColorCollection.hidden = [itemName isEqualToString:@"hair-noitem"] ;
-            self.decorationColorCollection.currentType = FUFigureDecorationTypeHair ;
-            [self.decorationColorCollection scrollCurrentToCenterWithAnimation:NO];
-            
-            self.currentHair = itemName ;
+        case FUFigureDecorationCollectionTypeHair:{
+            self.hair = itemName ;
+            self.decorationColorCollection.hidden = [itemName containsString:@"noitem"];
             if ([self.delegate respondsToSelector:@selector(figureViewDidChangeHair:)]) {
                 [self.delegate figureViewDidChangeHair:itemName];
             }
         }
             break;
-        case FUFigureDecorationTypeBeard:{
-            
-            self.decorationColorCollection.hidden = YES ;
-            
-            self.currentBeard = itemName ;
+        case FUFigureDecorationCollectionTypeFace:{
+            self.face = itemName ;
+            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeFace:index:)]) {
+                [self.delegate figureViewDidChangeFace:itemName index:index];
+            }
+        }
+            break;
+        case FUFigureDecorationCollectionTypeEyes:{
+            self.eyes = itemName ;
+            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeEyes:index:)]) {
+                [self.delegate figureViewDidChangeEyes:itemName index:index];
+            }
+        }
+            break;
+        case FUFigureDecorationCollectionTypeMouth:{
+            self.mouth = itemName ;
+            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeMouth:index:)]) {
+                [self.delegate figureViewDidChangeMouth:itemName index:index];
+            }
+        }
+            break;
+        case FUFigureDecorationCollectionTypeNose:{
+            self.nose = itemName ;
+            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeNose:index:)]) {
+                [self.delegate figureViewDidChangeNose:itemName index:index];
+            }
+        }
+            break;
+        case FUFigureDecorationCollectionTypeBeard:{
+            self.beard = itemName ;
             if ([self.delegate respondsToSelector:@selector(figureViewDidChangeBeard:)]) {
                 [self.delegate figureViewDidChangeBeard:itemName];
             }
         }
             break;
-        case FUFigureDecorationTypeEyeBrow:{
-            
-            self.decorationColorCollection.hidden = YES ;
-            
-            self.currentEyeBrow = itemName ;
+        case FUFigureDecorationCollectionTypeEyeBrow:{
+            self.eyeBrow = itemName ;
             if ([self.delegate respondsToSelector:@selector(figureViewDidChangeEyeBrow:)]) {
                 [self.delegate figureViewDidChangeEyeBrow:itemName];
             }
         }
             break;
-        case FUFigureDecorationTypeEyeLash:{
-            
-            self.decorationColorCollection.hidden = YES ;
-            
-            self.currentEyeLash = itemName ;
+        case FUFigureDecorationCollectionTypeEyeLash:{
+            self.eyeLash = itemName ;
             if ([self.delegate respondsToSelector:@selector(figureViewDidChangeeyeLash:)]) {
                 [self.delegate figureViewDidChangeeyeLash:itemName];
             }
         }
             break;
-        case FUFigureDecorationTypeHat:{
-            
-            NSArray *noArray = @[@"male_hair_t_2", @"male_hair_t_3", @"male_hair_t_4", @"female_hair_12", @"female_hair_t_1"];
-            if (self.currentHair && [noArray containsObject:self.currentHair] && ![itemName isEqualToString:@"hat-noitem"]) {
-                [SVProgressHUD dismiss];
-                [SVProgressHUD showInfoWithStatus:@"此发型暂不支持帽子哦"];
-                return NO;
-            }
-            
-            self.decorationColorCollection.hidden = [itemName isEqualToString:@"hat-noitem"] ;
-            self.decorationColorCollection.currentType = FUFigureDecorationTypeHat ;
-            [self.decorationColorCollection scrollCurrentToCenterWithAnimation:NO];
-            
-            self.currentHat = itemName ;
+        case FUFigureDecorationCollectionTypeHat:{
+            self.hat = itemName ;
+            self.decorationColorCollection.hidden = [itemName containsString:@"noitem"];
+            self.decorationColorCollection.currentType = FUFigureColorTypeHatColor ;
             if ([self.delegate respondsToSelector:@selector(figureViewDidChangeHat:)]) {
                 [self.delegate figureViewDidChangeHat:itemName];
             }
         }
             break;
-        case FUFigureDecorationTypeClothes:{
-            
-            self.decorationColorCollection.hidden = YES ;
-            
-            self.currentCloth = itemName ;
+        case FUFigureDecorationCollectionTypeClothes:{
+            self.clothes = itemName ;
             if ([self.delegate respondsToSelector:@selector(figureViewDidChangeClothes:)]) {
                 [self.delegate figureViewDidChangeClothes:itemName];
             }
         }
             break;
-        case FUFigureDecorationTypeIris:            // 瞳色 -- 此处用不到
-        case FUFigureDecorationTypeLips:            // 唇色 -- 此处用不到
-        case FUFigureDecorationTypeGlassesFrame:    // 镜框 -- 此处用不到
-        case FUFigureDecorationTypeGlasses:         // 镜片 -- 此处用不到
+        case FUFigureDecorationCollectionTypeShoes:{
+            self.shoes = itemName ;
+            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeShoes:)]) {
+                [self.delegate figureViewDidChangeShoes:itemName];
+            }
+        }
             break;
     }
-    return YES ;
 }
 
-#pragma mark ----- FUFigureDecorationColorCollectionDelegate
+#pragma mark --- FUFigureColorCollectionDelegate
 
-- (void)decorationColorCollectionDidChangeColor:(FUP2AColor *)color colorType:(FUFigureDecorationType)type {
-    
+- (void)didSelectedColor:(FUP2AColor *)currentColor index:(NSInteger)index tyep:(FUFigureColorType)type {
     switch (type) {
-        case FUFigureDecorationTypeHair:{   // 发色
-            self.hairColor = color ;
+        case FUFigureColorTypeHairColor:{
+            self.hairColor = currentColor ;
             if ([self.delegate respondsToSelector:@selector(figureViewDidChangeHairColor:)]) {
-                [self.delegate figureViewDidChangeHairColor:color];
+                [self.delegate figureViewDidChangeHairColor:currentColor];
             }
         }
             break;
-        case  FUFigureDecorationTypeHat:{   // 帽色
-            self.hatColor = color ;
-            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeHatColor:)]) {
-                [self.delegate figureViewDidChangeHatColor:color];
+        case FUFigureColorTypeSkinColor: {
+            self.skinLevel = index ;
+            self.colorSlider.value = 0.0 ;
+            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeSkinColor:)]) {
+                [self.delegate figureViewDidChangeSkinColor:currentColor];
             }
         }
-            break ;
-        case FUFigureDecorationTypeBeard:{  // 胡色
-//            self.beardColor = color;
-//            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeHairColor:)]) {
-//                [self.delegate figureViewDidChangeBeardColor:color];
-//            }
-        }
-            break ;
-        case FUFigureDecorationTypeIris:{  // 瞳色
-            self.irisColor = color ;
+            break;
+        case FUFigureColorTypeirisColor: {
+            self.irisLevel = index ;
+            self.colorSlider.value = 0.0 ;
             if ([self.delegate respondsToSelector:@selector(figureViewDidChangeIrisColor:)]) {
-                [self.delegate figureViewDidChangeIrisColor:color];
+                [self.delegate figureViewDidChangeIrisColor:currentColor];
             }
         }
-            break ;
-        case FUFigureDecorationTypeLips:{  // 唇色
-            self.lipColor = color ;
+            break;
+        case FUFigureColorTypeLipsColor: {
+            self.lipLevel = index ;
+            self.colorSlider.value = 0.0 ;
             if ([self.delegate respondsToSelector:@selector(figureViewDidChangeLipsColor:)]) {
-                [self.delegate figureViewDidChangeLipsColor:color];
+                [self.delegate figureViewDidChangeLipsColor:currentColor];
             }
         }
-            break ;
-        case FUFigureDecorationTypeGlassesFrame:{   // 镜框
-            self.glassesFrameColor = color ;
-            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeGlassesFrameColor:)]) {
-                [self.delegate figureViewDidChangeGlassesFrameColor:color];
+            break;
+        case FUFigureColorTypeBeardColor: {
+            self.beardColor = currentColor ;
+            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeBeard:)]) {
+                [self.delegate figureViewDidChangeBeardColor:currentColor];
             }
         }
-            break ;
-        case FUFigureDecorationTypeGlasses: {       // 镜片
-            self.glassesColor = color ;
+            break;
+        case FUFigureColorTypeHatColor: {
+            self.hatColor = currentColor ;
+            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeHat:)]) {
+                [self.delegate figureViewDidChangeHatColor:currentColor];
+            }
+        }
+            break;
+        case FUFigureColorTypeGlassesColor: {
+            self.glassesColor = currentColor ;
             if ([self.delegate respondsToSelector:@selector(figureViewDidChangeGlassesColor:)]) {
-                [self.delegate figureViewDidChangeGlassesColor:color];
+                [self.delegate figureViewDidChangeGlassesColor:currentColor];
             }
+        }
+            break;
+        case FUFigureColorTypeGlassesFrameColor: {
+            self.glassesFrameColor = currentColor ;
+            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeGlassesFrameColor:)]) {
+                [self.delegate figureViewDidChangeGlassesFrameColor:currentColor];
+            }
+        }
+            break;
+    }
+}
+
+#pragma mark --- FUFigureHorizCollectionDelegate
+- (void)didChangeGlasses:(NSString *)glasses {
+    self.glasses = glasses ;
+    
+    BOOL hidden = [glasses containsString:@"noitem"];
+    self.glassesFrameCollection.hidden = hidden ;
+    self.glassesColorCollection.hidden = hidden ;
+    self.glassesLabel.hidden = hidden ;
+    self.glassesFrameLabel.hidden = hidden ;
+    
+    if ([self.delegate respondsToSelector:@selector(figureViewDidChangeGlasses:)]) {
+        [self.delegate figureViewDidChangeGlasses:glasses];
+    }
+}
+
+- (IBAction)sliderValueChange:(FUFigureSlider *)sender {
+    FUP2AColor *currentColor = nil, *nextColor = nil ;
+    switch (self.decorationColorCollection.currentType) {
+        case FUFigureColorTypeSkinColor:{
+            int index = (int)self.skinLevel ;
+            currentColor = self.skinColorArray[index] ;
+            nextColor = self.skinColorArray[index + 1] ;
+        }
+            break;
+        case FUFigureColorTypeirisColor:{
+            int index = (int)self.irisLevel ;
+            currentColor = self.irisColorArray[index] ;
+            nextColor = self.irisColorArray[index + 1] ;
+        }
+            break ;
+        case FUFigureColorTypeLipsColor:{
+            int index = (int)self.lipLevel ;
+            currentColor = self.lipsColorArray[index] ;
+            nextColor = self.lipsColorArray[index + 1] ;
         }
             break ;
             
         default:
             break;
     }
-}
-
-#pragma mark ----- FUFigureColorCollectionDelegate
-
-// 肤色点击
-- (void)colorCollectionDidSelectedSkinColor:(FUP2AColor *)skinColor {
     
-    NSUInteger skinIndex = [[FUManager shareInstance].skinColorArray indexOfObject:skinColor];
-    self.skinLevel = (double)skinIndex ;
-    self.skinColor = skinColor ;
-    
-    self.colorSlider.value = 0.0 ;
-    if ([self.delegate respondsToSelector:@selector(figureViewDidChangeSkinColor:)]) {
-        [self.delegate figureViewDidChangeSkinColor:skinColor];
-    }
-}
-
-// 唇色点击
-- (void)colorCollectionDidSelectedLipsColor:(FUP2AColor *)lipsColor {
-    self.lipColor = lipsColor ;
-    if ([self.delegate respondsToSelector:@selector(figureViewDidChangeLipsColor:)]) {
-        [self.delegate figureViewDidChangeLipsColor:lipsColor];
-    }
-}
-
-// 瞳色点击
-- (void)colorCollectionDidSelectedIrisColor:(FUP2AColor *)irisColor {
-    self.irisColor = irisColor ;
-    if ([self.delegate respondsToSelector:@selector(figureViewDidChangeIrisColor:)]) {
-        [self.delegate figureViewDidChangeIrisColor:irisColor];
-    }
-}
-
-// skin slider changed
-- (IBAction)colorSliderChanged:(FUFigureSlider *)sender {
-    
-    FUP2AColor *skinColor = self.colorCollection.skinColor ;
-    NSInteger index = [[FUManager shareInstance].skinColorArray indexOfObject: skinColor];
-    FUP2AColor *nextColor = [[FUManager shareInstance].skinColorArray objectAtIndex:index + 1];
-    float scale = sender.value ;
-    
-    FUP2AColor *color = [FUP2AColor colorWithR:skinColor.r + scale * (nextColor.r - skinColor.r) g:skinColor.g + scale * (nextColor.g - skinColor.g) b:skinColor.b + scale * (nextColor.b - skinColor.b)];
-    
-    if ([self.delegate respondsToSelector:@selector(figureViewDidChangeSkinColor:)]) {
-        [self.delegate figureViewDidChangeSkinColor:color];
-    }
-}
-
-- (IBAction)resetSkinColor:(UIButton *)sender {
-    
-    if (self.skinLevel != _defaultSkinLevel) {
-        __weak typeof(self)weakSelf = self ;
-        [self showAlterWithMessage:@"确认将肤色恢复默认吗？" certainAction:^(UIAlertAction * _Nonnull action) {
-            
-            weakSelf.skinLevel = self->_defaultSkinLevel ;
-            weakSelf.skinColor = [FUManager shareInstance].skinColorArray[(int)self->_defaultSkinLevel] ;
-            
-            self.colorSlider.value = self->_defaultSkinLevel - (int)self->_defaultSkinLevel ;
-            
-            if ([self.delegate respondsToSelector:@selector(figureViewDidChangeSkinColor:)]) {
-                [self.delegate figureViewDidChangeSkinColor:self.skinColor];
-            }
-            
-            self.colorCollection.skinColor = weakSelf.skinColor;
-        }];
-    }
-}
-
-- (void)showAlterWithMessage:(NSString *)message certainAction:(void (^)(UIAlertAction * _Nonnull action))action {
-    
-    UIAlertController *alertC = [UIAlertController alertControllerWithTitle:message message:nil preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction *cancle = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
-    }];
-    [cancle setValue:[UIColor colorWithRed:34/255.0 green:34/255.0 blue:34/255.0 alpha:1.0] forKey:@"titleTextColor"];
-    
-    
-    UIAlertAction *certain = [UIAlertAction actionWithTitle:@"确认" style:UIAlertActionStyleDefault handler:action];
-    [certain setValue:[UIColor colorWithHexColorString:@"4C96FF"] forKey:@"titleTextColor"];
-    [alertC addAction:cancle];
-    [alertC addAction:certain];
-    [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:alertC animated:YES completion:^{
-    }];
-}
-
-#pragma mark ----- FUFigureShapeCollectionDelegate
-
-- (void)shapeCollectionDidSelectIndex:(NSInteger)index {
-    
-    FUFigureShapeType type = 0;
-    switch (index) {
-        case 0:{        // 面部
-            type = self.faceBtn.selected ? FUFigureShapeTypeFaceSide : FUFigureShapeTypeFaceFront ;
-        }
-            break;
-        case 1:{        // 眼睛
-            type = self.faceBtn.selected ? FUFigureShapeTypeEyesSide : FUFigureShapeTypeEyesFront ;
-        }
-            break;
-        case 2:{        // 嘴巴
-            type = self.faceBtn.selected ? FUFigureShapeTypeLipsSide : FUFigureShapeTypeLipsFront ;
-        }
-            break;
-        case 3:{        // 鼻子
-            type = self.faceBtn.selected ? FUFigureShapeTypeNoseSide : FUFigureShapeTypeNoseFront ;
-        }
-            break;
-        default:{       // 取消
-            type = self.faceBtn.selected ? FUFigureShapeTypeNoneSide : FUFigureShapeTypeNoneFront ;
-        }
-            break;
-    }
-    currentShapeType = type ;
-    if ([self.delegate respondsToSelector:@selector(figureViewDidSelectShapeView:)]) {
-        [self.delegate figureViewDidSelectShapeView:type];
-    }
-}
-
-- (IBAction)faceBtnAction:(UIButton *)sender {
-    sender.selected = !sender.selected ;
-    
-    FUFigureShapeType type ;
-    if (sender.selected) {
-        switch (self.shapeCollection.selectedIndex) {
-            case 0:{        // 面部侧面
-                type = FUFigureShapeTypeFaceSide ;
-            }
-                break;
-            case 1:{        // 眼睛侧面
-                type = FUFigureShapeTypeEyesSide ;
-            }
-                break;
-            case 2:{        // 嘴巴侧面
-                type = FUFigureShapeTypeLipsSide ;
-            }
-                break;
-            case 3:{        // 鼻子侧面
-                type = FUFigureShapeTypeNoseSide ;
-            }
-                break;
-            default:{        // 侧面无角度
-                type = FUFigureShapeTypeNoneSide ;
-            }
-                break;
-        }
-    } else {
+    if (currentColor && nextColor) {
         
-        switch (self.shapeCollection.selectedIndex) {
-            case 0:{        // 面部正面
-                type = FUFigureShapeTypeFaceFront ;
+        double scale = sender.value ;
+        
+        FUP2AColor *color = [FUP2AColor colorWithR:(nextColor.r - currentColor.r) * scale + currentColor.r
+                                                 g:(nextColor.g - currentColor.g) * scale + currentColor.g
+                                                 b:(nextColor.b - currentColor.b) * scale + currentColor.b];
+        
+        switch (self.decorationColorCollection.currentType) {
+            case FUFigureColorTypeSkinColor:{
+                self.skinLevel = sender.value + (int)self.skinLevel;
+                if ([self.delegate respondsToSelector:@selector(figureViewDidChangeSkinColor:)]) {
+                    [self.delegate figureViewDidChangeSkinColor:color];
+                }
             }
                 break;
-            case 1:{        // 眼睛正面
-                type = FUFigureShapeTypeEyesFront ;
+            case FUFigureColorTypeirisColor:{
+                self.irisLevel = sender.value + (int)self.irisLevel ;
+                if ([self.delegate respondsToSelector:@selector(figureViewDidChangeIrisColor:)]) {
+                    [self.delegate figureViewDidChangeIrisColor:color];
+                }
             }
-                break;
-            case 2:{        // 嘴巴正面
-                type = FUFigureShapeTypeLipsFront ;
+                break ;
+            case FUFigureColorTypeLipsColor:{
+                self.lipLevel = sender.value + (int)self.lipLevel ;
+                if ([self.delegate respondsToSelector:@selector(figureViewDidChangeLipsColor:)]) {
+                    [self.delegate figureViewDidChangeLipsColor:color];
+                }
             }
-                break;
-            case 3:{        // 鼻子正面
-                type = FUFigureShapeTypeNoseFront ;
-            }
-                break;
-            default:{        // 正面无角度
-                type = FUFigureShapeTypeNoneFront ;
-            }
+                break ;
+                
+            default:
                 break;
         }
     }
-    currentShapeType = type ;
-    if ([self.delegate respondsToSelector:@selector(figureViewDidSelectShapeView:)]) {
-        [self.delegate figureViewDidSelectShapeView:type];
+}
+
+#pragma mark --- input data source
+
+-(void)setAvatarStyle:(FUAvatarStyle)avatarStyle {
+    _avatarStyle = avatarStyle ;
+    
+    switch (avatarStyle) {
+        case FUAvatarStyleNormal:{
+            self.bottomCollection.dataArray = self.avatarIsMale ? @[@"发型", @"脸型", @"眼型", @"嘴型", @"鼻型", @"胡子", @"眉毛", @"眼镜", @"帽子", @"衣服"] : @[@"发型", @"脸型", @"眼型", @"嘴型", @"鼻型", @"眉毛", @"睫毛", @"眼镜", @"帽子", @"衣服"] ;
+        }
+            break;
+        case FUAvatarStyleQ:{
+//            self.bottomCollection.dataArray = @[@"发型", @"脸型", @"眼型", @"嘴型", @"鼻型", @"胡子", @"眉毛", @"睫毛", @"眼镜", @"帽子", @"衣服", @"鞋子"] ;
+            self.bottomCollection.dataArray = @[@"发型", @"脸型", @"眼型", @"嘴型", @"鼻型", @"胡子", @"眼镜", @"帽子", @"衣服"] ;
+        }
+            break ;
     }
 }
 
-- (IBAction)faceShapeResetAction:(UIButton *)sender {
-    
-    NSInteger typeIndex = self.shapeCollection.selectedIndex ;
-    if ([self.delegate respondsToSelector:@selector(figureViewShouldResetParamWithType:)]) {
-        [self.delegate figureViewShouldResetParamWithType:typeIndex];
+-(void)setAvatarIsMale:(BOOL)avatarIsMale {
+    _avatarIsMale = avatarIsMale ;
+    if (self.avatarStyle == FUAvatarStyleNormal) {
+        self.bottomCollection.dataArray = avatarIsMale ? @[@"发型", @"脸型", @"眼型", @"嘴型", @"鼻型", @"胡子", @"眉毛", @"眼镜", @"帽子", @"衣服"] : @[@"发型", @"脸型", @"眼型", @"嘴型", @"鼻型", @"眉毛", @"睫毛", @"眼镜", @"帽子", @"衣服"] ;
     }
 }
 
-#pragma mark -----  FUFigureDecorationHorizCollectionDelegate
--(void)didChangeGlasses:(NSString *)glassesName {
-    self.currentGlasses = glassesName ;
-    if ([self.delegate respondsToSelector:@selector(figureViewDidChangeGlasses:)]) {
-        [self.delegate figureViewDidChangeGlasses:glassesName];
-    }
-    
-    self.glassesColorView.hidden = [glassesName isEqualToString:@"glasses-noitem"];
-}
+#pragma mark --- UIGestureRecognizerDelegate
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
     
     for (UIView *view in self.subviews) {
-        if ([touch.view isDescendantOfView:view]) {
+        if ([touch.view isDescendantOfView:view] && touch.view != self.decorationView) {
             return NO ;
         }
     }
     return YES ;
 }
-
-- (FUP2AColor *)getColorOfColorList:(NSArray *)list color:(FUP2AColor *)color {
-    NSInteger index = 0 ;
-    for (FUP2AColor *c in list) {
-        if (c.r == color.r
-            && c.g == color.g
-            && c.b == color.b) {
-            index = [list indexOfObject:c];
-            break ;
-        }
-    }
-    return [list objectAtIndex:index] ;
-}
-
 @end

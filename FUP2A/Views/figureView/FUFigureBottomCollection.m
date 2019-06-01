@@ -1,9 +1,9 @@
 //
 //  FUFigureBottomCollection.m
-//  FUP2A
+//  FUFigureView
 //
-//  Created by L on 2019/1/7.
-//  Copyright © 2019年 L. All rights reserved.
+//  Created by L on 2019/4/8.
+//  Copyright © 2019 L. All rights reserved.
 //
 
 #import "FUFigureBottomCollection.h"
@@ -13,8 +13,8 @@
 {
     NSInteger selectedIndex ;
 }
-@property (nonatomic, strong) NSArray *dataArray ;
 @property (nonatomic, strong) UIView *line ;
+
 @end
 
 @implementation FUFigureBottomCollection
@@ -29,15 +29,15 @@
     self.line.backgroundColor = [UIColor colorWithHexColorString:@"4C96FF"];
     self.line.layer.masksToBounds = YES ;
     self.line.layer.cornerRadius = 1.0 ;
-    self.line.frame = CGRectMake(15.0, self.frame.size.height - 2.0, 30, 2.0) ;
+    self.line.frame = CGRectMake(34.0, self.frame.size.height - 2.0, 34, 2.0) ;
     [self addSubview:self.line];
     
     selectedIndex = 0 ;
 }
 
--(void)setIsMale:(BOOL)isMale {
-    _isMale = isMale ;
-    self.dataArray = isMale ? @[@"发型", @"肤色", @"捏脸", @"瞳色", @"唇色", @"胡子", @"眉毛", @"眼镜", @"帽子", @"衣服"] : @[@"发型", @"肤色", @"捏脸", @"瞳色", @"唇色", @"眉毛", @"睫毛", @"眼镜", @"帽子", @"衣服"] ;
+-(void)setDataArray:(NSArray *)dataArray {
+    _dataArray = dataArray ;
+    [self reloadData];
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
@@ -57,7 +57,7 @@
     if (indexPath.row == selectedIndex) {
         if ([self.mDelegate respondsToSelector:@selector(bottomCollectionDidSelectedIndex:show:animation:)]) {
             [self.mDelegate bottomCollectionDidSelectedIndex:selectedIndex show:NO animation:YES];
-
+            
             [self hiddenSelectedItem];
         }
         
@@ -82,7 +82,7 @@
     }
     [collectionView reloadData];
     [collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
-
+    
     if ([self.mDelegate respondsToSelector:@selector(bottomCollectionDidSelectedIndex:show:animation:)]) {
         [self.mDelegate bottomCollectionDidSelectedIndex:selectedIndex show:YES animation:animation];
     }

@@ -16,6 +16,8 @@
 - (void)homeBarViewShouldDeleteAvatar ;
 // 进入新增页
 - (void)homeBarViewShouldCreateAvatar ;
+// 风格切换
+- (void)homeBarViewChangeAvatarStyle ;
 // 切换模型
 - (void)homeBarViewDidSelectedAvatar:(FUAvatar *)avatar ;
 // 显示/隐藏 上半部

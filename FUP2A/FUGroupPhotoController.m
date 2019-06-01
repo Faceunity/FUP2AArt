@@ -16,10 +16,13 @@
 {
     FUSceneryMode currentModeType ;
 }
+@property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (nonatomic, strong) NSArray *singleArray ;
 @property (weak, nonatomic) IBOutlet UICollectionView *singleCollection;
+@property (weak, nonatomic) IBOutlet UILabel *multipleLabel;
 @property (nonatomic, strong) NSArray *multipleArray ;
 @property (weak, nonatomic) IBOutlet UICollectionView *multipleCollection;
+@property (weak, nonatomic) IBOutlet UILabel *animationLabel;
 @property (nonatomic, strong) NSArray *animationArray ;
 @property (weak, nonatomic) IBOutlet UICollectionView *animationCollection;
 
@@ -55,7 +58,8 @@
 
 - (void)setupData {
     
-    NSDictionary *dataDict = [NSDictionary dictionaryWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"GroupScenery.plist" ofType:nil]];
+    NSString *dictPath = [FUManager shareInstance].avatarStyle == FUAvatarStyleNormal ? [[NSBundle mainBundle] pathForResource:@"AvatarAnimations.plist" ofType:nil] : [[NSBundle mainBundle] pathForResource:@"AvatarQAnimations.plist" ofType:nil];
+    NSDictionary *dataDict = [NSDictionary dictionaryWithContentsOfFile:dictPath];
     
     NSMutableArray *tmpArray = [NSMutableArray arrayWithCapacity:1];
     NSArray *sinArr = dataDict[@"单人场景"];
@@ -65,21 +69,24 @@
     }
     self.singleArray = [tmpArray copy];
     
-    NSMutableArray *tmpArray2 = [NSMutableArray arrayWithCapacity:1];
-    NSArray *muArr = dataDict[@"多人场景"];
-    for (NSDictionary *dict in muArr) {
-        FUMultipleModel *model = [FUMultipleModel modelWithDict:dict];
-        [tmpArray2 addObject:model];
+    if ([dataDict.allKeys containsObject:@"多人场景"]) {
+     
+        NSMutableArray *tmpArray2 = [NSMutableArray arrayWithCapacity:1];
+        NSArray *muArr = dataDict[@"多人场景"];
+        for (NSDictionary *dict in muArr) {
+            FUMultipleModel *model = [FUMultipleModel modelWithDict:dict];
+            [tmpArray2 addObject:model];
+        }
+        self.multipleArray = [tmpArray2 copy];
+        
+        NSMutableArray *tmpArray3 = [NSMutableArray arrayWithCapacity:1];
+        NSArray *aniArr = dataDict[@"动画场景"];
+        for (NSDictionary *dict in aniArr) {
+            FUSingleModel *model = [FUSingleModel modelWithDict:dict];
+            [tmpArray3 addObject:model];
+        }
+        self.animationArray = [tmpArray3 copy];
     }
-    self.multipleArray = [tmpArray2 copy];
-    
-    NSMutableArray *tmpArray3 = [NSMutableArray arrayWithCapacity:1];
-    NSArray *aniArr = dataDict[@"动画场景"];
-    for (NSDictionary *dict in aniArr) {
-        FUSingleModel *model = [FUSingleModel modelWithDict:dict];
-        [tmpArray3 addObject:model];
-    }
-    self.animationArray = [tmpArray3 copy];
 }
 
 - (void)viewWillAppear:(BOOL)animated {

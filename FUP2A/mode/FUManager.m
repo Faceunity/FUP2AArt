@@ -29,8 +29,9 @@
     float lightingValue ;
     // 同步信号量
     dispatch_semaphore_t signal;
+    
+    __block BOOL isCreatingAvatar ;
 }
-
 @end
 
 @implementation FUManager
@@ -47,38 +48,37 @@ static FUManager *fuManager = nil ;
 -(instancetype)init {
     self = [super init];
     if (self) {
-
+        
         [self initFaceUnity];
-
+        
         [self creatPixelBuffer];
-
-        [self loadTongueMode];
-
-        // p2a bin
-        NSString *corePath = [[NSBundle mainBundle] pathForResource:@"p2a_client_core" ofType:@"bin"];
-        NSString *qPath = [[NSBundle mainBundle] pathForResource:@"p2a_client_q" ofType:@"bin"];
-        [[FUP2AClient shareInstance] setupClientWithCoreDataPath:corePath customDataPath:qPath authPackage:&g_auth_package authSize:sizeof(g_auth_package)];
         
         [[FUP2AHelper shareInstance] setupHelperWithAuthPackage:&g_auth_package authSize:sizeof(g_auth_package)];
 
         [self loadFxaa];
-
-        NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"bg" ofType:@"bundle"];
+        
+        // 加载舌头
+        NSData *tongueData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"tongue.bundle" ofType:nil]];
+        [FURenderer loadTongueModel:(void *)tongueData.bytes size:(int)tongueData.length];
+        
+        NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"background" ofType:@"bundle"];
         [self reloadBackGroundWithFilePath:bgPath];
 
-        [self loadSubData];
-
         self.currentAvatars = [NSMutableArray arrayWithCapacity:1];
-        
-        if (![[NSFileManager defaultManager] fileExistsAtPath:AvatarListPath]) {
-            [[NSFileManager defaultManager] createDirectoryAtPath:AvatarListPath withIntermediateDirectories:YES attributes:nil error:nil];
-        }
         
         frameSize = CGSizeZero ;
         
         signal = dispatch_semaphore_create(1);
+        
+        isCreatingAvatar = NO ;
     }
     return self ;
+}
+
+-(void)setAvatarStyle:(FUAvatarStyle)avatarStyle {
+    _avatarStyle = avatarStyle ;
+    
+    [self loadSubData];
 }
 
 - (void)initFaceUnity {
@@ -87,6 +87,54 @@ static FUManager *fuManager = nil ;
     [[FURenderer shareRenderer] setupWithDataPath:path authPackage:&g_auth_package authSize:sizeof(g_auth_package) shouldCreateContext:YES];
     
     [FURenderer setMaxFaces:1];
+}
+
+- (void)loadSubData {
+    switch (self.avatarStyle) {
+        case FUAvatarStyleNormal:{
+           
+            if (![[NSFileManager defaultManager] fileExistsAtPath:AvatarListPath]) {
+                [[NSFileManager defaultManager] createDirectoryAtPath:AvatarListPath withIntermediateDirectories:YES attributes:nil error:nil];
+            }
+            [self loadNormalTypeSubData];
+        }
+            break;
+        case FUAvatarStyleQ:{
+            if (![[NSFileManager defaultManager] fileExistsAtPath:AvatarQPath]) {
+                [[NSFileManager defaultManager] createDirectoryAtPath:AvatarQPath withIntermediateDirectories:YES attributes:nil error:nil];
+            }
+            [self loadQtypeAvatarData];
+        }
+            break ;
+    }
+}
+
+- (void)loadClientDataWithFirstSetup:(BOOL)firstSetup {
+
+    NSString *qPath ;
+    switch (self.avatarStyle) {
+        case FUAvatarStyleNormal:{
+            if (![[NSFileManager defaultManager] fileExistsAtPath:AvatarQPath]) {
+                [[NSFileManager defaultManager] createDirectoryAtPath:AvatarQPath withIntermediateDirectories:YES attributes:nil error:nil];
+            }
+            qPath =[[NSBundle mainBundle] pathForResource:@"p2a_client_q" ofType:@"bin"];
+        }
+            break;
+        case FUAvatarStyleQ:{
+            if (![[NSFileManager defaultManager] fileExistsAtPath:AvatarQPath]) {
+                [[NSFileManager defaultManager] createDirectoryAtPath:AvatarQPath withIntermediateDirectories:YES attributes:nil error:nil];
+            }
+            qPath =[[NSBundle mainBundle] pathForResource:@"p2a_client_q1" ofType:@"bin"];
+        }
+            break ;
+    }
+    // p2a bin
+    if (firstSetup) {
+        NSString *corePath = [[NSBundle mainBundle] pathForResource:@"p2a_client_core" ofType:@"bin"];
+        [[FUP2AClient shareInstance] setupClientWithCoreDataPath:corePath customDataPath:qPath authPackage:&g_auth_package authSize:sizeof(g_auth_package)];
+    }else {
+        [[FUP2AClient shareInstance] reSetupCustomData:qPath];
+    }
 }
 
 - (void)creatPixelBuffer {
@@ -106,12 +154,6 @@ static FUManager *fuManager = nil ;
                             (__bridge CFDictionaryRef)pixelBufferOptions,
                             &renderTarget);
     }
-}
-
-// 加载舌头Mode
-- (void)loadTongueMode {
-    NSData *tongueData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"tongue.bundle" ofType:nil]];
-    [FURenderer loadTongueModel:(void *)tongueData.bytes size:(int)tongueData.length];
 }
 
 //加载抗锯齿
@@ -158,7 +200,7 @@ static FUManager *fuManager = nil ;
 
 #pragma mark ----- 以下数据
 -(NSString *)appVersion {
-    return @"DigiMe Art v1.4.0" ;
+    return @"DigiMe Art v1.5.0" ;
 }
 
 -(NSString *)sdkVersion {
@@ -166,10 +208,11 @@ static FUManager *fuManager = nil ;
     return [NSString stringWithFormat:@"SDK v%@", version] ;
 }
 
-- (void)loadSubData {
+/**     normal data **/
+- (void)loadNormalTypeSubData {
     
     // female hairs
-    NSArray *ornamentArray = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"Ornament.plist" ofType:nil]];
+    NSArray *ornamentArray = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"AvatarDecoration.plist" ofType:nil]];
     NSDictionary *expDic = ornamentArray[0] ;
     NSArray *tmpArr0 = expDic[@"items"] ;
     NSMutableArray *tmpArr1 = [tmpArr0 mutableCopy];
@@ -290,6 +333,14 @@ static FUManager *fuManager = nil ;
     }
     _maleEyeBrows = [tmpArr1 copy] ;
     
+    
+    // mesh points
+    NSData *meshData = [[NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"MeshPoints" ofType:@"json"] encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *meshDict = [NSJSONSerialization JSONObjectWithData:meshData options:NSJSONReadingMutableContainers error:nil];
+    
+    self.maleMeshPoints = meshDict[@"male"] ;
+    self.femaleMeshPoints = meshDict[@"female"] ;
+    
     // color data
     NSData *jsonData = [[NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"color" ofType:@"json"] encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:nil];
@@ -330,15 +381,117 @@ static FUManager *fuManager = nil ;
         }
     }
     
+    [self loadAvatarList];
+}
+
+- (void)loadQtypeAvatarData {
+    
+    // hairs
+    NSArray *ornamentArray = [NSArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"AvatarQDecoration.plist" ofType:nil]];
+    
+    NSDictionary *expDic = ornamentArray[0] ;
+    _qHairs = expDic[@"items"] ;
+    
+    // glasses
+    expDic = ornamentArray[1] ;
+    _qGlasses = expDic[@"items"] ;
+    
+    // clothes
+    expDic = ornamentArray[2] ;
+    _qClothes = expDic[@"items"] ;
+    
+    // hats
+    expDic = ornamentArray[3] ;
+    _qHats = expDic[@"items"] ;
+    
+    // shoes
+    expDic = ornamentArray[4] ;
+    _qShoes = expDic[@"items"] ;
+    
+    // eyelash
+    expDic = ornamentArray[5] ;
+    _qEyeLash = expDic[@"items"] ;
+    // eyebrow
+    expDic = ornamentArray[6] ;
+    _qEyeBrow = expDic[@"items"] ;
+    
+    expDic = ornamentArray[7] ;
+    _qBeard = expDic[@"items"] ;
+    
     // mesh points
     NSData *meshData = [[NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"MeshPoints" ofType:@"json"] encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary *meshDict = [NSJSONSerialization JSONObjectWithData:meshData options:NSJSONReadingMutableContainers error:nil];
     
-    self.maleMeshPoints = meshDict[@"male"] ;
-    self.femaleMeshPoints = meshDict[@"female"] ;
+    self.qMeshPoints = meshDict[@"mid"] ;
+    
+    // color data
+    NSData *jsonData = [[NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"color_q" ofType:@"json"] encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:nil];
+    
+    NSArray *keys = dic.allKeys ;
+    for (NSString *key in keys) {
+        NSMutableArray *tmpArray = [NSMutableArray arrayWithCapacity:1];
+        NSDictionary *infoDic = [dic objectForKey:key];
+        
+        NSInteger count = infoDic.allKeys.count ;
+        
+        for (int i = 1; i < count + 1; i ++) {
+            
+            NSString *subKey = [NSString stringWithFormat:@"%d", i];
+            NSDictionary *subValue = [infoDic objectForKey:subKey] ;
+            
+            FUP2AColor *color = [FUP2AColor colorWithDict:subValue];
+            color.index = i ;
+            [tmpArray addObject:color];
+        }
+        
+        if ([key isEqualToString:@"lip_color"]) {
+            self.lipColorArray = [tmpArray copy];
+        }else if ([key isEqualToString:@"iris_color"]){
+            self.irisColorArray = [tmpArray copy];
+        }else if ([key isEqualToString:@"hair_color"]){
+            self.hairColorArray = [tmpArray copy];
+        }else if ([key isEqualToString:@"beard_color"]){
+            self.beardColorArray = [tmpArray copy];
+        }else if ([key isEqualToString:@"glass_frame_color"]){
+            self.glassFrameArray = [tmpArray copy];
+        }else if ([key isEqualToString:@"glass_color"]){
+            self.glassColorArray = [tmpArray copy];
+        }else if ([key isEqualToString:@"skin_color"]){
+            self.skinColorArray = [tmpArray copy];
+        }else if ([key isEqualToString:@"hat_color"]){
+            self.hatColorArray = [tmpArray copy];
+        }
+    }
+    
+    // shape data
+    NSData *shapeJson = [[NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"shape_list" ofType:@"json"] encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *shapeDict = [NSJSONSerialization JSONObjectWithData:shapeJson options:NSJSONReadingMutableContainers error:nil];
+    
+    NSArray *shapeKeys = shapeDict.allKeys ;
+    for (NSString *key in shapeKeys) {
+        NSArray *paramsArray = [shapeDict objectForKey:key];
+        
+        if ([key isEqualToString:@"face"]) {
+            self.qFaces = paramsArray ;
+        }else if ([key isEqualToString:@"eye"]){
+            self.qEyes = paramsArray ;
+        }else if ([key isEqualToString:@"mouth"]){
+            self.qMouths = paramsArray ;
+        }else if ([key isEqualToString:@"nose"]){
+            self.qNoses = paramsArray ;
+        }
+    }
+    
+    [self loadAvatarList];
 }
 
--(NSMutableArray *)avatarList {
+- (void)loadAvatarList {
+    if (_avatarList) {
+        [_avatarList removeAllObjects];
+        _avatarList = nil ;
+    }
+    
     if (!_avatarList) {
         _avatarList = [NSMutableArray arrayWithCapacity:1];
         
@@ -346,11 +499,16 @@ static FUManager *fuManager = nil ;
         NSArray *dataArray = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:nil];
         
         for (NSDictionary *dict in dataArray) {
+            
+            if ([dict[@"q_type"] integerValue] != self.avatarStyle) {
+                continue ;
+            }
+            
             FUAvatar *avatar = [FUAvatar avatarWithInfoDic:dict];
             [_avatarList addObject:avatar];
         }
         
-        NSArray *array = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:AvatarListPath error:nil];
+        NSArray *array = self.avatarStyle == FUAvatarStyleNormal ? [[NSFileManager defaultManager] contentsOfDirectoryAtPath:AvatarListPath error:nil] : [[NSFileManager defaultManager] contentsOfDirectoryAtPath:AvatarQPath error:nil];
         array = [array sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
             return [obj2 compare:obj1 options:NSNumericSearch] ;
         }];
@@ -358,7 +516,7 @@ static FUManager *fuManager = nil ;
             if (![jsonName hasSuffix:@".json"]) {
                 continue ;
             }
-            NSString *jsonPath = [AvatarListPath stringByAppendingPathComponent:jsonName];
+            NSString *jsonPath = self.avatarStyle == FUAvatarStyleNormal ? [AvatarListPath stringByAppendingPathComponent:jsonName] : [AvatarQPath stringByAppendingPathComponent:jsonName];
             NSData *jsonData = [[NSString stringWithContentsOfFile:jsonPath encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
             NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:nil];
             
@@ -366,7 +524,6 @@ static FUManager *fuManager = nil ;
             [_avatarList addObject:avatar];
         }
     }
-    return _avatarList ;
 }
 
 #pragma mark ----- 以下处理接口
@@ -556,7 +713,6 @@ static FUManager *fuManager = nil ;
     return pixelBuffer ;
 }
 
-
 static int frameId = 0 ;
 /**
  Avatar 处理接口
@@ -597,7 +753,7 @@ static int frameId = 0 ;
         
         is_valid = [FURenderer isTracking];
     }
-
+    
     TAvatarInfo info;
     info.p_translation = translation;
     info.p_rotation = rotation;
@@ -658,10 +814,14 @@ static int ARFilterID = 0 ;
  */
 - (FUAvatar *)createAvatarWithData:(NSData *)data avatarName:(NSString *)name gender:(FUGender)gender {
     
+    isCreatingAvatar = YES ;
+    
     FUAvatar *avatar = [[FUAvatar alloc] init];
     avatar.defaultModel = NO ;
     avatar.name = name;
     avatar.gender = gender ;
+    BOOL isQ = self.avatarStyle == FUAvatarStyleQ ;
+    avatar.isQType = isQ ;
     
     // create head
     NSData *finalBundleData = [[FUP2AClient shareInstance] createAvatarHeadWithData:data];
@@ -674,30 +834,32 @@ static int ARFilterID = 0 ;
     if ([defaultHair isEqualToString:@"hair-noitem"]) {
         defaultHair = gender == FUGenderMale ? @"male_hair_2" : @"female_td2" ;
     }
+    if (isQ) {
+        defaultHair = gender == FUGenderMale ? @"male_hair_q_0" : @"female_hair_q_7" ;
+    }
     avatar.hair = defaultHair ;
     
-    NSData *baseHairData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:defaultHair ofType:@"bundle"]];
+    NSString *baseHairPath = [[NSBundle mainBundle] pathForResource:avatar.hair ofType:@"bundle"] ;
+    NSData *baseHairData = [NSData dataWithContentsOfFile: baseHairPath];
     NSData *defaultHairData = [[FUP2AClient shareInstance] createAvatarHairWithServerData:data defaultHairData:baseHairData];
     NSString *defaultHairPath = [[[avatar filePath] stringByAppendingPathComponent:defaultHair] stringByAppendingString:@".bundle"];
     [defaultHairData writeToFile:defaultHairPath atomically:YES];
     
-    // 衣服
-    avatar.clothes = gender == FUGenderMale ? @"male_clothes_1" : @"female_clothes_1" ;
-    
-    // 胡子
-    int beardLabel = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"beard_label"];
-    avatar.bearLabel = beardLabel ;
-    avatar.beard = gender == FUGenderMale ? [self getBeardNameWithNum:beardLabel] : @"beard-noitem";
-    
-//    // 眼镜
+    // 眼镜
     int hasGlass = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"has_glasses"];
+//    avatar.glasses = hasGlass == 0 ? @"glasses-noitem" : (gender == FUGenderMale ? @"male_glass_1" : @"female_glass_1");
     if (hasGlass == 0) {
         avatar.glasses = @"glasses-noitem" ;
     }else {
-        int shapeGlasses = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"shape_glasses"];
-        int rimGlasses = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"rim_glasses"];
-        NSString *glassName = [self getGlassesNameWithShape:shapeGlasses rim:rimGlasses male:gender == FUGenderMale];
-        avatar.glasses = glassName ;
+        if (avatar.isQType) {
+            avatar.glasses = @"glass_2" ;
+        }else {
+            int shapeGlasses = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"shape_glasses"];
+            int rimGlasses = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"rim_glasses"];
+            NSLog(@"--------- shape_glasses: %d - rim_glasses:%d", shapeGlasses, rimGlasses);
+            NSString *glassName = [self getGlassesNameWithShape:shapeGlasses rim:rimGlasses male:gender == FUGenderMale];
+            avatar.glasses = glassName ;
+        }
     }
     
     avatar.hat = @"hat-noitem" ;
@@ -705,42 +867,74 @@ static int ARFilterID = 0 ;
     // avatar info
     NSMutableDictionary *avatarInfo = [NSMutableDictionary dictionaryWithCapacity:1];
     
+    if (avatar.isQType) {
+        // 衣服
+        avatar.clothes = @"mid_cloth0" ;
+//        // 鞋子
+//        avatar.shoes = self.qShoes[1] ;
+//        [avatarInfo setObject:avatar.shoes forKey:@"shoes"];
+    }else {
+        // 衣服
+        avatar.clothes = gender == FUGenderMale ? @"male_clothes_1" : @"female_clothes_1" ;
+    }
+    
+    // 胡子
+    int beardLabel = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"beard_label"];
+    avatar.bearLabel = beardLabel ;
+    avatar.beard = [self getBeardNameWithNum:beardLabel Qtype:avatar.isQType male:avatar.gender == FUGenderMale];
+    
+    [avatarInfo setObject:@(beardLabel) forKey:@"beard_label"];
+    [avatarInfo setObject:avatar.beard forKey:@"beard"];
+    
     [avatarInfo setObject:@(0) forKey:@"default"];
+    [avatarInfo setObject:@(avatar.isQType) forKey:@"q_type"];
     [avatarInfo setObject:name forKey:@"name"];
     [avatarInfo setObject:@(gender) forKey:@"gender"];
     [avatarInfo setObject:@(hairLabel) forKey:@"hair_label"];
     [avatarInfo setObject:defaultHair forKey:@"hair"];
     [avatarInfo setObject:avatar.clothes forKey:@"clothes"];
     [avatarInfo setObject:avatar.glasses forKey:@"glasses"];
-    [avatarInfo setObject:@(beardLabel) forKey:@"beard_label"];
-    [avatarInfo setObject:avatar.beard forKey:@"beard"];
     [avatarInfo setObject:avatar.hat forKey:@"hat"];
     
-    NSString *avatarInfoPath = [[AvatarListPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
+    avatar.hairColor = self.hairColorArray[0] ;
+    
+    NSString *avatarInfoPath = self.avatarStyle == FUAvatarStyleNormal ? [[AvatarListPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"] : [[AvatarQPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
     NSData *avatarInfoData = [NSJSONSerialization dataWithJSONObject:avatarInfo options:NSJSONWritingPrettyPrinted error:nil];
     [avatarInfoData writeToFile:avatarInfoPath atomically:YES];
     
     // create other hairs
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        NSArray *hairs = gender == FUGenderMale ? self.maleHairs : self.femaleHairs ;
+        NSArray *hairs ;
+        if (avatar.isQType) {
+            hairs = self.qHairs ;
+        }else {
+            hairs = gender == FUGenderMale ? self.maleHairs : self.femaleHairs ;
+        }
         for (NSString *hairName in hairs) {
-            if ([hairName isEqualToString:@"hair-noitem"] || [hairName isEqualToString:defaultHair]) {
+            if ([hairName isEqualToString:@"hair-noitem"] || [hairName isEqualToString:@"hair_q_noitem"] || [hairName isEqualToString:defaultHair]) {
                 continue ;
             }
             NSString *hairPath = [[NSBundle mainBundle] pathForResource:hairName ofType:@"bundle"];
             NSData *d0 = [NSData dataWithContentsOfFile:hairPath];
             
+            NSLog(@"------- hair name: %@", hairName);
             NSData *d1 = [[FUP2AClient shareInstance] createAvatarHairWithServerData:data defaultHairData:d0];
-            if (d1 == nil) {
-                NSLog(@"---- error path: %@", hairPath);
-            }
             NSString *hp = [[[avatar filePath] stringByAppendingPathComponent:hairName] stringByAppendingString:@".bundle"];
             [d1 writeToFile:hp atomically:YES];
         }
+        
+        self->isCreatingAvatar = NO ;
     });
-    
-    
     return avatar ;
+}
+
+/**
+ 是否正在生成 Avatar 模型
+ 
+ @return 是否正在生成
+ */
+- (BOOL)isCreatingAvatar {
+    return isCreatingAvatar ;
 }
 
 /**
@@ -773,6 +967,7 @@ static int ARFilterID = 0 ;
     // Avatar
     FUAvatar *avatar = [[FUAvatar alloc] init];
     avatar.name = avatarName;
+    avatar.isQType = currentAvatar.isQType ;
     avatar.gender = currentAvatar.gender ;
 
     // 图片 icon
@@ -783,7 +978,7 @@ static int ARFilterID = 0 ;
     // 头
     [headData writeToFile:[[avatar filePath] stringByAppendingPathComponent:@"head.bundle"] atomically:YES];
     // 头发
-    NSArray *hairs = currentAvatar.gender == FUGenderMale ? self.maleHairs : self.femaleHairs ;
+    NSArray *hairs = avatar.isQType ? self.qHairs : (currentAvatar.gender == FUGenderMale ? self.maleHairs : self.femaleHairs) ;
     
     if (currentAvatar.defaultModel) { // 预置模型
         // copy json
@@ -800,7 +995,7 @@ static int ARFilterID = 0 ;
             }
         }
 
-        NSString *jsonPath = [[AvatarListPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
+        NSString *jsonPath = avatar.isQType ? [[AvatarQPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"] : [[AvatarListPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
         [avatarInfoData writeToFile:jsonPath atomically:YES];
 
         // copy resource
@@ -970,22 +1165,25 @@ static float CenterScale = 0.3 ;
 }
 
 // 根据 beardLabel 获取 beard name
-- (NSString *)getBeardNameWithNum:(int)num {
+- (NSString *)getBeardNameWithNum:(int)num Qtype:(BOOL)q male:(BOOL)male {
     
     NSString *beardName = @"beard-noitem" ;
+    if (!q && !male) {
+        return beardName ;
+    }
     
     if (num > 0 && num <= 2) {
-        beardName = @"male_beard_4" ;
+        beardName = q ? @"beard04" : @"male_beard_4" ;
     }else if (num > 2 && num < 5){
-        beardName = @"male_beard_5" ;
+        beardName = q ? @"beard05" : @"male_beard_5" ;
     }else if (num >= 5 && num < 7){
-        beardName = @"male_beard_6" ;
+        beardName = q ? @"beard06" : @"male_beard_6" ;
     }else if (num >= 7 && num < 13){
-        beardName = @"male_beard_1" ;
+        beardName = q ? @"beard01" : @"male_beard_1" ;
     }else if (num >= 12 && num < 19){
-        beardName = @"male_beard_2" ;
+        beardName = q ? @"beard02" : @"male_beard_2" ;
     }else if (num >= 19 && num <= 37){
-        beardName = @"male_beard_3" ;
+        beardName = q ? @"beard03" : @"male_beard_3" ;
     }
     return beardName ;
 }
@@ -1062,6 +1260,123 @@ static float CenterScale = 0.3 ;
         return male ? @"male_glass_15" : @"female_glass_15" ;
     }
     return @"glasses-noitem" ;
+}
+
+// batch creat avatars
+static dispatch_semaphore_t batchProcessSignal ;
+- (void)batchCreatingAvatarsWithImageInfos:(NSArray *)imageInfos Completion:(void (^)(void))handle {
+    
+    if (!batchProcessSignal) {
+        batchProcessSignal = dispatch_semaphore_create(1) ;
+    }
+    
+    for (NSDictionary *infoDict in imageInfos) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            
+            NSString *imagePath = infoDict[@"imagePath"] ;
+            BOOL male = [infoDict[@"male"] boolValue] ;
+            
+            UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
+            if (image != nil) {
+                
+                dispatch_semaphore_wait(batchProcessSignal, DISPATCH_TIME_FOREVER) ;
+                
+                NSDictionary *params = @{ @"gender":male ? @(0) : @(1), @"is_q": @(1) };
+                
+                [[FURequestManager sharedInstance] createQAvatarWithImage:image Params:params CompletionWithData:^(NSData *data, NSError *error) {
+                    if (!error) {
+                        NSTimeInterval time = [[NSDate date] timeIntervalSince1970];
+                        NSString *fileName = [NSString stringWithFormat:@"%.0f", time];
+                        NSString *filePath = [documentPath stringByAppendingPathComponent:fileName];
+                        [[NSFileManager defaultManager] createDirectoryAtPath:filePath withIntermediateDirectories:YES attributes:nil error:nil];
+                        
+                        NSData *imageData = UIImagePNGRepresentation(image) ;
+                        NSString *imageDataPath = [filePath stringByAppendingPathComponent:@"image.png"] ;
+                        [imageData writeToFile:imageDataPath atomically:YES];
+                        
+                        [data writeToFile:[filePath stringByAppendingPathComponent:@"server.bundle"] atomically:YES];
+                        
+                        FUAvatar *avatar = [[FUManager shareInstance] createAvatarWithData:data avatarName:fileName gender:male ? FUGenderMale : FUGenderFemale];
+                        
+                        [[FUManager shareInstance].avatarList insertObject:avatar atIndex:DefaultAvatarNum];
+                        
+                        [[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
+                        NSLog(@"----------------------------------------------------------------------------------------------- process one completed~ ");
+                        dispatch_semaphore_signal(batchProcessSignal);
+                        
+                        if ([imageInfos indexOfObject:infoDict] == imageInfos.count - 1) {
+                            handle() ;
+                        }
+                    }else {
+                        
+                        NSDictionary *userInfo = error.userInfo;
+                        NSHTTPURLResponse *response = userInfo[@"com.alamofire.serialization.response.error.response"];
+                        NSInteger code = response.statusCode;
+                        
+                        NSString *message = @"网络访问错误" ;
+                        if (code == 500) {
+                            NSData *data = userInfo[@"com.alamofire.serialization.response.error.data"];
+                            
+                            NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                            
+                            if ([str isEqualToString:@"server busy"]) {
+                                message = @"服务器被占用" ;
+                            }else if ([str isEqualToString:@"输入参数错误"]){
+                                message = @"bad input" ;
+                            }else {
+                                int errIndex = [str intValue] ;
+                                message = [self getErrorMessageWithIndex:errIndex];
+                            }
+                        }
+                        NSLog(@"------ batch process error: %@", message);
+                        
+                        dispatch_semaphore_signal(batchProcessSignal);
+                    }
+                }];
+            }
+        });
+    }
+}
+
+- (NSString *)getErrorMessageWithIndex:(int)errorIndex {
+    NSString *message ;
+    switch (errorIndex) {
+        case 1:
+            message = @"无法加载输入图片" ;
+            break;
+        case 2:
+            message = @"未检测到人脸" ;
+            break;
+        case 3:
+            message = @"检测到多个人脸" ;
+            break;
+        case 4:
+            message = @"检测不到头发" ;
+            break;
+        case 5:
+            message = @"输入图片不符合要求" ;
+            break;
+        case 6:
+            message = @"非正脸图片" ;
+            break;
+        case 7:
+            message = @"非清晰人脸" ;
+            break;
+        case 8:
+            message = @"未找到匹配发型" ;
+            break;
+        case 9:
+            message = @"未知错误" ;
+            break;
+        case 10:
+            message = @"FOV错误" ;
+            break;
+            
+        default:
+            message = @"未知错误" ;
+            break;
+    }
+    return message ;
 }
 
 @end

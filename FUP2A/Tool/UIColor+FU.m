@@ -25,7 +25,7 @@
     range.length =2;
     
     range.location =0;
-    
+    // 
     [[NSScanner scannerWithString:[hexColorString substringWithRange:range]]scanHexInt:&red];
     
     range.location =2;

@@ -8,11 +8,13 @@
 
 #import "FURequestManager.h"
 #import <AFNetworking.h>
+#import "FUManager.h"
 
 @interface FURequestManager()
 
 @property (nonatomic, strong) AFHTTPSessionManager *requestManager;
 @property(nonatomic,copy) void(^requestResultBlock)(NSData *data, NSError *error);
+
 @end
 
 static FURequestManager *sharedInstance;
@@ -34,8 +36,6 @@ static FURequestManager *sharedInstance;
     self = [super init];
     
     if (self) {
-        
-        self.requestResultBlock = nil ;
         
         AFSecurityPolicy *policy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeNone];
         policy.allowInvalidCertificates = YES;
@@ -125,30 +125,39 @@ static FURequestManager *sharedInstance;
 }
 
 - (void)createQAvatarWithImage:(UIImage *)image Params:(NSDictionary *)params CompletionWithData:(void (^)(NSData *data, NSError *error))handle {
+    
     if (handle) {
         self.requestResultBlock = handle ;
     }
-    
+
     __weak typeof(self)weakSelf = self ;
     [_requestManager GET:TOKENURL parameters:nil progress:^(NSProgress * _Nonnull downloadProgress) {
     } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        
+
         NSString *ret = [[NSString alloc] initWithData:responseObject encoding:NSUTF8StringEncoding];
         NSLog(@"====== ret: %@", ret);
-        
+
         dispatch_async(dispatch_get_main_queue(), ^{
-            [weakSelf uploadImageWith:image params:params token:ret];
+            [weakSelf uploadImageWith:image params:params token:ret qType:[FUManager shareInstance].avatarStyle == FUAvatarStyleQ];
         });
-        
+
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
         weakSelf.requestResultBlock(nil, error) ;
         weakSelf.requestResultBlock = nil ;
     }];
 }
 
-- (void)uploadImageWith:(UIImage *)image params:(NSDictionary *)params token:(NSString *)token {
+- (void)uploadImageWith:(UIImage *)image params:(NSDictionary *)params token:(NSString *)token qType:(BOOL)qType {
+    
+    NSString *version = qType ? @"1.0.4" : @"1.0.2" ;
     
     NSData *imageData = UIImagePNGRepresentation(image) ;
+    
+    BOOL gender = [params[@"gender"] boolValue];
+    params = @{
+               @"gender":@(gender),
+               @"version": version,
+               };
     
     NSString *url = [[UPLOADURL stringByAppendingString:@"?access_token="] stringByAppendingString:token];
     __weak typeof(self)weakSelf = self ;
@@ -170,7 +179,7 @@ static FURequestManager *sharedInstance;
         NSString *taskid = dict[@"data"][@"taskid"] ;
         NSLog(@"====== task_id: %@", taskid);
         
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [weakSelf downloadDataWithTask:taskid token:token];
         });
         
@@ -201,4 +210,5 @@ static FURequestManager *sharedInstance;
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
     }];
 }
+
 @end

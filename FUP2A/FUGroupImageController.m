@@ -58,7 +58,7 @@
     [self.currentAvatar loadStandbyAnimation];
     
     if (![[FUManager shareInstance] isBackgroundItemExist]) {
-        NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"bg.bundle" ofType:nil];
+        NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"background.bundle" ofType:nil];
         [[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
     }
     
@@ -92,6 +92,7 @@
         [SVProgressHUD showSuccessWithStatus:@"合影已保存到相册"];
     }
 }
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
 }
