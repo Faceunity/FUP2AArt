@@ -19,6 +19,8 @@
 
 @property (nonatomic, assign) FUAvatarStyle avatarStyle ;
 
+
+
 @property (nonatomic, strong) NSMutableArray *avatarList ;
 // 数据模型
 @property (nonatomic, strong) NSArray *femaleHairs ;

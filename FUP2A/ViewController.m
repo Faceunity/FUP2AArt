@@ -31,6 +31,7 @@ FUHistoryViewControllerDelegate
 >
 {
     CGFloat preScale; // 捏合比例
+	CGFloat _rotDelta;
     FURenderMode renderMode ;
     BOOL loadingBundles ;
 }
@@ -50,7 +51,7 @@ FUHistoryViewControllerDelegate
 @property (nonatomic, strong) NSTimer *labelTimer ;
 
 
-// 版本号 debug view
+// 版本号  view
 @property (weak, nonatomic) IBOutlet UILabel *appVersionLabel;
 @property (weak, nonatomic) IBOutlet UILabel *sdkVersionLabel;
 @end
@@ -68,7 +69,7 @@ FUHistoryViewControllerDelegate
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    _rotDelta = 1;
     [self addObserver];
     
     firstLoad = YES ;
@@ -94,6 +95,8 @@ FUHistoryViewControllerDelegate
         [self.homeBar reloadModeData];
         [self.camera startCapture ];
     }
+	FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+	[avatar resetScaleToBody];
 }
 
 -(void)viewWillDisappear:(BOOL)animated {
@@ -141,7 +144,7 @@ FUHistoryViewControllerDelegate
     [[FUManager shareInstance] reloadRenderAvatar:avatar];
     [avatar loadStandbyAnimation];
     
-    [avatar resetScaleToBody];
+    [avatar resetScaleToSmallBody];
     
     loadingBundles = NO ;
 }
@@ -163,6 +166,7 @@ FUHistoryViewControllerDelegate
     
     FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
     [avatar resetRotDelta:dx];
+	_rotDelta += dx ;
     [avatar resetTranslateDelta:-dy];
 }
 
@@ -279,8 +283,10 @@ static int frameIndex = 0 ;
     
     [[FUManager shareInstance] reloadRenderAvatar:avatar];
     
-    [avatar resetScaleToBody];
-    
+	//[avatar resetScaleToBody];
+       [avatar resetScaleDelta:-1];
+       [avatar resetTranslateDelta:0.1];
+       [avatar resetRotDelta:_rotDelta];
     switch (self->renderMode) {
         case FURenderCommonMode:
             [avatar loadStandbyAnimation];
@@ -298,7 +304,7 @@ static int frameIndex = 0 ;
     
     if (show) {
         
-        [avatar resetScaleToFace];
+        [avatar resetScaleToBody];
         
         [UIView animateWithDuration:0.5 animations:^{
             self.trackBtn.transform = CGAffineTransformMakeTranslation(0, -200) ;
@@ -307,7 +313,7 @@ static int frameIndex = 0 ;
         
         if (!CGAffineTransformEqualToTransform(self.trackBtn.transform, CGAffineTransformIdentity)) {
             
-            [avatar resetScaleToBody];
+            [avatar resetScaleToSmallBody];
             
             [UIView animateWithDuration:0.5 animations:^{
                 self.trackBtn.transform = CGAffineTransformIdentity ;

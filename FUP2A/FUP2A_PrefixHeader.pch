@@ -1,0 +1,66 @@
+#import <Foundation/Foundation.h>
+#import "FUP2ADefine.h"
+#import "FULoadingView.h"
+#import "AGLKVertexAttribArrayBuffer.h"
+#import "AGLKContext.h"
+#import "Tool/FUOpenGLView.h"
+#import "mode/FUManager.h"
+#import "FUPhotoLoadingView.h"
+#import "FUHomeBarViewController.h"
+#import "FUCamera.h"
+#import "FUOpenGLView.h"
+#import "FUManager.h"
+#import "FUAvatar.h"
+#import <SVProgressHUD.h>
+#import "FUTool.h"
+#import "FUAVUtilities.h"
+
+#import "FUP2AColor.h"
+#import "FUFigureView.h"
+#import "FUMeshPoint.h"
+#import "FUShapeParamsMode.h"
+#import "UIColor+FU.h"
+#import <FUP2AClient/FUP2AClient.h>
+
+#import <SVProgressHUD.h>
+#import "FUManager.h"
+#import "FUAvatar.h"
+#import <Photos/Photos.h>
+#import <SVProgressHUD.h>
+#import <UIImage+GIF.h>
+#import "FUAVPlayerView.h"
+
+#import <SVProgressHUD.h>
+#import "FUP2ADefine.h"
+#import "FUCamera.h"
+#import "FUOpenGLView.h"
+#import "FUManager.h"
+#import "FUAvatar.h"
+#import "FUP2AColor.h"
+#import "FUTool.h"
+#import "FUTakePhotoController.h"
+#import "FUEditViewController.h"
+#import "FURequestManager.h"
+#import "FUGroupVideoController.h"
+
+#import "FUOpenGLView.h"
+#import "FUCamera.h"
+#import "FUAvatar.h"
+#import "FUManager.h"
+#import "FUP2ADefine.h"
+#import "UIColor+FU.h"
+#import "FUSceneryModel.h"
+#import <SVProgressHUD.h>
+#import "FUGroupImageController.h"
+#import "CRender.h"
+#import <FUP2AHelper/FUP2AHelper.h>
+#import "Manager/AppManager.h"
+// views
+#import "FUHomeBarView.h"
+#import "FUHistoryViewController.h"
+
+
+
+
+#define appManager [AppManager sharedInstance]
+#define HairsWriteToLocalSuccessNot @"FUHairsWriteToLocalSuccessNot"

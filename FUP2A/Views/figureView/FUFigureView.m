@@ -198,7 +198,17 @@ FUFigureHorizCollectionDelegate
     self.glassesFrameCollection.mDelegate = self ;
     self.glassesFrameCollection.currentType = FUFigureColorTypeGlassesFrameColor ;
 }
+-(void)resetUI{
 
+  //  [self.decorationCollection recoverCollectionViewUI];
+  self.face = nil;
+	self.mouth = nil;
+	self.eyes = nil;
+	self.nose = nil;
+
+
+
+}
 #pragma mark -- FUFigureBottomCollectionDelegate
 
 -(void)bottomCollectionDidSelectedIndex:(NSInteger)index show:(BOOL)show animation:(BOOL)animation {

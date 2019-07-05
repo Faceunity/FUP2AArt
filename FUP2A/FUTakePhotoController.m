@@ -17,7 +17,6 @@
 #import "FUTool.h"
 #import "FURequestManager.h"
 #import "CRender.h"
-#import "FULoadingView.h"
 #import <FUP2AHelper/FUP2AHelper.h>
 #import "FURenderer.h"
 
@@ -51,7 +50,7 @@ FULoadingViewDelegate
 @property (weak, nonatomic) IBOutlet UIButton *switchBtn;
 
 @property (weak, nonatomic) IBOutlet UIView *loadingContainer;
-@property (nonatomic, strong) FULoadingView *loadingView ;
+@property (nonatomic, strong) FUPhotoLoadingView *loadingView ;
 
 @property (nonatomic, strong) UIAlertController *backAlter ;
 @end
@@ -104,9 +103,9 @@ FULoadingViewDelegate
 }
 
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    if ([segue.identifier isEqualToString:@"FULoadingView"]) {
+    if ([segue.identifier isEqualToString:@"FUPhotoLoadingView"]) {
         UIViewController *vc = segue.destinationViewController ;
-        self.loadingView = (FULoadingView *)vc.view ;
+        self.loadingView = (FUPhotoLoadingView *)vc.view ;
         self.loadingView.mDelegate = self ;
     }
 }
@@ -310,14 +309,14 @@ static int frameID = 0;
     NSString *fileName = [NSString stringWithFormat:@"%.0f", time];
     NSString *filePath = [documentPath stringByAppendingPathComponent:fileName];
     [[NSFileManager defaultManager] createDirectoryAtPath:filePath withIntermediateDirectories:YES attributes:nil error:nil];
-    
+	CFAbsoluteTime startUpdateTime = CFAbsoluteTimeGetCurrent() ;
     [[FURequestManager sharedInstance] createQAvatarWithImage:selectedImage Params:params CompletionWithData:^(NSData *data, NSError *error) {
         if (!error && data) {
 
             if (self->currentType == FUCurrentViewTypeNone) {
                 return ;
             }
-
+			NSLog(@"------------ server time: %f ms", (CFAbsoluteTimeGetCurrent() - startUpdateTime) * 1000.0);
             UIImage *image = self->iconImage ? self->iconImage : self->selectedImage;
             NSData *imageData = UIImagePNGRepresentation(image) ;
             NSString *imagePath = [filePath stringByAppendingPathComponent:@"image.png"] ;
@@ -331,7 +330,7 @@ static int frameID = 0;
             }
             
             FUAvatar *avatar = [[FUManager shareInstance] createAvatarWithData:data avatarName:fileName gender:gender];
-
+       //     [avatar resetScaleToBody];
             if (avatar) {
 
                 if (self->currentType == FUCurrentViewTypeNone) {
@@ -370,7 +369,10 @@ static int frameID = 0;
             NSInteger code = response.statusCode;
 
             NSString *message = @"网络访问错误" ;
-            if (code == 500) {
+			NSString *str0 = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            if ([str0 isEqualToString:@"上传的图片未检测到人脸！"]) {
+				message = str0;
+            }else if (code == 500) {
                 NSData *data = userInfo[@"com.alamofire.serialization.response.error.data"];
 
                 NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
@@ -384,6 +386,7 @@ static int frameID = 0;
                     message = [self getErrorMessageWithIndex:errIndex];
                 }
             }
+			
 
             self->currentType = FUCurrentViewTypeNone ;
             [self downloadErrorWithMessage:message];

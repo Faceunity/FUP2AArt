@@ -13,9 +13,10 @@
 + (instancetype)meshPointWithDicInfo:(NSDictionary *)dict {
     
     UIImage *image = [UIImage imageNamed:@"mesh_point"];
-    
+	
     FUMeshPoint *point = [[FUMeshPoint alloc] initWithImage:image];
-    
+    point.bounds = CGRectMake(0, 0, 23, 23);
+    point.contentMode = UIViewContentModeCenter;
     point.index = [dict[@"index"] integerValue];
     point.direction = (FUMeshPiontDirection)[dict[@"direction"] integerValue];
     

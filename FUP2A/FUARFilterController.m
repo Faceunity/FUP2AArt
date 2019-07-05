@@ -88,11 +88,8 @@ FUARFilterViewDelegate
 }
 
 -(void)didOutputVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer {
-    
     CVPixelBufferRef buffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
-    
     [[FUManager shareInstance] renderARFilterItemWithBuffer:buffer];
-    
     [self.renderView displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:YES];
 }
 

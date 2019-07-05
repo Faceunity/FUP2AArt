@@ -479,8 +479,8 @@ typedef enum : NSInteger {
 //    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(70)];
 //    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
     
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(50)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(5)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(120)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(10)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
 }
@@ -739,11 +739,12 @@ typedef enum : NSInteger {
     if (self.irisColor) {
         [self facepupModeSetColor:self.irisColor key:@"iris_color"];
     }
-    
-    // hair color
-    if (self.hairColor) {
-        [self facepupModeSetColor:self.hairColor key:@"hair_color"];
-    }
+	
+	// hair color
+	if (!self.hairColor) {
+		self.hairColor = [FUManager shareInstance].hairColorArray[0];
+	}
+	[self facepupModeSetColor:self.hairColor key:@"hair_color"];
     
     // glasses color
     if (self.glassColor) {

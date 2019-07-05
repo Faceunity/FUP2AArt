@@ -9,50 +9,20 @@
 #import "FULoadingView.h"
 
 @interface FULoadingView ()
-{
-    FUGender gender ;
-}
-@property (weak, nonatomic) IBOutlet UILabel *tipLabel;
-@property (weak, nonatomic) IBOutlet UIButton *maleBtn;
-@property (weak, nonatomic) IBOutlet UIButton *femaleBtn;
-@property (weak, nonatomic) IBOutlet UIImageView *loadingImage;
-@property (weak, nonatomic) IBOutlet UILabel *loadingLabel;
+
 
 @property (nonatomic, strong) NSTimer *loadingTimer ;
+@property (nonatomic, strong) NSString *loadingString;
 @end
-
 @implementation FULoadingView
-
--(void)awakeFromNib {
-    [super awakeFromNib];
-    gender = FUGenderUnKnow ;
+-(void)awakeFromNib{
+   [super awakeFromNib];
+	self.loadingString = self.loadingLabel.text;
 }
-
-// 选择性别
-- (IBAction)genderSelected:(UIButton *)sender {
-
-    if (gender == FUGenderUnKnow) {
-
-        if (sender == self.maleBtn) {
-            gender = FUGenderMale ;
-        }else if (sender == self.femaleBtn){
-            gender = FUGenderFemale ;
-        }
-
-        if (self.mDelegate && [self.mDelegate respondsToSelector:@selector(shouldCreateAvatarWithGender:)]) {
-            [self.mDelegate shouldCreateAvatarWithGender:gender];
-        }
-
-        return ;
-    }
-}
-
 // 开始加载
 - (void)startLoading {
-    self.tipLabel.hidden = YES ;
-    self.maleBtn.hidden = YES ;
-    self.femaleBtn.hidden = YES ;
-    
+ 
+  
     self.loadingImage.hidden = NO ;
     NSMutableArray *images = [NSMutableArray arrayWithCapacity:1];
     for (int i = 1; i < 33; i ++) {
@@ -78,7 +48,7 @@
     if (num == 4) {
         num = 0 ;
     }
-    NSString *message = @"模型生成中";
+    NSString *message = self.loadingString;
     for (int i = 0 ; i < num; i ++) {
         message = [message stringByAppendingString:@"."];
     }
@@ -93,18 +63,10 @@
     self.loadingLabel.hidden = YES ;
     [self.loadingTimer invalidate];
     self.loadingTimer = nil ;
-    self.tipLabel.text = @"请选择性别" ;
-    [self.maleBtn setImage:[UIImage imageNamed:@"camera-male"] forState:UIControlStateNormal];
-    [self.femaleBtn setImage:[UIImage imageNamed:@"camera-female"] forState:UIControlStateNormal];
-    
-    self.tipLabel.hidden = NO ;
-    self.maleBtn.hidden = NO ;
-    self.femaleBtn.hidden = NO ;
+
     
     [self.loadingImage stopAnimating];
     self.loadingImage.hidden = YES ;
-    
-    gender = FUGenderUnKnow ;
 }
 
 @end
