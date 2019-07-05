@@ -194,21 +194,29 @@ static FURequestManager *sharedInstance;
     
     NSString *url = [[DOWNLOADURL stringByAppendingString:@"?access_token="] stringByAppendingString:token];
     __weak typeof(self)weakSelf = self ;
-    [_requestManager POST:url parameters:params progress:^(NSProgress * _Nonnull uploadProgress) {
-    } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        NSData *jsonData = (NSData *)responseObject ;
-        
-        NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingAllowFragments error:nil];
-        NSLog(@"====== dict: %@", dict);
-        
-        NSString *dataString = dict[@"data"];
-        
-        NSData *data = [[NSData alloc] initWithBase64EncodedString:dataString options:NSDataBase64DecodingIgnoreUnknownCharacters] ;
-        
-        weakSelf.requestResultBlock(data, nil) ;
-        
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-    }];
+	[_requestManager POST:url parameters:params progress:^(NSProgress * _Nonnull uploadProgress) {
+	} success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+		NSData *jsonData = (NSData *)responseObject ;
+		
+		NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingAllowFragments error:nil];
+		NSLog(@"====== dict: %@", dict);
+		int code = (int)dict[@"code"];
+		NSString * message = dict[@"message"];
+		NSError  *error = [[NSError alloc]init];
+		if ([message isEqualToString:@"FAILED"]) {
+		     NSString* str = @"上传的图片未检测到人脸！";
+             NSData* data = [str dataUsingEncoding:NSUTF8StringEncoding];
+		     weakSelf.requestResultBlock(data, error) ;
+			// [SVProgressHUD showErrorWithStatus:@"上传的图片未检测到人脸！"];
+		}else{
+			NSString *dataString = dict[@"data"];
+			
+			NSData *data = [[NSData alloc] initWithBase64EncodedString:dataString options:NSDataBase64DecodingIgnoreUnknownCharacters] ;
+			
+			weakSelf.requestResultBlock(data, nil) ;
+		}
+	} failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+	}];
 }
 
 @end

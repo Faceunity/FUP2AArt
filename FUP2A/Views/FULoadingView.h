@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "FUP2ADefine.h"
+
 
 @protocol FULoadingViewDelegate <NSObject>
 @optional
@@ -15,7 +15,8 @@
 @end
 
 @interface FULoadingView : UIView
-
+@property (weak, nonatomic) IBOutlet UIImageView *loadingImage;
+@property (weak, nonatomic) IBOutlet UILabel *loadingLabel;
 @property (nonatomic, assign) id<FULoadingViewDelegate>mDelegate ;
 
 // 开始加载

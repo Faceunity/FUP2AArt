@@ -53,7 +53,7 @@
 
 @property (nonatomic, copy) NSString *shoes ;
 @property (nonatomic, strong) NSArray *shoesArray ;
-
+-(void)recoverCollectionViewUI;
 - (void)loadDecorationData ;
 @end
 

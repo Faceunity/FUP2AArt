@@ -192,6 +192,7 @@
     FUHomeBarCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"FUHomeBarCell" forIndexPath:indexPath];
     
     FUAvatar *avatar = [FUManager shareInstance].avatarList[indexPath.row];
+
     UIImage *image = [UIImage imageWithContentsOfFile:avatar.imagePath];
     
     cell.imageView.image = image ;

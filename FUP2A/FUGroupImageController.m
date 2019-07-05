@@ -7,12 +7,7 @@
 //
 
 #import "FUGroupImageController.h"
-#import <SVProgressHUD.h>
-#import "FUManager.h"
-#import "FUAvatar.h"
-#import <Photos/Photos.h>
-#import <SVProgressHUD.h>
-#import <UIImage+GIF.h>
+
 
 @interface FUGroupImageController ()
 
@@ -61,28 +56,45 @@
         NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"background.bundle" ofType:nil];
         [[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
     }
-    
-    [self.navigationController popToRootViewControllerAnimated:YES];
+	UIViewController * lasTwoVC =  self.navigationController.viewControllers[1];
+	[self.navigationController popToViewController:lasTwoVC animated:true];
 }
 
 - (IBAction)saveImage:(UIButton *)sender {
     if (self.image) {
         UIImageWriteToSavedPhotosAlbum(self.image, self, @selector(image:didFinishSavingWithError:contextInfo:), NULL);
     }
-    if (self.gifPath && [[NSFileManager defaultManager] fileExistsAtPath:self.gifPath]) {
-        NSData *data = [NSData dataWithContentsOfFile:self.gifPath];
-        
-        [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
-            [[PHAssetCreationRequest creationRequestForAsset] addResourceWithType:PHAssetResourceTypePhoto data:data options:nil];
-        } completionHandler:^(BOOL success, NSError * _Nullable error) {
-            
-            if(success && error == nil){
-                [SVProgressHUD showSuccessWithStatus:@"动图已保存到相册"];
-            }else{
-                [SVProgressHUD showErrorWithStatus:@"保存动图失败"];
-            }
-        }];
-    }
+#if 0
+	if (self.gifPath && [[NSFileManager defaultManager] fileExistsAtPath:self.gifPath]) {
+		NSData *data = [NSData dataWithContentsOfFile:self.gifPath];
+		
+		[[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+			[[PHAssetCreationRequest creationRequestForAsset] addResourceWithType:PHAssetResourceTypePhoto data:data options:nil];
+		} completionHandler:^(BOOL success, NSError * _Nullable error) {
+			
+			if(success && error == nil){
+				[SVProgressHUD showSuccessWithStatus:@"动图已保存到相册"];
+			}else{
+				[SVProgressHUD showErrorWithStatus:@"保存动图失败"];
+			}
+		}];
+	}
+#else
+	if (self.gifPath && [[NSFileManager defaultManager] fileExistsAtPath:self.gifPath]) {
+		NSData *data = [NSData dataWithContentsOfFile:self.gifPath];
+		
+		[[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+		[PHAssetCreationRequest creationRequestForAssetFromVideoAtFileURL:[NSURL URLWithString:self.gifPath]];
+		} completionHandler:^(BOOL success, NSError * _Nullable error) {
+			
+			if(success && error == nil){
+				[SVProgressHUD showSuccessWithStatus:@"动图已保存到相册"];
+			}else{
+				[SVProgressHUD showErrorWithStatus:@"保存动图失败"];
+			}
+		}];
+	}
+#endif
 }
 
 - (void)image: (UIImage *) image didFinishSavingWithError: (NSError *) error contextInfo: (void *) contextInfo  {

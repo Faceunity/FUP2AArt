@@ -9,7 +9,6 @@
 #import "FUManager.h"
 #import "authpack.h"
 #import "FURenderer.h"
-#import <FUP2AClient/FUP2AClient.h>
 #import "FURequestManager.h"
 #import "FUAvatar.h"
 #import "FUP2AColor.h"
@@ -200,7 +199,8 @@ static FUManager *fuManager = nil ;
 
 #pragma mark ----- 以下数据
 -(NSString *)appVersion {
-    return @"DigiMe Art v1.5.0" ;
+    NSString* versionStr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+    return [NSString stringWithFormat:@"DigiMe Art v%@",versionStr];
 }
 
 -(NSString *)sdkVersion {
@@ -816,6 +816,8 @@ static int ARFilterID = 0 ;
     
     isCreatingAvatar = YES ;
     
+
+    
     FUAvatar *avatar = [[FUAvatar alloc] init];
     avatar.defaultModel = NO ;
     avatar.name = name;
@@ -831,12 +833,20 @@ static int ARFilterID = 0 ;
     int hairLabel = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"hair_label"];
     avatar.hairLabel = hairLabel ;
     NSString *defaultHair = [self gethairNameWithNum:hairLabel];
-    if ([defaultHair isEqualToString:@"hair-noitem"]) {
-        defaultHair = gender == FUGenderMale ? @"male_hair_2" : @"female_td2" ;
-    }
-    if (isQ) {
-        defaultHair = gender == FUGenderMale ? @"male_hair_q_0" : @"female_hair_q_7" ;
-    }
+//    if ([defaultHair isEqualToString:@"hair-noitem"]) {
+//        defaultHair = gender == FUGenderMale ? @"male_hair_2" : @"female_td2" ;
+//    }
+//    if (isQ) {
+//        defaultHair = gender == FUGenderMale ? @"male_hair_q_3" : @"female_hair_q_21" ;
+//    }
+	if (isQ) {
+		NSString *string = defaultHair;
+		NSError *error = nil;
+		NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"_hair_" options:NSRegularExpressionCaseInsensitive error:&error];
+		NSString *modifiedString = [regex stringByReplacingMatchesInString:string options:0 range:NSMakeRange(0, [string length]) withTemplate:@"_hair_q_"];
+		NSLog(@"%@", modifiedString);
+		defaultHair = modifiedString;
+	}
     avatar.hair = defaultHair ;
     
     NSString *baseHairPath = [[NSBundle mainBundle] pathForResource:avatar.hair ofType:@"bundle"] ;
@@ -851,11 +861,14 @@ static int ARFilterID = 0 ;
     if (hasGlass == 0) {
         avatar.glasses = @"glasses-noitem" ;
     }else {
+		int shapeGlasses = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"shape_glasses"];
+		int rimGlasses = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"rim_glasses"];
         if (avatar.isQType) {
-            avatar.glasses = @"glass_2" ;
+			NSLog(@"---------Q-Style--- shape_glasses: %d - rim_glasses:%d", shapeGlasses, rimGlasses);
+            NSString *glassName = [self getQGlassesNameWithShape:shapeGlasses rim:rimGlasses male:gender == FUGenderMale];
+            avatar.glasses = glassName ;
         }else {
-            int shapeGlasses = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"shape_glasses"];
-            int rimGlasses = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"rim_glasses"];
+
             NSLog(@"--------- shape_glasses: %d - rim_glasses:%d", shapeGlasses, rimGlasses);
             NSString *glassName = [self getGlassesNameWithShape:shapeGlasses rim:rimGlasses male:gender == FUGenderMale];
             avatar.glasses = glassName ;
@@ -896,12 +909,14 @@ static int ARFilterID = 0 ;
     [avatarInfo setObject:avatar.glasses forKey:@"glasses"];
     [avatarInfo setObject:avatar.hat forKey:@"hat"];
     
+
+    
     avatar.hairColor = self.hairColorArray[0] ;
     
     NSString *avatarInfoPath = self.avatarStyle == FUAvatarStyleNormal ? [[AvatarListPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"] : [[AvatarQPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
     NSData *avatarInfoData = [NSJSONSerialization dataWithJSONObject:avatarInfo options:NSJSONWritingPrettyPrinted error:nil];
     [avatarInfoData writeToFile:avatarInfoPath atomically:YES];
-    
+    appManager.localizeHairBundlesSuccess = false;
     // create other hairs
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         NSArray *hairs ;
@@ -917,16 +932,24 @@ static int ARFilterID = 0 ;
             NSString *hairPath = [[NSBundle mainBundle] pathForResource:hairName ofType:@"bundle"];
             NSData *d0 = [NSData dataWithContentsOfFile:hairPath];
             
-            NSLog(@"------- hair name: %@", hairName);
+//            CFAbsoluteTime startProcessHair1 = CFAbsoluteTimeGetCurrent() ;
             NSData *d1 = [[FUP2AClient shareInstance] createAvatarHairWithServerData:data defaultHairData:d0];
+//            NSLog(@"------------ process hair time: %f ms - hair name: %@", (CFAbsoluteTimeGetCurrent() - startProcessHair1) * 1000.0, hairName);
+            if (d1 == nil) {
+                NSLog(@"---- error path: %@", hairPath);
+            }
             NSString *hp = [[[avatar filePath] stringByAppendingPathComponent:hairName] stringByAppendingString:@".bundle"];
             [d1 writeToFile:hp atomically:YES];
         }
-        
+		appManager.localizeHairBundlesSuccess = true;
+		[[NSNotificationCenter defaultCenter] postNotificationName:HairsWriteToLocalSuccessNot object:nil];
         self->isCreatingAvatar = NO ;
     });
+ 
     return avatar ;
 }
+
+
 
 /**
  是否正在生成 Avatar 模型
@@ -1258,6 +1281,21 @@ static float CenterScale = 0.3 ;
         return male ? @"male_glass_8" : @"female_glass_8" ;
     }else if (shape == 1 && rim == 2){
         return male ? @"male_glass_15" : @"female_glass_15" ;
+    }
+    return @"glasses-noitem" ;
+}
+
+// 获取Q风格默认眼镜
+- (NSString *)getQGlassesNameWithShape:(int)shape rim:(int)rim male:(BOOL)male{
+	
+    if (shape == 1 && rim == 0) {
+        return @"glass_14" ;
+    }else if (shape == 0 && rim == 0){
+        return @"glass_2";
+    }else if (shape == 1 && rim == 1){
+        return @"glass_8";
+    }else if (shape == 1 && rim == 2){
+        return @"glass_15";
     }
     return @"glasses-noitem" ;
 }

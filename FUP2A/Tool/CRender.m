@@ -8,8 +8,8 @@
 
 #import "CRender.h"
 #import "FUManager.h"
-#import <OpenGLES/ES2/gl.h>
-#import <OpenGLES/ES2/glext.h>
+#import <OpenGLES/ES3/gl.h>
+#import <OpenGLES/ES3/glext.h>
 #import <Accelerate/Accelerate.h>
 
 #define STRINGIZE(x)    #x
@@ -93,7 +93,7 @@ static CRender *_shareRenderer = nil;
 {
     if (self = [super init]) {
         
-        _context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+		_context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
         
         if (!_context || ![EAGLContext setCurrentContext:_context]) {
             return nil;

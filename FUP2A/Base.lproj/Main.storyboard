@@ -591,11 +591,12 @@
                         <outlet property="nextBtn" destination="Nmf-50-PfP" id="XuF-bI-fPv"/>
                         <outlet property="tipLabel" destination="BJb-t1-G8C" id="bes-9K-AX1"/>
                         <segue destination="2WB-1q-xLK" kind="show" identifier="FUGroupImageController" id="rXn-kw-GXA"/>
+                        <segue destination="nkJ-fv-Yhh" kind="show" identifier="FUGroupVideoController" id="A0O-Ec-HOX"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="077-0i-z1Q" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2274.4000000000001" y="-935.98200899550227"/>
+            <point key="canvasLocation" x="2513" y="-1094"/>
         </scene>
         <!--Group Image Controller-->
         <scene sceneID="bGj-xq-BWn">
@@ -677,7 +678,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Wq8-VN-JGu" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2988.4057971014495" y="-935.86956521739137"/>
+            <point key="canvasLocation" x="3106" y="-491"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="Vec-mb-KCb">
@@ -910,7 +911,7 @@
                             <containerView hidden="YES" opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qBr-8g-1kO">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                                 <connections>
-                                    <segue destination="DCL-av-BaW" kind="embed" identifier="FULoadingView" id="IH3-mp-3a4"/>
+                                    <segue destination="DCL-av-BaW" kind="embed" identifier="FUPhotoLoadingView" id="IH3-mp-3a4"/>
                                 </connections>
                             </containerView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="S0c-TE-Hac" userLabel="返回">
@@ -963,7 +964,7 @@
                         <viewControllerLayoutGuide type="top" id="2WN-LL-na7"/>
                         <viewControllerLayoutGuide type="bottom" id="9XK-kZ-okH"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="BWE-xS-ULo" customClass="FULoadingView">
+                    <view key="view" contentMode="scaleToFill" id="BWE-xS-ULo" customClass="FUPhotoLoadingView">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
@@ -1088,9 +1089,17 @@
                                     <action selector="qstyleSelected:" destination="AIX-SZ-lsp" eventType="touchUpInside" id="yKI-hO-cKd"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="请选择模型生成风格" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tgb-r5-nRO">
+                                <rect key="frame" x="114" y="50" width="147" height="19.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
+                            <constraint firstItem="Tgb-r5-nRO" firstAttribute="centerX" secondItem="ehE-An-ZVQ" secondAttribute="centerX" id="3Ct-kd-nYM"/>
+                            <constraint firstItem="Tgb-r5-nRO" firstAttribute="top" secondItem="kaN-yh-7Hi" secondAttribute="bottom" constant="30" id="CsV-Ou-WBB"/>
                             <constraint firstItem="bcD-eb-tvm" firstAttribute="centerY" secondItem="ehE-An-ZVQ" secondAttribute="centerY" constant="115" id="J0l-UL-4rm"/>
                             <constraint firstItem="80G-R1-Lt6" firstAttribute="centerX" secondItem="ehE-An-ZVQ" secondAttribute="centerX" id="LQV-Hf-v7Y"/>
                             <constraint firstItem="80G-R1-Lt6" firstAttribute="centerY" secondItem="ehE-An-ZVQ" secondAttribute="centerY" constant="-115" id="X8Q-CI-dv1"/>
@@ -1099,6 +1108,8 @@
                     </view>
                     <navigationItem key="navigationItem" id="kVA-nm-LaF"/>
                     <connections>
+                        <outlet property="NormalStyleButton" destination="bcD-eb-tvm" id="qcX-qP-YEc"/>
+                        <outlet property="QStyleButton" destination="80G-R1-Lt6" id="2sT-a2-Ib1"/>
                         <segue destination="BYZ-38-t0r" kind="show" identifier="showMainViewController" id="Qt4-TK-sMO"/>
                     </connections>
                 </viewController>
@@ -1218,6 +1229,7 @@
                         <outlet property="downloadBtn" destination="Spb-Fy-cWV" id="yHO-Js-GcO"/>
                         <outlet property="faceBtn" destination="DXy-l9-qIt" id="eFy-Ay-R9M"/>
                         <outlet property="loadingImage" destination="Bct-jZ-lUf" id="4b5-rO-bMa"/>
+                        <outlet property="loadingLabel" destination="zHe-eX-Wnl" id="Izr-H8-txF"/>
                         <outlet property="loadingView" destination="xvn-xb-Meh" id="FEn-gu-fwY"/>
                         <outlet property="pointLabel" destination="ipl-aI-mOj" id="m86-Ol-is9"/>
                         <outlet property="renderView" destination="aNF-Lf-z3N" id="U2o-Kz-pY5"/>
@@ -1821,6 +1833,88 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="uEk-ED-dhd" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2238" y="465"/>
+        </scene>
+        <!--Group Video Controller-->
+        <scene sceneID="GnS-cw-Ub7">
+            <objects>
+                <viewController id="nkJ-fv-Yhh" customClass="FUGroupVideoController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="5Ac-xx-XFg"/>
+                        <viewControllerLayoutGuide type="bottom" id="fg6-eU-ZQT"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="zRB-bw-qea">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kyQ-ch-oMS">
+                                <rect key="frame" x="327" y="7" width="42" height="42"/>
+                                <state key="normal" image="group-close"/>
+                                <connections>
+                                    <action selector="backToRoot:" destination="nkJ-fv-Yhh" eventType="touchUpInside" id="O86-Lh-W9W"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Rmx-mh-0NL">
+                                <rect key="frame" x="6" y="7" width="42" height="42"/>
+                                <state key="normal" image="group-selected-back"/>
+                                <connections>
+                                    <action selector="backAction:" destination="nkJ-fv-Yhh" eventType="touchUpInside" id="dEK-DB-DtA"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Wg7-Ek-kch">
+                                <rect key="frame" x="87.5" y="574" width="200" height="44"/>
+                                <color key="backgroundColor" red="0.29803921570000003" green="0.58823529409999997" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="200" id="QmR-ce-CzQ"/>
+                                    <constraint firstAttribute="height" constant="44" id="wpe-Aw-In4"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="17"/>
+                                <state key="normal" title="保存">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="22"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="saveImage:" destination="nkJ-fv-Yhh" eventType="touchUpInside" id="ZWF-O7-x7g"/>
+                                </connections>
+                            </button>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eZl-mi-HyN" customClass="FUAVPlayerView">
+                                <rect key="frame" x="33.5" y="119.5" width="308" height="358"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="308" id="ElG-58-uWi"/>
+                                    <constraint firstAttribute="width" secondItem="eZl-mi-HyN" secondAttribute="height" multiplier="308:358" id="cJ0-kR-MAd"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="8"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="eZl-mi-HyN" firstAttribute="centerX" secondItem="zRB-bw-qea" secondAttribute="centerX" id="5TD-ZP-CSO"/>
+                            <constraint firstItem="fg6-eU-ZQT" firstAttribute="top" secondItem="Wg7-Ek-kch" secondAttribute="bottom" constant="49" id="9Zd-Az-neI"/>
+                            <constraint firstItem="Wg7-Ek-kch" firstAttribute="centerX" secondItem="zRB-bw-qea" secondAttribute="centerX" id="BfE-SR-9ZH"/>
+                            <constraint firstItem="kyQ-ch-oMS" firstAttribute="centerY" secondItem="Rmx-mh-0NL" secondAttribute="centerY" id="Zrl-zq-vy1"/>
+                            <constraint firstItem="Rmx-mh-0NL" firstAttribute="top" secondItem="zRB-bw-qea" secondAttribute="top" constant="7" id="fdC-pE-QCq"/>
+                            <constraint firstItem="eZl-mi-HyN" firstAttribute="centerY" secondItem="zRB-bw-qea" secondAttribute="centerY" constant="-35" id="h35-O2-K3p"/>
+                            <constraint firstAttribute="trailing" secondItem="kyQ-ch-oMS" secondAttribute="trailing" constant="6" id="hS3-Hw-XsG"/>
+                            <constraint firstItem="Rmx-mh-0NL" firstAttribute="leading" secondItem="zRB-bw-qea" secondAttribute="leading" constant="6" id="zSf-FO-FHZ"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="playerView" destination="eZl-mi-HyN" id="Emw-aX-lG4"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="84H-BC-gMT" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3230" y="-1222"/>
         </scene>
     </scenes>
     <resources>

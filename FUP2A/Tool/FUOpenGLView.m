@@ -111,6 +111,7 @@ enum
 @interface FUOpenGLView()
 
 @property (nonatomic, strong) EAGLContext *glContext;
+@property (nonatomic, strong) CAEAGLLayer *eaglLayer;
 
 @property(nonatomic) dispatch_queue_t contextQueue;
 
@@ -149,7 +150,7 @@ enum
 - (instancetype)initWithCoder:(NSCoder *)aDecoder
 {
     if (self = [super initWithCoder:aDecoder]) {
-        
+        openGLBufferSize = self.frame.size;
         _contextQueue = dispatch_queue_create("com.faceunity.contextQueue", DISPATCH_QUEUE_SERIAL);
         
         self.contentScaleFactor = [[UIScreen mainScreen] scale];
@@ -172,14 +173,16 @@ enum
                 NSLog(@"Error at CVOpenGLESTextureCacheCreate %d", err);
             }
         }
+		self.eaglLayer = (CAEAGLLayer *)self.layer;
+		[self glkViewTest];
     }
         
     return self;
 }
-
+CGSize openGLBufferSize;
 - (instancetype)initWithFrame:(CGRect)frame{
     if (self = [super initWithFrame:frame] ) {
-        
+        openGLBufferSize = frame.size;
         _contextQueue = dispatch_queue_create("com.faceunity.contextQueue", DISPATCH_QUEUE_SERIAL);
         self.contentScaleFactor = [[UIScreen mainScreen] scale];
         
@@ -202,6 +205,8 @@ enum
                 NSLog(@"Error at CVOpenGLESTextureCacheCreate %d", err);
             }
         }
+        self.eaglLayer = (CAEAGLLayer *)self.layer;
+        [self glkViewTest];
     }
     return self;
 }
@@ -236,7 +241,92 @@ enum
         }
     });
 }
+-(CVPixelBufferRef)createPixelBufferWithSize:(CGSize)size {
+    const void *keys[] = {
+        kCVPixelBufferOpenGLESCompatibilityKey,
+        kCVPixelBufferIOSurfacePropertiesKey,
+    };
+    const void *values[] = {
+        (__bridge const void *)([NSNumber numberWithBool:YES]),
+        (__bridge const void *)([NSDictionary dictionary])
+    };
+	
+    OSType bufferPixelFormat = kCVPixelFormatType_32BGRA;
+	
+    CFDictionaryRef optionsDictionary = CFDictionaryCreate(NULL, keys, values, 2, NULL, NULL);
+	
+    CVPixelBufferRef pixelBuffer = NULL;
+    CVPixelBufferCreate(kCFAllocatorDefault,
+                        size.width,
+                        size.height,
+                        bufferPixelFormat,
+                        optionsDictionary,
+                        &pixelBuffer);
+	
+    CFRelease(optionsDictionary);
+	
+    return pixelBuffer;
+}
+typedef void (^CompleteBlock)(void);
+CompleteBlock _completeBlock;
+-(void)playDefaultAvatarInOpengl:(CompleteBlock)completeBlock{
+_completeBlock = completeBlock;
 
+	 CADisplayLink * displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkMethod)];
+     displayLink.preferredFramesPerSecond = 30;
+     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+		 
+	
+}
+
+-(void)displayLinkMethod{
+ dispatch_queue_t globalQueue = dispatch_get_global_queue(0, 0);
+	 dispatch_async(globalQueue, ^{
+	 
+	 CVPixelBufferRef pixelBuffer = [self createPixelBufferWithSize:openGLBufferSize] ;
+    float landmarks[150] ;
+    CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemWithPixelBuffer:pixelBuffer RenderMode:FURenderCommonMode Landmarks:landmarks];
+    [self displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:YES];
+	CVPixelBufferRelease(pixelBuffer);
+	_completeBlock();
+	 });
+	
+}
+typedef struct{
+    GLKVector3 positionCoords;
+}SceneVertex;
+
+static const SceneVertex vertices[] = {
+    {{-0.5f,-0.4f,0.0}},
+    {{0.5f,-0.4f,0.0}},
+    {{-0.5f,0.4f,0.0}},
+    {{0.5f,0.4f,0.0}}
+};
+-(void)glkViewTest{
+return;
+    UIView *view = (UIView *)self;
+	
+
+	
+    self.baseEffect = [[GLKBaseEffect alloc] init];
+    self.baseEffect.useConstantColor = GL_TRUE;
+    self.baseEffect.constantColor = GLKVector4Make(1.0f,//red
+                                                   1.0f,//green
+                                                   1.0f,//blue
+                                                   1.0f);
+
+    self.vertexBuffer = [[AGLKVertexAttribArrayBuffer alloc] initWithAttribStride:sizeof(SceneVertex) numberOfVertices:sizeof(vertices)/sizeof(SceneVertex) data:vertices usage:GL_STATIC_DRAW];
+	
+}
+-(void)displayLinkTest{
+ glClear(GL_COLOR_BUFFER_BIT);
+  glClearColor(0, 104.0/255.0, 55.0/255.0, 1.0);
+//	[self.baseEffect prepareToDraw];
+//    [self.vertexBuffer prepareToDrawWithAttrib:GLKVertexAttribPosition numberOfCoordinates:3 attribOffset:offsetof(SceneVertex, positionCoords) shouldEnable:YES];
+//    [self.vertexBuffer drawArrayWithMode:GL_TRIANGLE_STRIP startVertexIndex:0 numberOfVertices:4];
+
+
+}
 - (void)createDisplayFramebuffer
 {
     [EAGLContext setCurrentContext:self.glContext];
@@ -249,7 +339,8 @@ enum
     glGenRenderbuffers(1, &renderBufferHandle);
     glBindRenderbuffer(GL_RENDERBUFFER, renderBufferHandle);
     
-    [self.glContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
+    [self.glContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:self.eaglLayer];
+//  [self.glContext renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
 
     glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
     glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
@@ -318,7 +409,7 @@ enum
     glBindRenderbuffer(GL_RENDERBUFFER, renderBufferHandle);
     [self.glContext presentRenderbuffer:GL_RENDERBUFFER];
     
-    glFinish() ;
+  //  glFinish() ;
 }
 
 - (void)displayPixelBuffer:(CVPixelBufferRef)pixelBuffer
@@ -329,7 +420,11 @@ enum
 - (void)displayPixelBuffer:(CVPixelBufferRef)pixelBuffer withLandmarks:(float *)landmarks count:(int)count Mirr:(BOOL) mirr
 {
     if (pixelBuffer == NULL) return;
-    
+    if (appManager.OpenGLESCapture)
+    {
+    glInsertEventMarkerEXT(0, "com.apple.GPUTools.event.debug-frame");
+	}
+	appManager.OpenGLESCapture = false;
     CVPixelBufferRetain(pixelBuffer);
     dispatch_sync(_contextQueue, ^{
 
@@ -363,6 +458,163 @@ enum
     });
     
 }
+
+- (void)convertMirrorPixelBuffer:(CVPixelBufferRef)pixelBuffer dstPixelBuffer:(CVPixelBufferRef*)dstPixelBuffer
+{
+	
+    if (appManager.OpenGLESCapture)
+    {
+    glInsertEventMarkerEXT(0, "com.apple.GPUTools.event.debug-frame");
+	}
+	appManager.OpenGLESCapture = false;
+    CVPixelBufferRetain(pixelBuffer);
+    dispatch_sync(_contextQueue, ^{
+
+        self->frameWidth = (int)CVPixelBufferGetWidth(pixelBuffer);
+        self->frameHeight = (int)CVPixelBufferGetHeight(pixelBuffer);
+		
+        if ([EAGLContext currentContext] != self.glContext) {
+            if (![EAGLContext setCurrentContext:self.glContext]) {
+                NSLog(@"fail to setCurrentContext");
+            }
+        }
+		
+        [self setDisplayFramebuffer];
+		
+        OSType type = CVPixelBufferGetPixelFormatType(pixelBuffer);
+        if (type == kCVPixelFormatType_32BGRA)
+        {
+            [self prepareToDrawBGRAPixelBuffer:pixelBuffer Mirr:true];
+			
+        }else{
+            [self prepareToDrawYUVPixelBuffer:pixelBuffer];
+        }
+		*dstPixelBuffer = pixelBuffer;
+        CVPixelBufferRelease(pixelBuffer);
+		
+		
+    });
+	
+}
+CVOpenGLESTextureCacheRef videoTextureCache1 = NULL;
+- (void)convertMirrorPixelBuffer2:(CVPixelBufferRef)pixelBuffer dstPixelBuffer:(CVPixelBufferRef*)dstPixelBuffer{
+CVPixelBufferRetain(pixelBuffer);
+    dispatch_sync(_contextQueue, ^{
+
+        self->frameWidth = (int)CVPixelBufferGetWidth(pixelBuffer);
+        self->frameHeight = (int)CVPixelBufferGetHeight(pixelBuffer);
+		
+        if ([EAGLContext currentContext] != self.glContext) {
+            if (![EAGLContext setCurrentContext:self.glContext]) {
+                NSLog(@"fail to setCurrentContext");
+            }
+        }
+		
+        [self setDisplayFramebuffer];
+		
+
+	CVReturn err0 = CVOpenGLESTextureCacheCreate(kCFAllocatorDefault, NULL, self.glContext, NULL, &videoTextureCache1);
+            if (err0 != noErr) {
+                NSLog(@"Error at CVOpenGLESTextureCacheCreate %d", err0);
+            }
+if (!rgbaProgram) {
+        [self loadShadersRGBA];
+    }
+	
+    CVOpenGLESTextureRef rgbaTexture = NULL;
+    CVReturn err = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault, videoTextureCache1, pixelBuffer, NULL, GL_TEXTURE_2D, GL_RGBA, frameWidth, frameHeight, GL_BGRA, GL_UNSIGNED_BYTE, 0, &rgbaTexture);
+	
+    if (!rgbaTexture || err) {
+		
+        NSLog(@"Camera CVOpenGLESTextureCacheCreateTextureFromImage failed (error: %d)", err);
+        return;
+    }
+	
+    glBindTexture(GL_TEXTURE_2D, CVOpenGLESTextureGetName(rgbaTexture));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	
+    glUseProgram(rgbaProgram);
+	
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+	
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, CVOpenGLESTextureGetName(rgbaTexture));
+    glUniform1i(displayInputTextureUniform, 4);
+	
+    [self updateVertices];
+	
+    // 更新顶点数据
+    glVertexAttribPointer(furgbaPositionAttribute, 2, GL_FLOAT, 0, 0, vertices);
+    glEnableVertexAttribArray(furgbaPositionAttribute);
+	
+    GLfloat quadTextureData[] =  {
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        0.0f,  0.0f,
+        1.0f,  0.0f,
+    };
+	
+    if (true) {
+		
+        quadTextureData[0] = 1.0 ;
+        quadTextureData[2] = 0.0 ;
+        quadTextureData[4] = 1.0 ;
+        quadTextureData[6] = 0.0 ;
+    }
+	
+    glVertexAttribPointer(furgbaTextureCoordinateAttribute, 2, GL_FLOAT, 0, 0, quadTextureData);
+    glEnableVertexAttribArray(furgbaTextureCoordinateAttribute);
+	
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	
+    if (rgbaTexture) {
+        CFRelease(rgbaTexture);
+        rgbaTexture = NULL;
+    }
+    [self createCVBufferWithSize:CGSizeMake(frameWidth, frameHeight) withRenderTarget:dstPixelBuffer withTextureOut:&rgbaTexture];
+});
+}
+
+- (void)createCVBufferWithSize:(CGSize)size
+			  withRenderTarget:(CVPixelBufferRef *)target
+				withTextureOut:(CVOpenGLESTextureRef *)texture {
+	CVReturn err = CVOpenGLESTextureCacheCreate(kCFAllocatorDefault, NULL, self.glContext, NULL, &videoTextureCache1);
+	if (err) return;
+	CFDictionaryRef empty; // empty value for attr value.
+	CFMutableDictionaryRef attrs;
+	empty = CFDictionaryCreate(kCFAllocatorDefault, // our empty IOSurface properties dictionary
+							   NULL,
+							   NULL,
+							   0,
+							   &kCFTypeDictionaryKeyCallBacks,
+							   &kCFTypeDictionaryValueCallBacks);
+	attrs = CFDictionaryCreateMutable(kCFAllocatorDefault, 1,
+									  &kCFTypeDictionaryKeyCallBacks,
+									  &kCFTypeDictionaryValueCallBacks);
+	CFDictionarySetValue(attrs, kCVPixelBufferIOSurfacePropertiesKey, empty);
+	CVPixelBufferCreate(kCFAllocatorDefault, size.width, size.height,
+						kCVPixelFormatType_32BGRA, attrs, target);
+	CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
+												 videoTextureCache1,
+												 *target,
+												 NULL, // texture attributes
+												 GL_TEXTURE_2D,
+												 GL_RGBA, // opengl format
+												 size.width,
+												 size.height,
+												 GL_BGRA, // native iOS format
+												 GL_UNSIGNED_BYTE,
+												 0,
+												 texture);
+	CFRelease(empty);
+	CFRelease(attrs);
+}
+
+
 
 - (void)prepareToDrawLandmarks:(float *)landmarks count:(int)count
 {

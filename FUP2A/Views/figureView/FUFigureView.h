@@ -153,4 +153,5 @@ typedef enum : NSInteger {
 @property (nonatomic, strong) NSArray <NSString *>*noseArray ;
 
 - (void)setupFigureView ;
+-(void)resetUI;
 @end
