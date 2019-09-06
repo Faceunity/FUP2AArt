@@ -236,9 +236,6 @@
 		0B8DE89E20C52F2200E21A8B /* FUAvatar.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B8DE89C20C52F2200E21A8B /* FUAvatar.m */; };
 		0B8DE8A820C5486200E21A8B /* FUTakePhotoController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B8DE8A720C5486200E21A8B /* FUTakePhotoController.m */; };
 		0B8E6664229BE71F000C8C86 /* background.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6663229BE71E000C8C86 /* background.bundle */; };
-		0B8E6671229BE96F000C8C86 /* FUP2AHelper.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B8E6670229BE96F000C8C86 /* FUP2AHelper.framework */; };
-		0B8E6672229BE9A2000C8C86 /* FUP2AHelper.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B8E6670229BE96F000C8C86 /* FUP2AHelper.framework */; };
-		0B8E6673229BE9A2000C8C86 /* FUP2AHelper.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0B8E6670229BE96F000C8C86 /* FUP2AHelper.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		0B8E6763229D3300000C8C86 /* female_brows01.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66D4229D32FF000C8C86 /* female_brows01.bundle */; };
 		0B8E6764229D3300000C8C86 /* female_brows03.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66D5229D32FF000C8C86 /* female_brows03.bundle */; };
 		0B8E6765229D3300000C8C86 /* female_brows07.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66D6229D32FF000C8C86 /* female_brows07.bundle */; };
@@ -249,18 +246,6 @@
 		0B8E676A229D3300000C8C86 /* female_brows06.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66DB229D32FF000C8C86 /* female_brows06.bundle */; };
 		0B8E676B229D3300000C8C86 /* female_brows08.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66DC229D32FF000C8C86 /* female_brows08.bundle */; };
 		0B8E676C229D3300000C8C86 /* female_brows04.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66DD229D32FF000C8C86 /* female_brows04.bundle */; };
-		0B8E676D229D3300000C8C86 /* female_hair_q_15.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66DF229D32FF000C8C86 /* female_hair_q_15.bundle */; };
-		0B8E676E229D3300000C8C86 /* female_hair_q_23.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66E0229D32FF000C8C86 /* female_hair_q_23.bundle */; };
-		0B8E676F229D3300000C8C86 /* female_hair_q_t_1.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66E1229D32FF000C8C86 /* female_hair_q_t_1.bundle */; };
-		0B8E6770229D3300000C8C86 /* female_hair_q_21.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66E2229D32FF000C8C86 /* female_hair_q_21.bundle */; };
-		0B8E6771229D3300000C8C86 /* female_hair_q_t_5.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66E3229D32FF000C8C86 /* female_hair_q_t_5.bundle */; };
-		0B8E6772229D3300000C8C86 /* female_hair_q_13.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66E4229D32FF000C8C86 /* female_hair_q_13.bundle */; };
-		0B8E6773229D3300000C8C86 /* female_hair_q_11.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66E5229D32FF000C8C86 /* female_hair_q_11.bundle */; };
-		0B8E6774229D3300000C8C86 /* female_hair_q_9.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66E6229D32FF000C8C86 /* female_hair_q_9.bundle */; };
-		0B8E6775229D3300000C8C86 /* female_hair_q_16.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66E7229D32FF000C8C86 /* female_hair_q_16.bundle */; };
-		0B8E6776229D3300000C8C86 /* female_hair_q_7.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66E8229D32FF000C8C86 /* female_hair_q_7.bundle */; };
-		0B8E6777229D3300000C8C86 /* female_hair_q_12.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66E9229D32FF000C8C86 /* female_hair_q_12.bundle */; };
-		0B8E6778229D3300000C8C86 /* female_hair_q_10.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E66EA229D32FF000C8C86 /* female_hair_q_10.bundle */; };
 		0B8E6796229D3300000C8C86 /* q_controller.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6709229D32FF000C8C86 /* q_controller.bundle */; };
 		0B8E6797229D3300000C8C86 /* shape_list.json in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E670A229D32FF000C8C86 /* shape_list.json */; };
 		0B8E6798229D3300000C8C86 /* controller.md in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E670B229D32FF000C8C86 /* controller.md */; };
@@ -275,14 +260,6 @@
 		0B8E67B3229D3300000C8C86 /* male_brows06.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6729229D32FF000C8C86 /* male_brows06.bundle */; };
 		0B8E67B4229D3300000C8C86 /* male_brows08.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E672A229D32FF000C8C86 /* male_brows08.bundle */; };
 		0B8E67B5229D3300000C8C86 /* male_brows04.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E672B229D32FF000C8C86 /* male_brows04.bundle */; };
-		0B8E67B6229D3300000C8C86 /* male_hair_q_t_7.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E672D229D32FF000C8C86 /* male_hair_q_t_7.bundle */; };
-		0B8E67B7229D3300000C8C86 /* male_hair_q_2.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E672E229D32FF000C8C86 /* male_hair_q_2.bundle */; };
-		0B8E67B8229D3300000C8C86 /* male_hair_q_t_9.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E672F229D32FF000C8C86 /* male_hair_q_t_9.bundle */; };
-		0B8E67B9229D3300000C8C86 /* male_hair_q_0.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6730229D32FF000C8C86 /* male_hair_q_0.bundle */; };
-		0B8E67BA229D3300000C8C86 /* male_hair_q_6.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6731229D32FF000C8C86 /* male_hair_q_6.bundle */; };
-		0B8E67BB229D3300000C8C86 /* male_hair_q_1.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6732229D32FF000C8C86 /* male_hair_q_1.bundle */; };
-		0B8E67BC229D3300000C8C86 /* male_hair_q_t_8.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6733229D32FF000C8C86 /* male_hair_q_t_8.bundle */; };
-		0B8E67BD229D3300000C8C86 /* male_hair_q_5.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6734229D32FF000C8C86 /* male_hair_q_5.bundle */; };
 		0B8E67BE229D3300000C8C86 /* glass_10.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6736229D3300000C8C86 /* glass_10.bundle */; };
 		0B8E67BF229D3300000C8C86 /* glass_8.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6737229D3300000C8C86 /* glass_8.bundle */; };
 		0B8E67C0229D3300000C8C86 /* glass_4.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6738229D3300000C8C86 /* glass_4.bundle */; };
@@ -311,35 +288,6 @@
 		0B8E67E5229D3300000C8C86 /* beard04.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6760229D3300000C8C86 /* beard04.bundle */; };
 		0B8E67E6229D3300000C8C86 /* beard06.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6761229D3300000C8C86 /* beard06.bundle */; };
 		0B8E67E7229D3300000C8C86 /* beard02.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6762229D3300000C8C86 /* beard02.bundle */; };
-		0B8E6805229D3316000C8C86 /* ani_SJG.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67E8229D3313000C8C86 /* ani_SJG.bundle */; };
-		0B8E6806229D3316000C8C86 /* hi.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67E9229D3313000C8C86 /* hi.bundle */; };
-		0B8E6807229D3316000C8C86 /* pose_5ren_1.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67EA229D3313000C8C86 /* pose_5ren_1.bundle */; };
-		0B8E6808229D3316000C8C86 /* ani_SZW_cam.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67EB229D3314000C8C86 /* ani_SZW_cam.bundle */; };
-		0B8E6809229D3316000C8C86 /* pose_5ren_5.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67EC229D3314000C8C86 /* pose_5ren_5.bundle */; };
-		0B8E680A229D3316000C8C86 /* pose_danren_01.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67ED229D3314000C8C86 /* pose_danren_01.bundle */; };
-		0B8E680B229D3316000C8C86 /* ani_SZW.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67EE229D3314000C8C86 /* ani_SZW.bundle */; };
-		0B8E680C229D3316000C8C86 /* ani_SJG_sjg.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67EF229D3314000C8C86 /* ani_SJG_sjg.bundle */; };
-		0B8E680D229D3316000C8C86 /* pose_shaungren_03_2.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67F0229D3314000C8C86 /* pose_shaungren_03_2.bundle */; };
-		0B8E680E229D3316000C8C86 /* ani_idle.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67F1229D3314000C8C86 /* ani_idle.bundle */; };
-		0B8E680F229D3316000C8C86 /* pose_5ren_4.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67F2229D3314000C8C86 /* pose_5ren_4.bundle */; };
-		0B8E6810229D3316000C8C86 /* ani_dace_bg.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67F3229D3314000C8C86 /* ani_dace_bg.bundle */; };
-		0B8E6811229D3316000C8C86 /* ani_LRPP_bg.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67F4229D3314000C8C86 /* ani_LRPP_bg.bundle */; };
-		0B8E6812229D3316000C8C86 /* ani_pose.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67F5229D3315000C8C86 /* ani_pose.bundle */; };
-		0B8E6813229D3316000C8C86 /* guzhang.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67F6229D3315000C8C86 /* guzhang.bundle */; };
-		0B8E6814229D3316000C8C86 /* ok.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67F7229D3315000C8C86 /* ok.bundle */; };
-		0B8E6815229D3316000C8C86 /* ani_LRPP_cam.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67F8229D3315000C8C86 /* ani_LRPP_cam.bundle */; };
-		0B8E6816229D3316000C8C86 /* shuangshoubixin.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67F9229D3315000C8C86 /* shuangshoubixin.bundle */; };
-		0B8E6817229D3316000C8C86 /* ani_LRPP.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67FA229D3315000C8C86 /* ani_LRPP.bundle */; };
-		0B8E6818229D3316000C8C86 /* pose_5ren_3.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67FB229D3315000C8C86 /* pose_5ren_3.bundle */; };
-		0B8E6819229D3316000C8C86 /* danshoubixin.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67FC229D3315000C8C86 /* danshoubixin.bundle */; };
-		0B8E681A229D3316000C8C86 /* ani_LRPP_shanzi.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67FD229D3315000C8C86 /* ani_LRPP_shanzi.bundle */; };
-		0B8E681B229D3316000C8C86 /* ani_dance.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67FE229D3315000C8C86 /* ani_dance.bundle */; };
-		0B8E681C229D3316000C8C86 /* pose_5ren_2.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E67FF229D3315000C8C86 /* pose_5ren_2.bundle */; };
-		0B8E681D229D3316000C8C86 /* ani_SJG_bg.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6800229D3315000C8C86 /* ani_SJG_bg.bundle */; };
-		0B8E681E229D3316000C8C86 /* ani_SJG_cam.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6801229D3316000C8C86 /* ani_SJG_cam.bundle */; };
-		0B8E681F229D3316000C8C86 /* ani_dace_cam.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6802229D3316000C8C86 /* ani_dace_cam.bundle */; };
-		0B8E6820229D3316000C8C86 /* pose_shaungren_03_1.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6803229D3316000C8C86 /* pose_shaungren_03_1.bundle */; };
-		0B8E6821229D3316000C8C86 /* rock.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6804229D3316000C8C86 /* rock.bundle */; };
 		0B8E6858229E2452000C8C86 /* mid_hat04.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6846229E2451000C8C86 /* mid_hat04.bundle */; };
 		0B8E6859229E2452000C8C86 /* mid_hat07.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6847229E2451000C8C86 /* mid_hat07.bundle */; };
 		0B8E685A229E2452000C8C86 /* mid_hat17.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B8E6848229E2451000C8C86 /* mid_hat17.bundle */; };
@@ -368,21 +316,6 @@
 		0BAAF084224B0F570016EF9D /* AvatarQDecoration.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAF080224B0F570016EF9D /* AvatarQDecoration.plist */; };
 		0BAAF085224B0F570016EF9D /* AvatarAnimations.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAF081224B0F570016EF9D /* AvatarAnimations.plist */; };
 		0BAAF086224B0F570016EF9D /* AvatarQAnimations.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0BAAF082224B0F570016EF9D /* AvatarQAnimations.plist */; };
-		0BBDB149229E7A4C000989D6 /* mid_cloth10.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDB13A229E7A4B000989D6 /* mid_cloth10.bundle */; };
-		0BBDB14A229E7A4C000989D6 /* mid_cloth09.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDB13B229E7A4B000989D6 /* mid_cloth09.bundle */; };
-		0BBDB14B229E7A4C000989D6 /* female_cloth01.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDB13C229E7A4B000989D6 /* female_cloth01.bundle */; };
-		0BBDB14C229E7A4C000989D6 /* mid_cloth05.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDB13D229E7A4B000989D6 /* mid_cloth05.bundle */; };
-		0BBDB14D229E7A4C000989D6 /* mid_cloth06.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDB13E229E7A4B000989D6 /* mid_cloth06.bundle */; };
-		0BBDB14E229E7A4C000989D6 /* mid_cloth07.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDB13F229E7A4C000989D6 /* mid_cloth07.bundle */; };
-		0BBDB14F229E7A4C000989D6 /* mid_cloth0.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDB140229E7A4C000989D6 /* mid_cloth0.bundle */; };
-		0BBDB150229E7A4C000989D6 /* female_cloth02.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDB141229E7A4C000989D6 /* female_cloth02.bundle */; };
-		0BBDB151229E7A4C000989D6 /* male_cloth01.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDB142229E7A4C000989D6 /* male_cloth01.bundle */; };
-		0BBDB152229E7A4C000989D6 /* mid_cloth01.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDB143229E7A4C000989D6 /* mid_cloth01.bundle */; };
-		0BBDB153229E7A4C000989D6 /* mid_cloth02.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDB144229E7A4C000989D6 /* mid_cloth02.bundle */; };
-		0BBDB154229E7A4C000989D6 /* mid_cloth08.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDB145229E7A4C000989D6 /* mid_cloth08.bundle */; };
-		0BBDB155229E7A4C000989D6 /* mid_cloth03.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDB146229E7A4C000989D6 /* mid_cloth03.bundle */; };
-		0BBDB156229E7A4C000989D6 /* mid_cloth04.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDB147229E7A4C000989D6 /* mid_cloth04.bundle */; };
-		0BBDB157229E7A4C000989D6 /* male_cloth02.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0BBDB148229E7A4C000989D6 /* male_cloth02.bundle */; };
 		0BCFC90B22672EE10095E305 /* FUFigureSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BCFC90122672EE00095E305 /* FUFigureSlider.m */; };
 		0BCFC90C22672EE10095E305 /* FUFigureView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BCFC90222672EE10095E305 /* FUFigureView.m */; };
 		0BCFC90D22672EE10095E305 /* FUFigureColorCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BCFC90422672EE10095E305 /* FUFigureColorCollection.m */; };
@@ -391,24 +324,118 @@
 		0BCFC91022672EE10095E305 /* FUFigureBottomCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BCFC90822672EE10095E305 /* FUFigureBottomCollection.m */; };
 		0BEB3A75222FA7CD003F6C04 /* FUShapeParamsMode.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BEB3A74222FA7CD003F6C04 /* FUShapeParamsMode.m */; };
 		0BF77B69211D6DCF00682938 /* FUARFilterController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BF77B68211D6DCF00682938 /* FUARFilterController.m */; };
+		9B03583E2304076F006235E4 /* female_hair_q_9.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03582B2304076D006235E4 /* female_hair_q_9.bundle */; };
+		9B03583F2304076F006235E4 /* female_hair_q_19.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03582C2304076D006235E4 /* female_hair_q_19.bundle */; };
+		9B0358402304076F006235E4 /* female_hair_q_10.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03582D2304076E006235E4 /* female_hair_q_10.bundle */; };
+		9B0358412304076F006235E4 /* female_hair_q_8.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03582E2304076E006235E4 /* female_hair_q_8.bundle */; };
+		9B0358422304076F006235E4 /* female_hair_q_15.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03582F2304076E006235E4 /* female_hair_q_15.bundle */; };
+		9B0358432304076F006235E4 /* female_hair_q_21_t4.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B0358302304076E006235E4 /* female_hair_q_21_t4.bundle */; };
+		9B0358442304076F006235E4 /* female_hair_q_7.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B0358312304076E006235E4 /* female_hair_q_7.bundle */; };
+		9B0358452304076F006235E4 /* female_hair_q_13.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B0358322304076E006235E4 /* female_hair_q_13.bundle */; };
+		9B0358462304076F006235E4 /* female_hair_q_21_t1.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B0358332304076E006235E4 /* female_hair_q_21_t1.bundle */; };
+		9B0358472304076F006235E4 /* female_hair_q_23.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B0358342304076E006235E4 /* female_hair_q_23.bundle */; };
+		9B0358482304076F006235E4 /* female_hair_q_22.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B0358352304076E006235E4 /* female_hair_q_22.bundle */; };
+		9B0358492304076F006235E4 /* female_hair_q_21_t2.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B0358362304076E006235E4 /* female_hair_q_21_t2.bundle */; };
+		9B03584A2304076F006235E4 /* female_hair_q_17.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B0358372304076E006235E4 /* female_hair_q_17.bundle */; };
+		9B03584B2304076F006235E4 /* female_hair_q_20.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B0358382304076E006235E4 /* female_hair_q_20.bundle */; };
+		9B03584C2304076F006235E4 /* female_hair_q_21.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B0358392304076F006235E4 /* female_hair_q_21.bundle */; };
+		9B03584D2304076F006235E4 /* female_hair_q_12.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03583A2304076F006235E4 /* female_hair_q_12.bundle */; };
+		9B03584E2304076F006235E4 /* female_hair_q_11.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03583B2304076F006235E4 /* female_hair_q_11.bundle */; };
+		9B03584F2304076F006235E4 /* female_hair_q_16.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03583C2304076F006235E4 /* female_hair_q_16.bundle */; };
+		9B0358502304076F006235E4 /* female_hair_q_21_t3.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03583D2304076F006235E4 /* female_hair_q_21_t3.bundle */; };
+		9B03585D23040787006235E4 /* male_hair_q_5.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03585123040786006235E4 /* male_hair_q_5.bundle */; };
+		9B03585E23040787006235E4 /* male_hair_q_1_t1.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03585223040786006235E4 /* male_hair_q_1_t1.bundle */; };
+		9B03585F23040787006235E4 /* male_hair_q_4_t1.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03585323040787006235E4 /* male_hair_q_4_t1.bundle */; };
+		9B03586023040787006235E4 /* male_hair_q_4_t2.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03585423040787006235E4 /* male_hair_q_4_t2.bundle */; };
+		9B03586123040787006235E4 /* male_hair_q_1_t3.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03585523040787006235E4 /* male_hair_q_1_t3.bundle */; };
+		9B03586223040787006235E4 /* male_hair_q_6.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03585623040787006235E4 /* male_hair_q_6.bundle */; };
+		9B03586323040787006235E4 /* male_hair_q_4.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03585723040787006235E4 /* male_hair_q_4.bundle */; };
+		9B03586423040787006235E4 /* male_hair_q_3.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03585823040787006235E4 /* male_hair_q_3.bundle */; };
+		9B03586523040787006235E4 /* male_hair_q_1_t2.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03585923040787006235E4 /* male_hair_q_1_t2.bundle */; };
+		9B03586623040787006235E4 /* male_hair_q_2.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03585A23040787006235E4 /* male_hair_q_2.bundle */; };
+		9B03586723040787006235E4 /* male_hair_q_1.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03585B23040787006235E4 /* male_hair_q_1.bundle */; };
+		9B03586823040787006235E4 /* male_hair_q_0.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B03585C23040787006235E4 /* male_hair_q_0.bundle */; };
+		9B0E315422F9323C00B0D138 /* FUGradientSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B0E315322F9323C00B0D138 /* FUGradientSlider.m */; };
+		9B2F6D72231649BF0081E55C /* cloth_18.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D70231649BF0081E55C /* cloth_18.bundle */; };
+		9B2F6D73231649BF0081E55C /* cloth_19.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D71231649BF0081E55C /* cloth_19.bundle */; };
+		9B2F6DA123165E6E0081E55C /* pose_danren_idle.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D7823165E6B0081E55C /* pose_danren_idle.bundle */; };
+		9B2F6DA223165E6E0081E55C /* pose_danren_dance.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D7923165E6B0081E55C /* pose_danren_dance.bundle */; };
+		9B2F6DA323165E6E0081E55C /* pose_danren_danshoubixin.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D7A23165E6B0081E55C /* pose_danren_danshoubixin.bundle */; };
+		9B2F6DA423165E6E0081E55C /* ani_pose.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D7B23165E6B0081E55C /* ani_pose.bundle */; };
+		9B2F6DA523165E6E0081E55C /* pose_danren_LRPP.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D7C23165E6B0081E55C /* pose_danren_LRPP.bundle */; };
+		9B2F6DA623165E6E0081E55C /* pose_5ren_3.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D7D23165E6B0081E55C /* pose_5ren_3.bundle */; };
+		9B2F6DA723165E6E0081E55C /* ani_hi.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D7E23165E6C0081E55C /* ani_hi.bundle */; };
+		9B2F6DA823165E6E0081E55C /* ani_rock.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D7F23165E6C0081E55C /* ani_rock.bundle */; };
+		9B2F6DA923165E6E0081E55C /* ani_dace_bg.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8023165E6C0081E55C /* ani_dace_bg.bundle */; };
+		9B2F6DAA23165E6E0081E55C /* ani_SJG_bg.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8123165E6C0081E55C /* ani_SJG_bg.bundle */; };
+		9B2F6DAB23165E6E0081E55C /* ani_LRPP_bg.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8223165E6C0081E55C /* ani_LRPP_bg.bundle */; };
+		9B2F6DAC23165E6E0081E55C /* ani_dance.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8323165E6C0081E55C /* ani_dance.bundle */; };
+		9B2F6DAD23165E6E0081E55C /* pose_shaungren_03_1.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8423165E6C0081E55C /* pose_shaungren_03_1.bundle */; };
+		9B2F6DAE23165E6E0081E55C /* ani_SJG.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8523165E6C0081E55C /* ani_SJG.bundle */; };
+		9B2F6DAF23165E6E0081E55C /* pose_shaungren_03_2.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8623165E6C0081E55C /* pose_shaungren_03_2.bundle */; };
+		9B2F6DB023165E6E0081E55C /* pose_5ren_4.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8723165E6C0081E55C /* pose_5ren_4.bundle */; };
+		9B2F6DB123165E6E0081E55C /* pose_danren_pose.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8823165E6C0081E55C /* pose_danren_pose.bundle */; };
+		9B2F6DB223165E6E0081E55C /* ani_SJG_cam.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8923165E6C0081E55C /* ani_SJG_cam.bundle */; };
+		9B2F6DB323165E6E0081E55C /* ani_SJG_sjg.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8A23165E6C0081E55C /* ani_SJG_sjg.bundle */; };
+		9B2F6DB423165E6E0081E55C /* pose_danren_guzhang.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8B23165E6C0081E55C /* pose_danren_guzhang.bundle */; };
+		9B2F6DB523165E6E0081E55C /* pose_danren_OK.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8C23165E6C0081E55C /* pose_danren_OK.bundle */; };
+		9B2F6DB623165E6E0081E55C /* ani_shuangshoubixin.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8D23165E6C0081E55C /* ani_shuangshoubixin.bundle */; };
+		9B2F6DB723165E6E0081E55C /* pose_5ren_1.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8E23165E6D0081E55C /* pose_5ren_1.bundle */; };
+		9B2F6DB823165E6E0081E55C /* ani_LRPP.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D8F23165E6D0081E55C /* ani_LRPP.bundle */; };
+		9B2F6DB923165E6E0081E55C /* pose_danren_SZW.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9023165E6D0081E55C /* pose_danren_SZW.bundle */; };
+		9B2F6DBA23165E6E0081E55C /* ani_LRPP_cam.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9123165E6D0081E55C /* ani_LRPP_cam.bundle */; };
+		9B2F6DBB23165E6E0081E55C /* ani_danshoubixin.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9223165E6D0081E55C /* ani_danshoubixin.bundle */; };
+		9B2F6DBC23165E6E0081E55C /* pose_5ren_5.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9323165E6D0081E55C /* pose_5ren_5.bundle */; };
+		9B2F6DBD23165E6E0081E55C /* pose_danren_shuangshoubixin.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9423165E6D0081E55C /* pose_danren_shuangshoubixin.bundle */; };
+		9B2F6DBE23165E6E0081E55C /* pose_danren_SJG.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9523165E6D0081E55C /* pose_danren_SJG.bundle */; };
+		9B2F6DBF23165E6E0081E55C /* ani_dace_cam.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9623165E6D0081E55C /* ani_dace_cam.bundle */; };
+		9B2F6DC023165E6E0081E55C /* ani_guzhang.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9723165E6D0081E55C /* ani_guzhang.bundle */; };
+		9B2F6DC123165E6E0081E55C /* pose_5ren_2.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9823165E6D0081E55C /* pose_5ren_2.bundle */; };
+		9B2F6DC223165E6E0081E55C /* pose_danren_hi.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9923165E6D0081E55C /* pose_danren_hi.bundle */; };
+		9B2F6DC323165E6E0081E55C /* pose_danren_rock.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9A23165E6E0081E55C /* pose_danren_rock.bundle */; };
+		9B2F6DC423165E6E0081E55C /* ani_LRPP_shanzi.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9B23165E6E0081E55C /* ani_LRPP_shanzi.bundle */; };
+		9B2F6DC523165E6E0081E55C /* ani_idle.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9C23165E6E0081E55C /* ani_idle.bundle */; };
+		9B2F6DC623165E6E0081E55C /* ani_SZW_cam.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9D23165E6E0081E55C /* ani_SZW_cam.bundle */; };
+		9B2F6DC723165E6E0081E55C /* pose_danren_01.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9E23165E6E0081E55C /* pose_danren_01.bundle */; };
+		9B2F6DC823165E6E0081E55C /* ani_SZW.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6D9F23165E6E0081E55C /* ani_SZW.bundle */; };
+		9B2F6DC923165E6E0081E55C /* ani_ok.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B2F6DA023165E6E0081E55C /* ani_ok.bundle */; };
 		9B3DD86822C1F0C200B32F7E /* FUHomeBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B3DD86722C1F0C200B32F7E /* FUHomeBarViewController.m */; };
 		9B3DD86B22C1F61C00B32F7E /* FUPhotoLoadingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B3DD86A22C1F61C00B32F7E /* FUPhotoLoadingView.m */; };
+		9B45EC3622FAA970004B7818 /* FUStack.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B45EC3522FAA970004B7818 /* FUStack.m */; };
+		9B45EC3922FAD00D004B7818 /* FUAvatarEditManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B45EC3822FAD00D004B7818 /* FUAvatarEditManager.m */; };
+		9B5337AD22FC4F2F00008901 /* FUNielianEditManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B5337AC22FC4F2F00008901 /* FUNielianEditManager.m */; };
 		9B57F67622BC710300E26620 /* AGLKVertexAttribArrayBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B57F67522BC710200E26620 /* AGLKVertexAttribArrayBuffer.m */; };
 		9B57F67922BC738100E26620 /* AGLKContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B57F67822BC738100E26620 /* AGLKContext.m */; };
+		9B5C539B23150A5F007DDC21 /* FUP2AHelper.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B5C539A23150A5F007DDC21 /* FUP2AHelper.framework */; };
+		9B5C539C23150A5F007DDC21 /* FUP2AHelper.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9B5C539A23150A5F007DDC21 /* FUP2AHelper.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9B6F211F22C9D03E009EFCEA /* FUAVUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B6F211E22C9D03E009EFCEA /* FUAVUtilities.m */; };
 		9B8F886822C466FB00C119A7 /* FUP2AClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B8F886722C466FB00C119A7 /* FUP2AClient.framework */; };
 		9B8F886922C466FB00C119A7 /* FUP2AClient.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9B8F886722C466FB00C119A7 /* FUP2AClient.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		9B96747E22B3ADB9003F8D6B /* male_hair_q_4.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B96747C22B3ADB9003F8D6B /* male_hair_q_4.bundle */; };
-		9B96747F22B3ADB9003F8D6B /* male_hair_q_3.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B96747D22B3ADB9003F8D6B /* male_hair_q_3.bundle */; };
-		9B96748522B3ADD8003F8D6B /* female_hair_q_20.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B96748022B3ADD8003F8D6B /* female_hair_q_20.bundle */; };
-		9B96748622B3ADD8003F8D6B /* female_hair_q_19.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B96748122B3ADD8003F8D6B /* female_hair_q_19.bundle */; };
-		9B96748722B3ADD8003F8D6B /* female_hair_q_8.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B96748222B3ADD8003F8D6B /* female_hair_q_8.bundle */; };
-		9B96748822B3ADD8003F8D6B /* female_hair_q_17.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B96748322B3ADD8003F8D6B /* female_hair_q_17.bundle */; };
-		9B96748922B3ADD8003F8D6B /* female_hair_q_22.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B96748422B3ADD8003F8D6B /* female_hair_q_22.bundle */; };
+		9BA247292313B5C9003AEDC3 /* male_hair_q_1_t4.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BA247282313B5C8003AEDC3 /* male_hair_q_1_t4.bundle */; };
+		9BA2472B2313B855003AEDC3 /* glass_1.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BA2472A2313B855003AEDC3 /* glass_1.bundle */; };
 		9BA3CD8222B882C700B09E8E /* AppManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BA3CD8122B882C700B09E8E /* AppManager.m */; };
+		9BD6BB0B22FBCCB8003D6F7C /* FUAvatarEditedDoModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BD6BB0A22FBCCB8003D6F7C /* FUAvatarEditedDoModel.m */; };
+		9BEF7A53231513560003E017 /* libPods-FUP2A.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9BEF7A52231513560003E017 /* libPods-FUP2A.a */; };
 		9BF4FC4722C705BC00BEB1A0 /* FUGroupVideoController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BF4FC4622C705BC00BEB1A0 /* FUGroupVideoController.m */; };
 		9BF4FC4D22C70A8100BEB1A0 /* FUAVPlayerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BF4FC4C22C70A8100BEB1A0 /* FUAVPlayerView.m */; };
-		FC096410CB0E13AEDC16B25A /* libPods-FUP2A.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 57E09EFF74EEF71DBDACB30A /* libPods-FUP2A.a */; };
+		9BFE7F982315199D008EB060 /* cloth_7.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F862315199B008EB060 /* cloth_7.bundle */; };
+		9BFE7F992315199D008EB060 /* cloth_10.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F872315199B008EB060 /* cloth_10.bundle */; };
+		9BFE7F9A2315199D008EB060 /* cloth_2.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F882315199B008EB060 /* cloth_2.bundle */; };
+		9BFE7F9B2315199D008EB060 /* cloth_13.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F892315199C008EB060 /* cloth_13.bundle */; };
+		9BFE7F9C2315199D008EB060 /* cloth_16.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F8A2315199C008EB060 /* cloth_16.bundle */; };
+		9BFE7F9D2315199D008EB060 /* cloth_1.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F8B2315199C008EB060 /* cloth_1.bundle */; };
+		9BFE7F9E2315199D008EB060 /* cloth_14.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F8C2315199C008EB060 /* cloth_14.bundle */; };
+		9BFE7F9F2315199D008EB060 /* cloth_0.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F8D2315199C008EB060 /* cloth_0.bundle */; };
+		9BFE7FA02315199D008EB060 /* cloth_4.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F8E2315199C008EB060 /* cloth_4.bundle */; };
+		9BFE7FA12315199D008EB060 /* cloth_11.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F8F2315199C008EB060 /* cloth_11.bundle */; };
+		9BFE7FA22315199D008EB060 /* cloth_9.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F902315199C008EB060 /* cloth_9.bundle */; };
+		9BFE7FA32315199D008EB060 /* cloth_6.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F912315199C008EB060 /* cloth_6.bundle */; };
+		9BFE7FA42315199D008EB060 /* cloth_8.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F922315199C008EB060 /* cloth_8.bundle */; };
+		9BFE7FA52315199D008EB060 /* cloth_15.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F932315199C008EB060 /* cloth_15.bundle */; };
+		9BFE7FA62315199D008EB060 /* cloth_5.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F942315199C008EB060 /* cloth_5.bundle */; };
+		9BFE7FA72315199D008EB060 /* cloth_3.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F952315199C008EB060 /* cloth_3.bundle */; };
+		9BFE7FA82315199D008EB060 /* cloth_17.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F962315199D008EB060 /* cloth_17.bundle */; };
+		9BFE7FA92315199D008EB060 /* cloth_12.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BFE7F972315199D008EB060 /* cloth_12.bundle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -419,7 +446,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				9B8F886922C466FB00C119A7 /* FUP2AClient.framework in Embed Frameworks */,
-				0B8E6673229BE9A2000C8C86 /* FUP2AHelper.framework in Embed Frameworks */,
+				9B5C539C23150A5F007DDC21 /* FUP2AHelper.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -682,7 +709,6 @@
 		0B8DE8A620C5486200E21A8B /* FUTakePhotoController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUTakePhotoController.h; sourceTree = "<group>"; };
 		0B8DE8A720C5486200E21A8B /* FUTakePhotoController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUTakePhotoController.m; sourceTree = "<group>"; };
 		0B8E6663229BE71E000C8C86 /* background.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = background.bundle; sourceTree = "<group>"; };
-		0B8E6670229BE96F000C8C86 /* FUP2AHelper.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FUP2AHelper.framework; sourceTree = "<group>"; };
 		0B8E66D4229D32FF000C8C86 /* female_brows01.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_brows01.bundle; sourceTree = "<group>"; };
 		0B8E66D5229D32FF000C8C86 /* female_brows03.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_brows03.bundle; sourceTree = "<group>"; };
 		0B8E66D6229D32FF000C8C86 /* female_brows07.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_brows07.bundle; sourceTree = "<group>"; };
@@ -693,18 +719,6 @@
 		0B8E66DB229D32FF000C8C86 /* female_brows06.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_brows06.bundle; sourceTree = "<group>"; };
 		0B8E66DC229D32FF000C8C86 /* female_brows08.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_brows08.bundle; sourceTree = "<group>"; };
 		0B8E66DD229D32FF000C8C86 /* female_brows04.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_brows04.bundle; sourceTree = "<group>"; };
-		0B8E66DF229D32FF000C8C86 /* female_hair_q_15.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_15.bundle; sourceTree = "<group>"; };
-		0B8E66E0229D32FF000C8C86 /* female_hair_q_23.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_23.bundle; sourceTree = "<group>"; };
-		0B8E66E1229D32FF000C8C86 /* female_hair_q_t_1.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_t_1.bundle; sourceTree = "<group>"; };
-		0B8E66E2229D32FF000C8C86 /* female_hair_q_21.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_21.bundle; sourceTree = "<group>"; };
-		0B8E66E3229D32FF000C8C86 /* female_hair_q_t_5.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_t_5.bundle; sourceTree = "<group>"; };
-		0B8E66E4229D32FF000C8C86 /* female_hair_q_13.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_13.bundle; sourceTree = "<group>"; };
-		0B8E66E5229D32FF000C8C86 /* female_hair_q_11.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_11.bundle; sourceTree = "<group>"; };
-		0B8E66E6229D32FF000C8C86 /* female_hair_q_9.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_9.bundle; sourceTree = "<group>"; };
-		0B8E66E7229D32FF000C8C86 /* female_hair_q_16.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_16.bundle; sourceTree = "<group>"; };
-		0B8E66E8229D32FF000C8C86 /* female_hair_q_7.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_7.bundle; sourceTree = "<group>"; };
-		0B8E66E9229D32FF000C8C86 /* female_hair_q_12.bundle */ = {isa = PBXFileReference; lastKnownFileType = text; path = female_hair_q_12.bundle; sourceTree = "<group>"; };
-		0B8E66EA229D32FF000C8C86 /* female_hair_q_10.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_10.bundle; sourceTree = "<group>"; };
 		0B8E6709229D32FF000C8C86 /* q_controller.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = q_controller.bundle; sourceTree = "<group>"; };
 		0B8E670A229D32FF000C8C86 /* shape_list.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = shape_list.json; sourceTree = "<group>"; };
 		0B8E670B229D32FF000C8C86 /* controller.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = controller.md; sourceTree = "<group>"; };
@@ -719,14 +733,6 @@
 		0B8E6729229D32FF000C8C86 /* male_brows06.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_brows06.bundle; sourceTree = "<group>"; };
 		0B8E672A229D32FF000C8C86 /* male_brows08.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_brows08.bundle; sourceTree = "<group>"; };
 		0B8E672B229D32FF000C8C86 /* male_brows04.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_brows04.bundle; sourceTree = "<group>"; };
-		0B8E672D229D32FF000C8C86 /* male_hair_q_t_7.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_t_7.bundle; sourceTree = "<group>"; };
-		0B8E672E229D32FF000C8C86 /* male_hair_q_2.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_2.bundle; sourceTree = "<group>"; };
-		0B8E672F229D32FF000C8C86 /* male_hair_q_t_9.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_t_9.bundle; sourceTree = "<group>"; };
-		0B8E6730229D32FF000C8C86 /* male_hair_q_0.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_0.bundle; sourceTree = "<group>"; };
-		0B8E6731229D32FF000C8C86 /* male_hair_q_6.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_6.bundle; sourceTree = "<group>"; };
-		0B8E6732229D32FF000C8C86 /* male_hair_q_1.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_1.bundle; sourceTree = "<group>"; };
-		0B8E6733229D32FF000C8C86 /* male_hair_q_t_8.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_t_8.bundle; sourceTree = "<group>"; };
-		0B8E6734229D32FF000C8C86 /* male_hair_q_5.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_5.bundle; sourceTree = "<group>"; };
 		0B8E6736229D3300000C8C86 /* glass_10.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = glass_10.bundle; sourceTree = "<group>"; };
 		0B8E6737229D3300000C8C86 /* glass_8.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = glass_8.bundle; sourceTree = "<group>"; };
 		0B8E6738229D3300000C8C86 /* glass_4.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = glass_4.bundle; sourceTree = "<group>"; };
@@ -755,35 +761,6 @@
 		0B8E6760229D3300000C8C86 /* beard04.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = beard04.bundle; sourceTree = "<group>"; };
 		0B8E6761229D3300000C8C86 /* beard06.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = beard06.bundle; sourceTree = "<group>"; };
 		0B8E6762229D3300000C8C86 /* beard02.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = beard02.bundle; sourceTree = "<group>"; };
-		0B8E67E8229D3313000C8C86 /* ani_SJG.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_SJG.bundle; sourceTree = "<group>"; };
-		0B8E67E9229D3313000C8C86 /* hi.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = hi.bundle; sourceTree = "<group>"; };
-		0B8E67EA229D3313000C8C86 /* pose_5ren_1.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_5ren_1.bundle; sourceTree = "<group>"; };
-		0B8E67EB229D3314000C8C86 /* ani_SZW_cam.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_SZW_cam.bundle; sourceTree = "<group>"; };
-		0B8E67EC229D3314000C8C86 /* pose_5ren_5.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_5ren_5.bundle; sourceTree = "<group>"; };
-		0B8E67ED229D3314000C8C86 /* pose_danren_01.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_danren_01.bundle; sourceTree = "<group>"; };
-		0B8E67EE229D3314000C8C86 /* ani_SZW.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_SZW.bundle; sourceTree = "<group>"; };
-		0B8E67EF229D3314000C8C86 /* ani_SJG_sjg.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_SJG_sjg.bundle; sourceTree = "<group>"; };
-		0B8E67F0229D3314000C8C86 /* pose_shaungren_03_2.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_shaungren_03_2.bundle; sourceTree = "<group>"; };
-		0B8E67F1229D3314000C8C86 /* ani_idle.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_idle.bundle; sourceTree = "<group>"; };
-		0B8E67F2229D3314000C8C86 /* pose_5ren_4.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_5ren_4.bundle; sourceTree = "<group>"; };
-		0B8E67F3229D3314000C8C86 /* ani_dace_bg.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_dace_bg.bundle; sourceTree = "<group>"; };
-		0B8E67F4229D3314000C8C86 /* ani_LRPP_bg.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_LRPP_bg.bundle; sourceTree = "<group>"; };
-		0B8E67F5229D3315000C8C86 /* ani_pose.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_pose.bundle; sourceTree = "<group>"; };
-		0B8E67F6229D3315000C8C86 /* guzhang.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = guzhang.bundle; sourceTree = "<group>"; };
-		0B8E67F7229D3315000C8C86 /* ok.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ok.bundle; sourceTree = "<group>"; };
-		0B8E67F8229D3315000C8C86 /* ani_LRPP_cam.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_LRPP_cam.bundle; sourceTree = "<group>"; };
-		0B8E67F9229D3315000C8C86 /* shuangshoubixin.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = shuangshoubixin.bundle; sourceTree = "<group>"; };
-		0B8E67FA229D3315000C8C86 /* ani_LRPP.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_LRPP.bundle; sourceTree = "<group>"; };
-		0B8E67FB229D3315000C8C86 /* pose_5ren_3.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_5ren_3.bundle; sourceTree = "<group>"; };
-		0B8E67FC229D3315000C8C86 /* danshoubixin.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = danshoubixin.bundle; sourceTree = "<group>"; };
-		0B8E67FD229D3315000C8C86 /* ani_LRPP_shanzi.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_LRPP_shanzi.bundle; sourceTree = "<group>"; };
-		0B8E67FE229D3315000C8C86 /* ani_dance.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_dance.bundle; sourceTree = "<group>"; };
-		0B8E67FF229D3315000C8C86 /* pose_5ren_2.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_5ren_2.bundle; sourceTree = "<group>"; };
-		0B8E6800229D3315000C8C86 /* ani_SJG_bg.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_SJG_bg.bundle; sourceTree = "<group>"; };
-		0B8E6801229D3316000C8C86 /* ani_SJG_cam.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_SJG_cam.bundle; sourceTree = "<group>"; };
-		0B8E6802229D3316000C8C86 /* ani_dace_cam.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_dace_cam.bundle; sourceTree = "<group>"; };
-		0B8E6803229D3316000C8C86 /* pose_shaungren_03_1.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_shaungren_03_1.bundle; sourceTree = "<group>"; };
-		0B8E6804229D3316000C8C86 /* rock.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = rock.bundle; sourceTree = "<group>"; };
 		0B8E6846229E2451000C8C86 /* mid_hat04.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_hat04.bundle; sourceTree = "<group>"; };
 		0B8E6847229E2451000C8C86 /* mid_hat07.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_hat07.bundle; sourceTree = "<group>"; };
 		0B8E6848229E2451000C8C86 /* mid_hat17.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_hat17.bundle; sourceTree = "<group>"; };
@@ -816,21 +793,6 @@
 		0BAAF080224B0F570016EF9D /* AvatarQDecoration.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = AvatarQDecoration.plist; sourceTree = "<group>"; };
 		0BAAF081224B0F570016EF9D /* AvatarAnimations.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = AvatarAnimations.plist; sourceTree = "<group>"; };
 		0BAAF082224B0F570016EF9D /* AvatarQAnimations.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = AvatarQAnimations.plist; sourceTree = "<group>"; };
-		0BBDB13A229E7A4B000989D6 /* mid_cloth10.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_cloth10.bundle; sourceTree = "<group>"; };
-		0BBDB13B229E7A4B000989D6 /* mid_cloth09.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_cloth09.bundle; sourceTree = "<group>"; };
-		0BBDB13C229E7A4B000989D6 /* female_cloth01.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_cloth01.bundle; sourceTree = "<group>"; };
-		0BBDB13D229E7A4B000989D6 /* mid_cloth05.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_cloth05.bundle; sourceTree = "<group>"; };
-		0BBDB13E229E7A4B000989D6 /* mid_cloth06.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_cloth06.bundle; sourceTree = "<group>"; };
-		0BBDB13F229E7A4C000989D6 /* mid_cloth07.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_cloth07.bundle; sourceTree = "<group>"; };
-		0BBDB140229E7A4C000989D6 /* mid_cloth0.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_cloth0.bundle; sourceTree = "<group>"; };
-		0BBDB141229E7A4C000989D6 /* female_cloth02.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_cloth02.bundle; sourceTree = "<group>"; };
-		0BBDB142229E7A4C000989D6 /* male_cloth01.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_cloth01.bundle; sourceTree = "<group>"; };
-		0BBDB143229E7A4C000989D6 /* mid_cloth01.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_cloth01.bundle; sourceTree = "<group>"; };
-		0BBDB144229E7A4C000989D6 /* mid_cloth02.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_cloth02.bundle; sourceTree = "<group>"; };
-		0BBDB145229E7A4C000989D6 /* mid_cloth08.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_cloth08.bundle; sourceTree = "<group>"; };
-		0BBDB146229E7A4C000989D6 /* mid_cloth03.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_cloth03.bundle; sourceTree = "<group>"; };
-		0BBDB147229E7A4C000989D6 /* mid_cloth04.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_cloth04.bundle; sourceTree = "<group>"; };
-		0BBDB148229E7A4C000989D6 /* male_cloth02.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_cloth02.bundle; sourceTree = "<group>"; };
 		0BCFC8FE22672EE00095E305 /* FUFigureBottomCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FUFigureBottomCollection.h; sourceTree = "<group>"; };
 		0BCFC8FF22672EE00095E305 /* FUFigureSlider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FUFigureSlider.h; sourceTree = "<group>"; };
 		0BCFC90022672EE00095E305 /* FUFigureColorCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FUFigureColorCollection.h; sourceTree = "<group>"; };
@@ -850,31 +812,130 @@
 		0BF77B68211D6DCF00682938 /* FUARFilterController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUARFilterController.m; sourceTree = "<group>"; };
 		4DEA1E1E97520D6F8B129A53 /* Pods-FUP2A.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FUP2A.debug.xcconfig"; path = "Pods/Target Support Files/Pods-FUP2A/Pods-FUP2A.debug.xcconfig"; sourceTree = "<group>"; };
 		57E09EFF74EEF71DBDACB30A /* libPods-FUP2A.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-FUP2A.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B03582B2304076D006235E4 /* female_hair_q_9.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_9.bundle; sourceTree = "<group>"; };
+		9B03582C2304076D006235E4 /* female_hair_q_19.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_19.bundle; sourceTree = "<group>"; };
+		9B03582D2304076E006235E4 /* female_hair_q_10.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_10.bundle; sourceTree = "<group>"; };
+		9B03582E2304076E006235E4 /* female_hair_q_8.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_8.bundle; sourceTree = "<group>"; };
+		9B03582F2304076E006235E4 /* female_hair_q_15.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_15.bundle; sourceTree = "<group>"; };
+		9B0358302304076E006235E4 /* female_hair_q_21_t4.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_21_t4.bundle; sourceTree = "<group>"; };
+		9B0358312304076E006235E4 /* female_hair_q_7.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_7.bundle; sourceTree = "<group>"; };
+		9B0358322304076E006235E4 /* female_hair_q_13.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_13.bundle; sourceTree = "<group>"; };
+		9B0358332304076E006235E4 /* female_hair_q_21_t1.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_21_t1.bundle; sourceTree = "<group>"; };
+		9B0358342304076E006235E4 /* female_hair_q_23.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_23.bundle; sourceTree = "<group>"; };
+		9B0358352304076E006235E4 /* female_hair_q_22.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_22.bundle; sourceTree = "<group>"; };
+		9B0358362304076E006235E4 /* female_hair_q_21_t2.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_21_t2.bundle; sourceTree = "<group>"; };
+		9B0358372304076E006235E4 /* female_hair_q_17.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_17.bundle; sourceTree = "<group>"; };
+		9B0358382304076E006235E4 /* female_hair_q_20.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_20.bundle; sourceTree = "<group>"; };
+		9B0358392304076F006235E4 /* female_hair_q_21.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_21.bundle; sourceTree = "<group>"; };
+		9B03583A2304076F006235E4 /* female_hair_q_12.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_12.bundle; sourceTree = "<group>"; };
+		9B03583B2304076F006235E4 /* female_hair_q_11.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_11.bundle; sourceTree = "<group>"; };
+		9B03583C2304076F006235E4 /* female_hair_q_16.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_16.bundle; sourceTree = "<group>"; };
+		9B03583D2304076F006235E4 /* female_hair_q_21_t3.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_21_t3.bundle; sourceTree = "<group>"; };
+		9B03585123040786006235E4 /* male_hair_q_5.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_5.bundle; sourceTree = "<group>"; };
+		9B03585223040786006235E4 /* male_hair_q_1_t1.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_1_t1.bundle; sourceTree = "<group>"; };
+		9B03585323040787006235E4 /* male_hair_q_4_t1.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_4_t1.bundle; sourceTree = "<group>"; };
+		9B03585423040787006235E4 /* male_hair_q_4_t2.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_4_t2.bundle; sourceTree = "<group>"; };
+		9B03585523040787006235E4 /* male_hair_q_1_t3.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_1_t3.bundle; sourceTree = "<group>"; };
+		9B03585623040787006235E4 /* male_hair_q_6.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_6.bundle; sourceTree = "<group>"; };
+		9B03585723040787006235E4 /* male_hair_q_4.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_4.bundle; sourceTree = "<group>"; };
+		9B03585823040787006235E4 /* male_hair_q_3.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_3.bundle; sourceTree = "<group>"; };
+		9B03585923040787006235E4 /* male_hair_q_1_t2.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_1_t2.bundle; sourceTree = "<group>"; };
+		9B03585A23040787006235E4 /* male_hair_q_2.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_2.bundle; sourceTree = "<group>"; };
+		9B03585B23040787006235E4 /* male_hair_q_1.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_1.bundle; sourceTree = "<group>"; };
+		9B03585C23040787006235E4 /* male_hair_q_0.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_0.bundle; sourceTree = "<group>"; };
+		9B0E315222F9323C00B0D138 /* FUGradientSlider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FUGradientSlider.h; sourceTree = "<group>"; };
+		9B0E315322F9323C00B0D138 /* FUGradientSlider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FUGradientSlider.m; sourceTree = "<group>"; };
+		9B2F6D70231649BF0081E55C /* cloth_18.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_18.bundle; sourceTree = "<group>"; };
+		9B2F6D71231649BF0081E55C /* cloth_19.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_19.bundle; sourceTree = "<group>"; };
+		9B2F6D7823165E6B0081E55C /* pose_danren_idle.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_danren_idle.bundle; sourceTree = "<group>"; };
+		9B2F6D7923165E6B0081E55C /* pose_danren_dance.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_danren_dance.bundle; sourceTree = "<group>"; };
+		9B2F6D7A23165E6B0081E55C /* pose_danren_danshoubixin.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_danren_danshoubixin.bundle; sourceTree = "<group>"; };
+		9B2F6D7B23165E6B0081E55C /* ani_pose.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_pose.bundle; sourceTree = "<group>"; };
+		9B2F6D7C23165E6B0081E55C /* pose_danren_LRPP.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_danren_LRPP.bundle; sourceTree = "<group>"; };
+		9B2F6D7D23165E6B0081E55C /* pose_5ren_3.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_5ren_3.bundle; sourceTree = "<group>"; };
+		9B2F6D7E23165E6C0081E55C /* ani_hi.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_hi.bundle; sourceTree = "<group>"; };
+		9B2F6D7F23165E6C0081E55C /* ani_rock.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_rock.bundle; sourceTree = "<group>"; };
+		9B2F6D8023165E6C0081E55C /* ani_dace_bg.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_dace_bg.bundle; sourceTree = "<group>"; };
+		9B2F6D8123165E6C0081E55C /* ani_SJG_bg.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_SJG_bg.bundle; sourceTree = "<group>"; };
+		9B2F6D8223165E6C0081E55C /* ani_LRPP_bg.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_LRPP_bg.bundle; sourceTree = "<group>"; };
+		9B2F6D8323165E6C0081E55C /* ani_dance.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_dance.bundle; sourceTree = "<group>"; };
+		9B2F6D8423165E6C0081E55C /* pose_shaungren_03_1.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_shaungren_03_1.bundle; sourceTree = "<group>"; };
+		9B2F6D8523165E6C0081E55C /* ani_SJG.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_SJG.bundle; sourceTree = "<group>"; };
+		9B2F6D8623165E6C0081E55C /* pose_shaungren_03_2.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_shaungren_03_2.bundle; sourceTree = "<group>"; };
+		9B2F6D8723165E6C0081E55C /* pose_5ren_4.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_5ren_4.bundle; sourceTree = "<group>"; };
+		9B2F6D8823165E6C0081E55C /* pose_danren_pose.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_danren_pose.bundle; sourceTree = "<group>"; };
+		9B2F6D8923165E6C0081E55C /* ani_SJG_cam.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_SJG_cam.bundle; sourceTree = "<group>"; };
+		9B2F6D8A23165E6C0081E55C /* ani_SJG_sjg.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_SJG_sjg.bundle; sourceTree = "<group>"; };
+		9B2F6D8B23165E6C0081E55C /* pose_danren_guzhang.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_danren_guzhang.bundle; sourceTree = "<group>"; };
+		9B2F6D8C23165E6C0081E55C /* pose_danren_OK.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_danren_OK.bundle; sourceTree = "<group>"; };
+		9B2F6D8D23165E6C0081E55C /* ani_shuangshoubixin.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_shuangshoubixin.bundle; sourceTree = "<group>"; };
+		9B2F6D8E23165E6D0081E55C /* pose_5ren_1.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_5ren_1.bundle; sourceTree = "<group>"; };
+		9B2F6D8F23165E6D0081E55C /* ani_LRPP.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_LRPP.bundle; sourceTree = "<group>"; };
+		9B2F6D9023165E6D0081E55C /* pose_danren_SZW.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_danren_SZW.bundle; sourceTree = "<group>"; };
+		9B2F6D9123165E6D0081E55C /* ani_LRPP_cam.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_LRPP_cam.bundle; sourceTree = "<group>"; };
+		9B2F6D9223165E6D0081E55C /* ani_danshoubixin.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_danshoubixin.bundle; sourceTree = "<group>"; };
+		9B2F6D9323165E6D0081E55C /* pose_5ren_5.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_5ren_5.bundle; sourceTree = "<group>"; };
+		9B2F6D9423165E6D0081E55C /* pose_danren_shuangshoubixin.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_danren_shuangshoubixin.bundle; sourceTree = "<group>"; };
+		9B2F6D9523165E6D0081E55C /* pose_danren_SJG.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_danren_SJG.bundle; sourceTree = "<group>"; };
+		9B2F6D9623165E6D0081E55C /* ani_dace_cam.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_dace_cam.bundle; sourceTree = "<group>"; };
+		9B2F6D9723165E6D0081E55C /* ani_guzhang.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_guzhang.bundle; sourceTree = "<group>"; };
+		9B2F6D9823165E6D0081E55C /* pose_5ren_2.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_5ren_2.bundle; sourceTree = "<group>"; };
+		9B2F6D9923165E6D0081E55C /* pose_danren_hi.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_danren_hi.bundle; sourceTree = "<group>"; };
+		9B2F6D9A23165E6E0081E55C /* pose_danren_rock.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_danren_rock.bundle; sourceTree = "<group>"; };
+		9B2F6D9B23165E6E0081E55C /* ani_LRPP_shanzi.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_LRPP_shanzi.bundle; sourceTree = "<group>"; };
+		9B2F6D9C23165E6E0081E55C /* ani_idle.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_idle.bundle; sourceTree = "<group>"; };
+		9B2F6D9D23165E6E0081E55C /* ani_SZW_cam.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_SZW_cam.bundle; sourceTree = "<group>"; };
+		9B2F6D9E23165E6E0081E55C /* pose_danren_01.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = pose_danren_01.bundle; sourceTree = "<group>"; };
+		9B2F6D9F23165E6E0081E55C /* ani_SZW.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_SZW.bundle; sourceTree = "<group>"; };
+		9B2F6DA023165E6E0081E55C /* ani_ok.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_ok.bundle; sourceTree = "<group>"; };
 		9B3DD86622C1F0C200B32F7E /* FUHomeBarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUHomeBarViewController.h; sourceTree = "<group>"; };
 		9B3DD86722C1F0C200B32F7E /* FUHomeBarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUHomeBarViewController.m; sourceTree = "<group>"; };
 		9B3DD86922C1F61C00B32F7E /* FUPhotoLoadingView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUPhotoLoadingView.h; sourceTree = "<group>"; };
 		9B3DD86A22C1F61C00B32F7E /* FUPhotoLoadingView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUPhotoLoadingView.m; sourceTree = "<group>"; };
+		9B45EC3422FAA970004B7818 /* FUStack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUStack.h; sourceTree = "<group>"; };
+		9B45EC3522FAA970004B7818 /* FUStack.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUStack.m; sourceTree = "<group>"; };
+		9B45EC3722FAD00D004B7818 /* FUAvatarEditManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUAvatarEditManager.h; sourceTree = "<group>"; };
+		9B45EC3822FAD00D004B7818 /* FUAvatarEditManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUAvatarEditManager.m; sourceTree = "<group>"; };
+		9B5337AB22FC4F2F00008901 /* FUNielianEditManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUNielianEditManager.h; sourceTree = "<group>"; };
+		9B5337AC22FC4F2F00008901 /* FUNielianEditManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUNielianEditManager.m; sourceTree = "<group>"; };
 		9B57F67422BC710200E26620 /* AGLKVertexAttribArrayBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AGLKVertexAttribArrayBuffer.h; sourceTree = "<group>"; };
 		9B57F67522BC710200E26620 /* AGLKVertexAttribArrayBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AGLKVertexAttribArrayBuffer.m; sourceTree = "<group>"; };
 		9B57F67722BC738100E26620 /* AGLKContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AGLKContext.h; sourceTree = "<group>"; };
 		9B57F67822BC738100E26620 /* AGLKContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AGLKContext.m; sourceTree = "<group>"; };
+		9B5C539A23150A5F007DDC21 /* FUP2AHelper.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FUP2AHelper.framework; path = FUP2A/Tool/FUP2AHelper/FUP2AHelper.framework; sourceTree = "<group>"; };
 		9B6F211D22C9D03E009EFCEA /* FUAVUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FUAVUtilities.h; sourceTree = "<group>"; };
 		9B6F211E22C9D03E009EFCEA /* FUAVUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FUAVUtilities.m; sourceTree = "<group>"; };
 		9B8F886722C466FB00C119A7 /* FUP2AClient.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FUP2AClient.framework; path = FUP2A/Faceunity/P2A/FUP2AClient.framework; sourceTree = "<group>"; };
-		9B96747C22B3ADB9003F8D6B /* male_hair_q_4.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_4.bundle; sourceTree = "<group>"; };
-		9B96747D22B3ADB9003F8D6B /* male_hair_q_3.bundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = male_hair_q_3.bundle; sourceTree = "<group>"; };
-		9B96748022B3ADD8003F8D6B /* female_hair_q_20.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_20.bundle; sourceTree = "<group>"; };
-		9B96748122B3ADD8003F8D6B /* female_hair_q_19.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_19.bundle; sourceTree = "<group>"; };
-		9B96748222B3ADD8003F8D6B /* female_hair_q_8.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_8.bundle; sourceTree = "<group>"; };
-		9B96748322B3ADD8003F8D6B /* female_hair_q_17.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_17.bundle; sourceTree = "<group>"; };
-		9B96748422B3ADD8003F8D6B /* female_hair_q_22.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = female_hair_q_22.bundle; sourceTree = "<group>"; };
+		9BA247282313B5C8003AEDC3 /* male_hair_q_1_t4.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = male_hair_q_1_t4.bundle; sourceTree = "<group>"; };
+		9BA2472A2313B855003AEDC3 /* glass_1.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = glass_1.bundle; sourceTree = "<group>"; };
 		9BA3CD7E22B87E3C00B09E8E /* FUP2A_PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUP2A_PrefixHeader.pch; sourceTree = "<group>"; };
 		9BA3CD8022B882C700B09E8E /* AppManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppManager.h; sourceTree = "<group>"; };
 		9BA3CD8122B882C700B09E8E /* AppManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppManager.m; sourceTree = "<group>"; };
+		9BD6BB0922FBCCB8003D6F7C /* FUAvatarEditedDoModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUAvatarEditedDoModel.h; sourceTree = "<group>"; };
+		9BD6BB0A22FBCCB8003D6F7C /* FUAvatarEditedDoModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUAvatarEditedDoModel.m; sourceTree = "<group>"; };
+		9BEF7A52231513560003E017 /* libPods-FUP2A.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libPods-FUP2A.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9BF4FC4522C705BC00BEB1A0 /* FUGroupVideoController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUGroupVideoController.h; sourceTree = "<group>"; };
 		9BF4FC4622C705BC00BEB1A0 /* FUGroupVideoController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUGroupVideoController.m; sourceTree = "<group>"; };
 		9BF4FC4B22C70A8100BEB1A0 /* FUAVPlayerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUAVPlayerView.h; sourceTree = "<group>"; };
 		9BF4FC4C22C70A8100BEB1A0 /* FUAVPlayerView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUAVPlayerView.m; sourceTree = "<group>"; };
+		9BFE7F862315199B008EB060 /* cloth_7.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_7.bundle; sourceTree = "<group>"; };
+		9BFE7F872315199B008EB060 /* cloth_10.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_10.bundle; sourceTree = "<group>"; };
+		9BFE7F882315199B008EB060 /* cloth_2.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_2.bundle; sourceTree = "<group>"; };
+		9BFE7F892315199C008EB060 /* cloth_13.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_13.bundle; sourceTree = "<group>"; };
+		9BFE7F8A2315199C008EB060 /* cloth_16.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_16.bundle; sourceTree = "<group>"; };
+		9BFE7F8B2315199C008EB060 /* cloth_1.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_1.bundle; sourceTree = "<group>"; };
+		9BFE7F8C2315199C008EB060 /* cloth_14.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_14.bundle; sourceTree = "<group>"; };
+		9BFE7F8D2315199C008EB060 /* cloth_0.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_0.bundle; sourceTree = "<group>"; };
+		9BFE7F8E2315199C008EB060 /* cloth_4.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_4.bundle; sourceTree = "<group>"; };
+		9BFE7F8F2315199C008EB060 /* cloth_11.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_11.bundle; sourceTree = "<group>"; };
+		9BFE7F902315199C008EB060 /* cloth_9.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_9.bundle; sourceTree = "<group>"; };
+		9BFE7F912315199C008EB060 /* cloth_6.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_6.bundle; sourceTree = "<group>"; };
+		9BFE7F922315199C008EB060 /* cloth_8.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_8.bundle; sourceTree = "<group>"; };
+		9BFE7F932315199C008EB060 /* cloth_15.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_15.bundle; sourceTree = "<group>"; };
+		9BFE7F942315199C008EB060 /* cloth_5.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_5.bundle; sourceTree = "<group>"; };
+		9BFE7F952315199C008EB060 /* cloth_3.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_3.bundle; sourceTree = "<group>"; };
+		9BFE7F962315199D008EB060 /* cloth_17.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_17.bundle; sourceTree = "<group>"; };
+		9BFE7F972315199D008EB060 /* cloth_12.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = cloth_12.bundle; sourceTree = "<group>"; };
 		E99E4BB7E2F36C3C1ACEC7F2 /* Pods-FUP2A.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FUP2A.release.xcconfig"; path = "Pods/Target Support Files/Pods-FUP2A/Pods-FUP2A.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -883,13 +944,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9BEF7A53231513560003E017 /* libPods-FUP2A.a in Frameworks */,
 				0B8DE89720C5257900E21A8B /* Accelerate.framework in Frameworks */,
 				0B8DE89520C5256C00E21A8B /* libstdc++.tbd in Frameworks */,
 				9B8F886822C466FB00C119A7 /* FUP2AClient.framework in Frameworks */,
+				9B5C539B23150A5F007DDC21 /* FUP2AHelper.framework in Frameworks */,
 				0B8DE88D20C5255000E21A8B /* libnama.a in Frameworks */,
-				FC096410CB0E13AEDC16B25A /* libPods-FUP2A.a in Frameworks */,
-				0B8E6671229BE96F000C8C86 /* FUP2AHelper.framework in Frameworks */,
-				0B8E6672229BE9A2000C8C86 /* FUP2AHelper.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -912,6 +972,14 @@
 				0B388BDA223653100026B544 /* FURequestManager.m */,
 				0B388BD9223653100026B544 /* UIColor+FU.h */,
 				0B388BDC223653100026B544 /* UIColor+FU.m */,
+				9B45EC3422FAA970004B7818 /* FUStack.h */,
+				9B45EC3522FAA970004B7818 /* FUStack.m */,
+				9B45EC3722FAD00D004B7818 /* FUAvatarEditManager.h */,
+				9B45EC3822FAD00D004B7818 /* FUAvatarEditManager.m */,
+				9B5337AB22FC4F2F00008901 /* FUNielianEditManager.h */,
+				9B5337AC22FC4F2F00008901 /* FUNielianEditManager.m */,
+				9BD6BB0922FBCCB8003D6F7C /* FUAvatarEditedDoModel.h */,
+				9BD6BB0A22FBCCB8003D6F7C /* FUAvatarEditedDoModel.m */,
 			);
 			path = Tool;
 			sourceTree = "<group>";
@@ -946,7 +1014,6 @@
 		0B65CF0C2237905C00F75058 /* FUP2AHelper */ = {
 			isa = PBXGroup;
 			children = (
-				0B8E6670229BE96F000C8C86 /* FUP2AHelper.framework */,
 			);
 			path = FUP2AHelper;
 			sourceTree = "<group>";
@@ -964,6 +1031,7 @@
 		0B6A932F2194027D002AA1BD /* figureView */ = {
 			isa = PBXGroup;
 			children = (
+				9B0E314E22F92CD300B0D138 /* FUGradientSlider */,
 				0BCFC90622672EE10095E305 /* FUFigureDefine.h */,
 				0BCFC90A22672EE10095E305 /* FUFigureView.h */,
 				0BCFC90222672EE10095E305 /* FUFigureView.m */,
@@ -1415,23 +1483,25 @@
 		0B8E66DE229D32FF000C8C86 /* hair */ = {
 			isa = PBXGroup;
 			children = (
-				9B96748222B3ADD8003F8D6B /* female_hair_q_8.bundle */,
-				9B96748322B3ADD8003F8D6B /* female_hair_q_17.bundle */,
-				9B96748122B3ADD8003F8D6B /* female_hair_q_19.bundle */,
-				9B96748022B3ADD8003F8D6B /* female_hair_q_20.bundle */,
-				9B96748422B3ADD8003F8D6B /* female_hair_q_22.bundle */,
-				0B8E66DF229D32FF000C8C86 /* female_hair_q_15.bundle */,
-				0B8E66E0229D32FF000C8C86 /* female_hair_q_23.bundle */,
-				0B8E66E1229D32FF000C8C86 /* female_hair_q_t_1.bundle */,
-				0B8E66E2229D32FF000C8C86 /* female_hair_q_21.bundle */,
-				0B8E66E3229D32FF000C8C86 /* female_hair_q_t_5.bundle */,
-				0B8E66E4229D32FF000C8C86 /* female_hair_q_13.bundle */,
-				0B8E66E5229D32FF000C8C86 /* female_hair_q_11.bundle */,
-				0B8E66E6229D32FF000C8C86 /* female_hair_q_9.bundle */,
-				0B8E66E7229D32FF000C8C86 /* female_hair_q_16.bundle */,
-				0B8E66E8229D32FF000C8C86 /* female_hair_q_7.bundle */,
-				0B8E66E9229D32FF000C8C86 /* female_hair_q_12.bundle */,
-				0B8E66EA229D32FF000C8C86 /* female_hair_q_10.bundle */,
+				9B0358312304076E006235E4 /* female_hair_q_7.bundle */,
+				9B03582E2304076E006235E4 /* female_hair_q_8.bundle */,
+				9B03582B2304076D006235E4 /* female_hair_q_9.bundle */,
+				9B03582D2304076E006235E4 /* female_hair_q_10.bundle */,
+				9B03583B2304076F006235E4 /* female_hair_q_11.bundle */,
+				9B03583A2304076F006235E4 /* female_hair_q_12.bundle */,
+				9B0358322304076E006235E4 /* female_hair_q_13.bundle */,
+				9B03582F2304076E006235E4 /* female_hair_q_15.bundle */,
+				9B03583C2304076F006235E4 /* female_hair_q_16.bundle */,
+				9B0358372304076E006235E4 /* female_hair_q_17.bundle */,
+				9B03582C2304076D006235E4 /* female_hair_q_19.bundle */,
+				9B0358382304076E006235E4 /* female_hair_q_20.bundle */,
+				9B0358332304076E006235E4 /* female_hair_q_21_t1.bundle */,
+				9B0358362304076E006235E4 /* female_hair_q_21_t2.bundle */,
+				9B03583D2304076F006235E4 /* female_hair_q_21_t3.bundle */,
+				9B0358302304076E006235E4 /* female_hair_q_21_t4.bundle */,
+				9B0358392304076F006235E4 /* female_hair_q_21.bundle */,
+				9B0358352304076E006235E4 /* female_hair_q_22.bundle */,
+				9B0358342304076E006235E4 /* female_hair_q_23.bundle */,
 			);
 			path = hair;
 			sourceTree = "<group>";
@@ -1439,35 +1509,47 @@
 		0B8E66EB229D32FF000C8C86 /* animation */ = {
 			isa = PBXGroup;
 			children = (
-				0B8E67F3229D3314000C8C86 /* ani_dace_bg.bundle */,
-				0B8E6802229D3316000C8C86 /* ani_dace_cam.bundle */,
-				0B8E67FE229D3315000C8C86 /* ani_dance.bundle */,
-				0B8E67F1229D3314000C8C86 /* ani_idle.bundle */,
-				0B8E67F4229D3314000C8C86 /* ani_LRPP_bg.bundle */,
-				0B8E67F8229D3315000C8C86 /* ani_LRPP_cam.bundle */,
-				0B8E67FD229D3315000C8C86 /* ani_LRPP_shanzi.bundle */,
-				0B8E67FA229D3315000C8C86 /* ani_LRPP.bundle */,
-				0B8E67F5229D3315000C8C86 /* ani_pose.bundle */,
-				0B8E6800229D3315000C8C86 /* ani_SJG_bg.bundle */,
-				0B8E6801229D3316000C8C86 /* ani_SJG_cam.bundle */,
-				0B8E67EF229D3314000C8C86 /* ani_SJG_sjg.bundle */,
-				0B8E67E8229D3313000C8C86 /* ani_SJG.bundle */,
-				0B8E67EB229D3314000C8C86 /* ani_SZW_cam.bundle */,
-				0B8E67EE229D3314000C8C86 /* ani_SZW.bundle */,
-				0B8E67FC229D3315000C8C86 /* danshoubixin.bundle */,
-				0B8E67F6229D3315000C8C86 /* guzhang.bundle */,
-				0B8E67E9229D3313000C8C86 /* hi.bundle */,
-				0B8E67F7229D3315000C8C86 /* ok.bundle */,
-				0B8E67EA229D3313000C8C86 /* pose_5ren_1.bundle */,
-				0B8E67FF229D3315000C8C86 /* pose_5ren_2.bundle */,
-				0B8E67FB229D3315000C8C86 /* pose_5ren_3.bundle */,
-				0B8E67F2229D3314000C8C86 /* pose_5ren_4.bundle */,
-				0B8E67EC229D3314000C8C86 /* pose_5ren_5.bundle */,
-				0B8E67ED229D3314000C8C86 /* pose_danren_01.bundle */,
-				0B8E6803229D3316000C8C86 /* pose_shaungren_03_1.bundle */,
-				0B8E67F0229D3314000C8C86 /* pose_shaungren_03_2.bundle */,
-				0B8E6804229D3316000C8C86 /* rock.bundle */,
-				0B8E67F9229D3315000C8C86 /* shuangshoubixin.bundle */,
+				9B2F6D8023165E6C0081E55C /* ani_dace_bg.bundle */,
+				9B2F6D9623165E6D0081E55C /* ani_dace_cam.bundle */,
+				9B2F6D8323165E6C0081E55C /* ani_dance.bundle */,
+				9B2F6D9223165E6D0081E55C /* ani_danshoubixin.bundle */,
+				9B2F6D9723165E6D0081E55C /* ani_guzhang.bundle */,
+				9B2F6D7E23165E6C0081E55C /* ani_hi.bundle */,
+				9B2F6D9C23165E6E0081E55C /* ani_idle.bundle */,
+				9B2F6D8223165E6C0081E55C /* ani_LRPP_bg.bundle */,
+				9B2F6D9123165E6D0081E55C /* ani_LRPP_cam.bundle */,
+				9B2F6D9B23165E6E0081E55C /* ani_LRPP_shanzi.bundle */,
+				9B2F6D8F23165E6D0081E55C /* ani_LRPP.bundle */,
+				9B2F6DA023165E6E0081E55C /* ani_ok.bundle */,
+				9B2F6D7B23165E6B0081E55C /* ani_pose.bundle */,
+				9B2F6D7F23165E6C0081E55C /* ani_rock.bundle */,
+				9B2F6D8D23165E6C0081E55C /* ani_shuangshoubixin.bundle */,
+				9B2F6D8123165E6C0081E55C /* ani_SJG_bg.bundle */,
+				9B2F6D8923165E6C0081E55C /* ani_SJG_cam.bundle */,
+				9B2F6D8A23165E6C0081E55C /* ani_SJG_sjg.bundle */,
+				9B2F6D8523165E6C0081E55C /* ani_SJG.bundle */,
+				9B2F6D9D23165E6E0081E55C /* ani_SZW_cam.bundle */,
+				9B2F6D9F23165E6E0081E55C /* ani_SZW.bundle */,
+				9B2F6D8E23165E6D0081E55C /* pose_5ren_1.bundle */,
+				9B2F6D9823165E6D0081E55C /* pose_5ren_2.bundle */,
+				9B2F6D7D23165E6B0081E55C /* pose_5ren_3.bundle */,
+				9B2F6D8723165E6C0081E55C /* pose_5ren_4.bundle */,
+				9B2F6D9323165E6D0081E55C /* pose_5ren_5.bundle */,
+				9B2F6D9E23165E6E0081E55C /* pose_danren_01.bundle */,
+				9B2F6D7923165E6B0081E55C /* pose_danren_dance.bundle */,
+				9B2F6D7A23165E6B0081E55C /* pose_danren_danshoubixin.bundle */,
+				9B2F6D8B23165E6C0081E55C /* pose_danren_guzhang.bundle */,
+				9B2F6D9923165E6D0081E55C /* pose_danren_hi.bundle */,
+				9B2F6D7823165E6B0081E55C /* pose_danren_idle.bundle */,
+				9B2F6D7C23165E6B0081E55C /* pose_danren_LRPP.bundle */,
+				9B2F6D8C23165E6C0081E55C /* pose_danren_OK.bundle */,
+				9B2F6D8823165E6C0081E55C /* pose_danren_pose.bundle */,
+				9B2F6D9A23165E6E0081E55C /* pose_danren_rock.bundle */,
+				9B2F6D9423165E6D0081E55C /* pose_danren_shuangshoubixin.bundle */,
+				9B2F6D9523165E6D0081E55C /* pose_danren_SJG.bundle */,
+				9B2F6D9023165E6D0081E55C /* pose_danren_SZW.bundle */,
+				9B2F6D8423165E6C0081E55C /* pose_shaungren_03_1.bundle */,
+				9B2F6D8623165E6C0081E55C /* pose_shaungren_03_2.bundle */,
 			);
 			path = animation;
 			sourceTree = "<group>";
@@ -1526,16 +1608,19 @@
 		0B8E672C229D32FF000C8C86 /* hair */ = {
 			isa = PBXGroup;
 			children = (
-				9B96747D22B3ADB9003F8D6B /* male_hair_q_3.bundle */,
-				9B96747C22B3ADB9003F8D6B /* male_hair_q_4.bundle */,
-				0B8E672D229D32FF000C8C86 /* male_hair_q_t_7.bundle */,
-				0B8E672E229D32FF000C8C86 /* male_hair_q_2.bundle */,
-				0B8E672F229D32FF000C8C86 /* male_hair_q_t_9.bundle */,
-				0B8E6730229D32FF000C8C86 /* male_hair_q_0.bundle */,
-				0B8E6731229D32FF000C8C86 /* male_hair_q_6.bundle */,
-				0B8E6732229D32FF000C8C86 /* male_hair_q_1.bundle */,
-				0B8E6733229D32FF000C8C86 /* male_hair_q_t_8.bundle */,
-				0B8E6734229D32FF000C8C86 /* male_hair_q_5.bundle */,
+				9BA247282313B5C8003AEDC3 /* male_hair_q_1_t4.bundle */,
+				9B03585C23040787006235E4 /* male_hair_q_0.bundle */,
+				9B03585223040786006235E4 /* male_hair_q_1_t1.bundle */,
+				9B03585923040787006235E4 /* male_hair_q_1_t2.bundle */,
+				9B03585523040787006235E4 /* male_hair_q_1_t3.bundle */,
+				9B03585B23040787006235E4 /* male_hair_q_1.bundle */,
+				9B03585A23040787006235E4 /* male_hair_q_2.bundle */,
+				9B03585823040787006235E4 /* male_hair_q_3.bundle */,
+				9B03585323040787006235E4 /* male_hair_q_4_t1.bundle */,
+				9B03585423040787006235E4 /* male_hair_q_4_t2.bundle */,
+				9B03585723040787006235E4 /* male_hair_q_4.bundle */,
+				9B03585123040786006235E4 /* male_hair_q_5.bundle */,
+				9B03585623040787006235E4 /* male_hair_q_6.bundle */,
 			);
 			path = hair;
 			sourceTree = "<group>";
@@ -1543,6 +1628,7 @@
 		0B8E6735229D3300000C8C86 /* glass */ = {
 			isa = PBXGroup;
 			children = (
+				9BA2472A2313B855003AEDC3 /* glass_1.bundle */,
 				0B8E6736229D3300000C8C86 /* glass_10.bundle */,
 				0B8E6737229D3300000C8C86 /* glass_8.bundle */,
 				0B8E6738229D3300000C8C86 /* glass_4.bundle */,
@@ -1578,21 +1664,26 @@
 		0B8E674D229D3300000C8C86 /* cloth */ = {
 			isa = PBXGroup;
 			children = (
-				0BBDB13C229E7A4B000989D6 /* female_cloth01.bundle */,
-				0BBDB141229E7A4C000989D6 /* female_cloth02.bundle */,
-				0BBDB142229E7A4C000989D6 /* male_cloth01.bundle */,
-				0BBDB148229E7A4C000989D6 /* male_cloth02.bundle */,
-				0BBDB140229E7A4C000989D6 /* mid_cloth0.bundle */,
-				0BBDB143229E7A4C000989D6 /* mid_cloth01.bundle */,
-				0BBDB144229E7A4C000989D6 /* mid_cloth02.bundle */,
-				0BBDB146229E7A4C000989D6 /* mid_cloth03.bundle */,
-				0BBDB147229E7A4C000989D6 /* mid_cloth04.bundle */,
-				0BBDB13D229E7A4B000989D6 /* mid_cloth05.bundle */,
-				0BBDB13E229E7A4B000989D6 /* mid_cloth06.bundle */,
-				0BBDB13F229E7A4C000989D6 /* mid_cloth07.bundle */,
-				0BBDB145229E7A4C000989D6 /* mid_cloth08.bundle */,
-				0BBDB13B229E7A4B000989D6 /* mid_cloth09.bundle */,
-				0BBDB13A229E7A4B000989D6 /* mid_cloth10.bundle */,
+				9B2F6D70231649BF0081E55C /* cloth_18.bundle */,
+				9B2F6D71231649BF0081E55C /* cloth_19.bundle */,
+				9BFE7F8D2315199C008EB060 /* cloth_0.bundle */,
+				9BFE7F8B2315199C008EB060 /* cloth_1.bundle */,
+				9BFE7F882315199B008EB060 /* cloth_2.bundle */,
+				9BFE7F952315199C008EB060 /* cloth_3.bundle */,
+				9BFE7F8E2315199C008EB060 /* cloth_4.bundle */,
+				9BFE7F942315199C008EB060 /* cloth_5.bundle */,
+				9BFE7F912315199C008EB060 /* cloth_6.bundle */,
+				9BFE7F862315199B008EB060 /* cloth_7.bundle */,
+				9BFE7F922315199C008EB060 /* cloth_8.bundle */,
+				9BFE7F902315199C008EB060 /* cloth_9.bundle */,
+				9BFE7F872315199B008EB060 /* cloth_10.bundle */,
+				9BFE7F8F2315199C008EB060 /* cloth_11.bundle */,
+				9BFE7F972315199D008EB060 /* cloth_12.bundle */,
+				9BFE7F892315199C008EB060 /* cloth_13.bundle */,
+				9BFE7F8C2315199C008EB060 /* cloth_14.bundle */,
+				9BFE7F932315199C008EB060 /* cloth_15.bundle */,
+				9BFE7F8A2315199C008EB060 /* cloth_16.bundle */,
+				9BFE7F962315199D008EB060 /* cloth_17.bundle */,
 			);
 			path = cloth;
 			sourceTree = "<group>";
@@ -1613,6 +1704,7 @@
 		0B8ED6C220C0DC360011221E = {
 			isa = PBXGroup;
 			children = (
+				9B5C539A23150A5F007DDC21 /* FUP2AHelper.framework */,
 				9B8F886722C466FB00C119A7 /* FUP2AClient.framework */,
 				0B8ED6CD20C0DC360011221E /* FUP2A */,
 				0B8ED6CC20C0DC360011221E /* Products */,
@@ -1726,11 +1818,21 @@
 		61AB2E0EF26C724A956A8541 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				9BEF7A52231513560003E017 /* libPods-FUP2A.a */,
 				0B8DE89620C5257900E21A8B /* Accelerate.framework */,
 				0B8DE89420C5256C00E21A8B /* libstdc++.tbd */,
 				57E09EFF74EEF71DBDACB30A /* libPods-FUP2A.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		9B0E314E22F92CD300B0D138 /* FUGradientSlider */ = {
+			isa = PBXGroup;
+			children = (
+				9B0E315222F9323C00B0D138 /* FUGradientSlider.h */,
+				9B0E315322F9323C00B0D138 /* FUGradientSlider.m */,
+			);
+			path = FUGradientSlider;
 			sourceTree = "<group>";
 		};
 		9BA3CD7F22B882A400B09E8E /* Manager */ = {
@@ -1758,7 +1860,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0B8ED6E120C0DC380011221E /* Build configuration list for PBXNativeTarget "FUP2A" */;
 			buildPhases = (
-				CDBD666721B2A50A003F65C8 /* unzip */,
+				9BCA77792322765C00342A2D /* unzip */,
 				4B0099231F02686F43ED32A6 /* [CP] Check Pods Manifest.lock */,
 				0B8ED6C720C0DC360011221E /* Sources */,
 				0B8ED6C820C0DC360011221E /* Frameworks */,
@@ -1815,117 +1917,131 @@
 			files = (
 				0B77D3E4225F21F5008D583E /* male_beard_4.bundle in Resources */,
 				0B0A8AB32122758100A09AB2 /* loading1.png in Resources */,
+				9B2F6DB723165E6E0081E55C /* pose_5ren_1.bundle in Resources */,
 				0B8E67D0229D3300000C8C86 /* glass_15.bundle in Resources */,
 				0B77D433225F21F5008D583E /* male_hair_2.bundle in Resources */,
 				0B77D3FF225F21F5008D583E /* female_hat_17.bundle in Resources */,
-				0B8E6816229D3316000C8C86 /* shuangshoubixin.bundle in Resources */,
 				0B8E67CC229D3300000C8C86 /* glass_7.bundle in Resources */,
 				0B77D426225F21F5008D583E /* female_hair_11.bundle in Resources */,
 				0B77D419225F21F5008D583E /* male_hat_16.bundle in Resources */,
 				0B77D3B7225F21F5008D583E /* male_danshoubixin.bundle in Resources */,
 				0B77D3E0225F21F5008D583E /* female_glass_19.bundle in Resources */,
 				0B77D3DB225F21F5008D583E /* female_glass_21.bundle in Resources */,
-				0B8E676D229D3300000C8C86 /* female_hair_q_15.bundle in Resources */,
-				0BBDB14A229E7A4C000989D6 /* mid_cloth09.bundle in Resources */,
 				0B77D3A0225F21F5008D583E /* female_body.bundle in Resources */,
+				9B03586223040787006235E4 /* male_hair_q_6.bundle in Resources */,
 				0B8E676C229D3300000C8C86 /* female_brows04.bundle in Resources */,
 				0B77D3CB225F21F5008D583E /* male_glass_8.bundle in Resources */,
 				0B77D40D225F21F5008D583E /* female_hat_5.bundle in Resources */,
 				0B77D3C2225F21F5008D583E /* male_glass_2.bundle in Resources */,
 				0B0A8AAE2122758100A09AB2 /* loading5.png in Resources */,
 				0B4FDC3E2183442C00705F4A /* FUHistoryViewController.xib in Resources */,
-				9B96748522B3ADD8003F8D6B /* female_hair_q_20.bundle in Resources */,
 				0B0A8A9B2122758100A09AB2 /* loading16.png in Resources */,
 				0B77D3CE225F21F5008D583E /* female_glass_6.bundle in Resources */,
-				0B8E6777229D3300000C8C86 /* female_hair_q_12.bundle in Resources */,
-				0B8E6771229D3300000C8C86 /* female_hair_q_t_5.bundle in Resources */,
 				0B8E67E6229D3300000C8C86 /* beard06.bundle in Resources */,
 				0B77D425225F21F5008D583E /* female_hair_13.bundle in Resources */,
+				9B2F6DC723165E6E0081E55C /* pose_danren_01.bundle in Resources */,
 				0B8E67E4229D3300000C8C86 /* beard01.bundle in Resources */,
 				0B77D3A9225F21F5008D583E /* pose_nanbaonv_female.bundle in Resources */,
 				0B77D3FB225F21F5008D583E /* female_hat_8.bundle in Resources */,
-				0B8E6811229D3316000C8C86 /* ani_LRPP_bg.bundle in Resources */,
 				0B729AD6224A18C100DA7D9D /* p2a_client_q.bin in Resources */,
-				0B8E6806229D3316000C8C86 /* hi.bundle in Resources */,
 				0B77D3A2225F21F5008D583E /* toonfilter.png in Resources */,
 				0B0A8AB22122758100A09AB2 /* loading26.png in Resources */,
+				9B2F6DA523165E6E0081E55C /* pose_danren_LRPP.bundle in Resources */,
 				0B0A8AA52122758100A09AB2 /* loading22.png in Resources */,
+				9BFE7F9A2315199D008EB060 /* cloth_2.bundle in Resources */,
 				0B8DE88E20C5255000E21A8B /* release_note.txt in Resources */,
 				0B77D3A7225F21F5008D583E /* female_pose_ok.bundle in Resources */,
 				0B77D3D6225F21F5008D583E /* male_glass_15.bundle in Resources */,
+				9BFE7F982315199D008EB060 /* cloth_7.bundle in Resources */,
+				9B2F6DBD23165E6E0081E55C /* pose_danren_shuangshoubixin.bundle in Resources */,
 				0B8E6764229D3300000C8C86 /* female_brows03.bundle in Resources */,
+				9B2F6DC523165E6E0081E55C /* ani_idle.bundle in Resources */,
+				9B03586423040787006235E4 /* male_hair_q_3.bundle in Resources */,
 				0B0A8AB42122758100A09AB2 /* loading31.png in Resources */,
 				0B0A8AA42122758100A09AB2 /* loading21.png in Resources */,
-				0B8E6814229D3316000C8C86 /* ok.bundle in Resources */,
+				9BFE7F9D2315199D008EB060 /* cloth_1.bundle in Resources */,
 				0B77D420225F21F5008D583E /* female_hair_21.bundle in Resources */,
-				0B8E67B8229D3300000C8C86 /* male_hair_q_t_9.bundle in Resources */,
 				0B77D3F6225F21F5008D583E /* male_hat_13.bundle in Resources */,
 				0B77D41C225F21F5008D583E /* female_hair_7.bundle in Resources */,
 				0B0A8AA92122758100A09AB2 /* loading12.png in Resources */,
 				0B8E67CB229D3300000C8C86 /* glass_13.bundle in Resources */,
 				0B77D3C8225F21F5008D583E /* female_glass_8.bundle in Resources */,
-				0B8E680D229D3316000C8C86 /* pose_shaungren_03_2.bundle in Resources */,
 				0B77D39F225F21F5008D583E /* color.json in Resources */,
 				0B8E6861229E2452000C8C86 /* mid_hat11.bundle in Resources */,
-				0BBDB14C229E7A4C000989D6 /* mid_cloth05.bundle in Resources */,
 				0B77D3AA225F21F5008D583E /* pose_nvlounan_female.bundle in Resources */,
+				9BFE7FA72315199D008EB060 /* cloth_3.bundle in Resources */,
+				9BFE7F9B2315199D008EB060 /* cloth_13.bundle in Resources */,
 				0B729ADC224A1EC700DA7D9D /* p2a_client_q1.bin in Resources */,
 				0B77D435225F21F5008D583E /* male_hair_0.bundle in Resources */,
 				0B77D39A225F21F5008D583E /* male_clothes_3.bundle in Resources */,
+				9BFE7FA52315199D008EB060 /* cloth_15.bundle in Resources */,
+				9B2F6DA323165E6E0081E55C /* pose_danren_danshoubixin.bundle in Resources */,
 				0B0A8AAA2122758100A09AB2 /* loading13.png in Resources */,
-				0BBDB14F229E7A4C000989D6 /* mid_cloth0.bundle in Resources */,
 				0B8E6767229D3300000C8C86 /* female_brows05.bundle in Resources */,
-				0B8E6813229D3316000C8C86 /* guzhang.bundle in Resources */,
 				0B0A8AA22122758100A09AB2 /* loading4.png in Resources */,
+				9B2F6DBE23165E6E0081E55C /* pose_danren_SJG.bundle in Resources */,
+				9BFE7FA22315199D008EB060 /* cloth_9.bundle in Resources */,
+				9BFE7F9F2315199D008EB060 /* cloth_0.bundle in Resources */,
 				0B77D41F225F21F5008D583E /* male_hair_t_5.bundle in Resources */,
+				9B03586123040787006235E4 /* male_hair_q_1_t3.bundle in Resources */,
 				0B0A8A9C2122758100A09AB2 /* loading29.png in Resources */,
-				0B8E681C229D3316000C8C86 /* pose_5ren_2.bundle in Resources */,
 				0B8E67C7229D3300000C8C86 /* glass_18.bundle in Resources */,
 				0B8E67CE229D3300000C8C86 /* glass_17.bundle in Resources */,
 				0B8E67C8229D3300000C8C86 /* glass_9.bundle in Resources */,
 				0B8E6799229D3300000C8C86 /* eyeLash.bundle in Resources */,
+				9B03584A2304076F006235E4 /* female_hair_q_17.bundle in Resources */,
+				9B03585F23040787006235E4 /* male_hair_q_4_t1.bundle in Resources */,
 				0B8E6860229E2452000C8C86 /* mid_hat10.bundle in Resources */,
+				9B0358402304076F006235E4 /* female_hair_q_10.bundle in Resources */,
 				0B8E67B5229D3300000C8C86 /* male_brows04.bundle in Resources */,
-				0BBDB150229E7A4C000989D6 /* female_cloth02.bundle in Resources */,
-				0B8E6807229D3316000C8C86 /* pose_5ren_1.bundle in Resources */,
 				0B8E6798229D3300000C8C86 /* controller.md in Resources */,
-				0BBDB152229E7A4C000989D6 /* mid_cloth01.bundle in Resources */,
 				0B77D3B0225F21F5008D583E /* female_rock.bundle in Resources */,
 				0B8E67AE229D3300000C8C86 /* male_brows07.bundle in Resources */,
 				0B8E67B1229D3300000C8C86 /* male_brows10.bundle in Resources */,
 				0B77D412225F21F5008D583E /* female_hat_16.bundle in Resources */,
 				0B8E67C1229D3300000C8C86 /* glass_6.bundle in Resources */,
-				0BBDB157229E7A4C000989D6 /* male_cloth02.bundle in Resources */,
+				9B03585D23040787006235E4 /* male_hair_q_5.bundle in Resources */,
 				0B77D406225F21F5008D583E /* female_hat_7.bundle in Resources */,
+				9B0358472304076F006235E4 /* female_hair_q_23.bundle in Resources */,
 				0B77D436225F21F5008D583E /* female_hair_10.bundle in Resources */,
+				9BFE7F9E2315199D008EB060 /* cloth_14.bundle in Resources */,
 				0B77D3BC225F21F5008D583E /* qiuhun_ani_cam.bundle in Resources */,
 				0B0A8AAC2122758100A09AB2 /* loading28.png in Resources */,
+				9B2F6DB423165E6E0081E55C /* pose_danren_guzhang.bundle in Resources */,
 				0B0A8AA02122758100A09AB2 /* loading18.png in Resources */,
 				0B77D3ED225F21F5008D583E /* female_eyebrow_3.bundle in Resources */,
 				0B77D3E5225F21F5008D583E /* male_beard_1.bundle in Resources */,
 				0B8E67CA229D3300000C8C86 /* glass_11.bundle in Resources */,
+				9B2F6DB823165E6E0081E55C /* ani_LRPP.bundle in Resources */,
 				0B77D3D9225F21F5008D583E /* male_glass_11.bundle in Resources */,
 				0B8E67E3229D3300000C8C86 /* beard03.bundle in Resources */,
 				0B77D429225F21F5008D583E /* male_hair_t_4.bundle in Resources */,
 				0B77D418225F21F5008D583E /* male_hat_1.bundle in Resources */,
 				0B0A8A992122758100A09AB2 /* loading27.png in Resources */,
-				0B8E680F229D3316000C8C86 /* pose_5ren_4.bundle in Resources */,
 				0B8E6868229E2452000C8C86 /* mid_hat21.bundle in Resources */,
 				0B8E67C3229D3300000C8C86 /* glass_2.bundle in Resources */,
 				0B77D39D225F21F5008D583E /* male_clothes_2.bundle in Resources */,
 				0B8E67E5229D3300000C8C86 /* beard04.bundle in Resources */,
 				0B77D3C3225F21F5008D583E /* female_glass_2.bundle in Resources */,
+				9B2F6DC123165E6E0081E55C /* pose_5ren_2.bundle in Resources */,
 				0B8E67C6229D3300000C8C86 /* glass_14.bundle in Resources */,
+				9B2F6DA723165E6E0081E55C /* ani_hi.bundle in Resources */,
 				0B8E6867229E2452000C8C86 /* mid_hat08.bundle in Resources */,
+				9B2F6DB023165E6E0081E55C /* pose_5ren_4.bundle in Resources */,
+				9BFE7FA42315199D008EB060 /* cloth_8.bundle in Resources */,
 				0B77D3B1225F21F5008D583E /* male_hi.bundle in Resources */,
 				0B77D431225F21F5008D583E /* female_hair_12.bundle in Resources */,
+				9BFE7FA82315199D008EB060 /* cloth_17.bundle in Resources */,
+				9B03586723040787006235E4 /* male_hair_q_1.bundle in Resources */,
+				9B03586023040787006235E4 /* male_hair_q_4_t2.bundle in Resources */,
+				9B2F6DBC23165E6E0081E55C /* pose_5ren_5.bundle in Resources */,
 				0B77D3B2225F21F5008D583E /* male_shuangshoubixin.bundle in Resources */,
-				0B8E67BC229D3300000C8C86 /* male_hair_q_t_8.bundle in Resources */,
 				0B77D405225F21F5008D583E /* female_hat_15.bundle in Resources */,
 				0B77D3CA225F21F5008D583E /* male_glass_4.bundle in Resources */,
 				0B77D3A3225F21F5008D583E /* toonfilter.bundle in Resources */,
 				0B77D42E225F21F5008D583E /* female_hair_16.bundle in Resources */,
 				0B77D3EB225F21F5008D583E /* female_eyebrow_5.bundle in Resources */,
+				9B2F6DB323165E6E0081E55C /* ani_SJG_sjg.bundle in Resources */,
 				0B77D41E225F21F5008D583E /* male_hair_5.bundle in Resources */,
 				0B77D3B9225F21F5008D583E /* female_animation.bundle in Resources */,
 				0B8E67B0229D3300000C8C86 /* male_brows05.bundle in Resources */,
@@ -1933,6 +2049,7 @@
 				0B77D3A5225F21F5008D583E /* male_pose_shuangshoubixin.bundle in Resources */,
 				0B8E67BE229D3300000C8C86 /* glass_10.bundle in Resources */,
 				0B0A8AB12122758100A09AB2 /* loading24.png in Resources */,
+				9B2F6D73231649BF0081E55C /* cloth_19.bundle in Resources */,
 				0B77D3B6225F21F5008D583E /* female_shuangshoubixin.bundle in Resources */,
 				0B77D403225F21F5008D583E /* male_hat_21.bundle in Resources */,
 				0B77D401225F21F5008D583E /* male_hat_2.bundle in Resources */,
@@ -1946,17 +2063,16 @@
 				0B0A8AA72122758100A09AB2 /* loading19.png in Resources */,
 				0B77D422225F21F5008D583E /* female_hair_t_1.bundle in Resources */,
 				0B77D3C6225F21F5008D583E /* female_glass_4.bundle in Resources */,
-				0B8E6809229D3316000C8C86 /* pose_5ren_5.bundle in Resources */,
 				0B77D41D225F21F5008D583E /* female_hair_23.bundle in Resources */,
 				0B77D3FC225F21F5008D583E /* male_hat_6.bundle in Resources */,
 				0B757788229FCE98004954D3 /* fxaa.bundle in Resources */,
 				0B77D3F8225F21F5008D583E /* female_hat_6.bundle in Resources */,
-				0B8E681E229D3316000C8C86 /* ani_SJG_cam.bundle in Resources */,
 				0B8E6796229D3300000C8C86 /* q_controller.bundle in Resources */,
 				0BAAF083224B0F570016EF9D /* AvatarDecoration.plist in Resources */,
 				0B77D4A2225F21F5008D583E /* Avatars.json in Resources */,
 				0B77D3CD225F21F5008D583E /* female_glass_18.bundle in Resources */,
 				0B0A8AAD2122758100A09AB2 /* loading8.png in Resources */,
+				9B2F6DC923165E6E0081E55C /* ani_ok.bundle in Resources */,
 				0B77D3F9225F21F5008D583E /* female_hat_13.bundle in Resources */,
 				0B77D3EA225F21F5008D583E /* male_eyebrow_1.bundle in Resources */,
 				0B77D3BF225F21F5008D583E /* male_animation.bundle in Resources */,
@@ -1964,16 +2080,18 @@
 				0B77D407225F21F5008D583E /* female_hat_10.bundle in Resources */,
 				0B77D3DD225F21F5008D583E /* female_glass_17.bundle in Resources */,
 				0B757787229FCE98004954D3 /* v3.bundle in Resources */,
+				9B2F6DA423165E6E0081E55C /* ani_pose.bundle in Resources */,
+				9B2F6DBF23165E6E0081E55C /* ani_dace_cam.bundle in Resources */,
 				0B77D421225F21F5008D583E /* female_hair_9.bundle in Resources */,
-				0B8E67BB229D3300000C8C86 /* male_hair_q_1.bundle in Resources */,
 				0B77D3AB225F21F5008D583E /* pose_nanbaonv_male.bundle in Resources */,
 				0B77D3F1225F21F5008D583E /* female_eyelash_3.bundle in Resources */,
 				0B757786229FCE98004954D3 /* tongue.bundle in Resources */,
 				0B77D414225F21F5008D583E /* female_hat_20.bundle in Resources */,
 				0B8E6862229E2452000C8C86 /* mid_hat12.bundle in Resources */,
-				0B8E680B229D3316000C8C86 /* ani_SZW.bundle in Resources */,
 				0B8E67B2229D3300000C8C86 /* male_brows02.bundle in Resources */,
+				9B2F6DB123165E6E0081E55C /* pose_danren_pose.bundle in Resources */,
 				0B77D3FA225F21F5008D583E /* female_hat_4.bundle in Resources */,
+				9BFE7FA12315199D008EB060 /* cloth_11.bundle in Resources */,
 				0B77D3C4225F21F5008D583E /* female_glass_10.bundle in Resources */,
 				0B0A8AB02122758100A09AB2 /* loading23.png in Resources */,
 				0B8E6865229E2452000C8C86 /* mid_hat09.bundle in Resources */,
@@ -1983,150 +2101,155 @@
 				0B77D399225F21F5008D583E /* female_clothes_1.bundle in Resources */,
 				0B8E685D229E2452000C8C86 /* mid_hat13.bundle in Resources */,
 				0B77D3F0225F21F5008D583E /* female_eyebrow_2.bundle in Resources */,
+				9B03583F2304076F006235E4 /* female_hair_q_19.bundle in Resources */,
 				0B8E6858229E2452000C8C86 /* mid_hat04.bundle in Resources */,
 				0B77D3EF225F21F5008D583E /* female_eyebrow_4.bundle in Resources */,
 				0B8E6765229D3300000C8C86 /* female_brows07.bundle in Resources */,
 				0B77D416225F21F5008D583E /* female_hat_18.bundle in Resources */,
-				0BBDB14B229E7A4C000989D6 /* female_cloth01.bundle in Resources */,
 				0B77D397225F21F5008D583E /* MeshPoints.json in Resources */,
+				9B0358452304076F006235E4 /* female_hair_q_13.bundle in Resources */,
 				0B77D3FD225F21F5008D583E /* male_hat_11.bundle in Resources */,
 				0B0A8A9E2122758100A09AB2 /* loading6.png in Resources */,
-				0BBDB151229E7A4C000989D6 /* male_cloth01.bundle in Resources */,
 				0B77D404225F21F5008D583E /* female_hat_2.bundle in Resources */,
 				0B77D3E2225F21F5008D583E /* male_beard_2.bundle in Resources */,
 				0B8E67C5229D3300000C8C86 /* glass_20.bundle in Resources */,
 				0B77D3BE225F21F5008D583E /* qiuhun_ani_jiezhi_ani.bundle in Resources */,
 				0B8E6869229E2452000C8C86 /* mid_hat05.bundle in Resources */,
 				0B77D39B225F21F5008D583E /* male_clothes_1.bundle in Resources */,
-				0B8E6819229D3316000C8C86 /* danshoubixin.bundle in Resources */,
 				0B77D4A1225F21F5008D583E /* bgImage1.png in Resources */,
+				9B03583E2304076F006235E4 /* female_hair_q_9.bundle in Resources */,
 				0B77D40B225F21F5008D583E /* male_hat_10.bundle in Resources */,
 				0B8E67B4229D3300000C8C86 /* male_brows08.bundle in Resources */,
-				0B8E681D229D3316000C8C86 /* ani_SJG_bg.bundle in Resources */,
+				9B2F6DAA23165E6E0081E55C /* ani_SJG_bg.bundle in Resources */,
 				0B77D411225F21F5008D583E /* male_hat_18.bundle in Resources */,
 				0B77D3D2225F21F5008D583E /* male_glass_3.bundle in Resources */,
 				0B77D3D3225F21F5008D583E /* male_glass_17.bundle in Resources */,
 				0B0A8A982122758100A09AB2 /* loading14.png in Resources */,
-				9B96748822B3ADD8003F8D6B /* female_hair_q_17.bundle in Resources */,
 				0B0A8AA82122758100A09AB2 /* loading30.png in Resources */,
-				0B8E6815229D3316000C8C86 /* ani_LRPP_cam.bundle in Resources */,
 				0B8E676B229D3300000C8C86 /* female_brows08.bundle in Resources */,
+				9BFE7F9C2315199D008EB060 /* cloth_16.bundle in Resources */,
 				0B8E67C0229D3300000C8C86 /* glass_4.bundle in Resources */,
 				0B77D3F4225F21F5008D583E /* male_hat_8.bundle in Resources */,
-				0B8E676F229D3300000C8C86 /* female_hair_q_t_1.bundle in Resources */,
 				0B77D3DE225F21F5008D583E /* male_glass_7.bundle in Resources */,
 				0B77D40F225F21F5008D583E /* female_hat_9.bundle in Resources */,
-				9B96748722B3ADD8003F8D6B /* female_hair_q_8.bundle in Resources */,
 				0B77D427225F21F5008D583E /* male_hair_t_1.bundle in Resources */,
 				0B0A8A9F2122758100A09AB2 /* loading17.png in Resources */,
 				0B0A8AAF2122758100A09AB2 /* loading20.png in Resources */,
 				0B77D3FE225F21F5008D583E /* female_hat_21.bundle in Resources */,
 				0B77D42D225F21F5008D583E /* female_hair_20.bundle in Resources */,
 				0B77D409225F21F5008D583E /* male_hat_9.bundle in Resources */,
-				0BBDB14D229E7A4C000989D6 /* mid_cloth06.bundle in Resources */,
-				0B8E6776229D3300000C8C86 /* female_hair_q_7.bundle in Resources */,
-				0B8E681A229D3316000C8C86 /* ani_LRPP_shanzi.bundle in Resources */,
-				0BBDB149229E7A4C000989D6 /* mid_cloth10.bundle in Resources */,
 				0B8E67C4229D3300000C8C86 /* glass_16.bundle in Resources */,
-				0B8E6774229D3300000C8C86 /* female_hair_q_9.bundle in Resources */,
 				0B729AD7224A18C100DA7D9D /* p2a_client_core.bin in Resources */,
+				9B2F6DB523165E6E0081E55C /* pose_danren_OK.bundle in Resources */,
 				0B0A8AAB2122758100A09AB2 /* loading10.png in Resources */,
 				0B77D40C225F21F5008D583E /* male_hat_7.bundle in Resources */,
 				0B77D428225F21F5008D583E /* male_hair_1.bundle in Resources */,
-				0B8E6770229D3300000C8C86 /* female_hair_q_21.bundle in Resources */,
 				0B77D39E225F21F5008D583E /* female_clothes_4.bundle in Resources */,
 				0B8E685E229E2452000C8C86 /* mid_hat06.bundle in Resources */,
+				9B2F6DAB23165E6E0081E55C /* ani_LRPP_bg.bundle in Resources */,
 				0BAAF084224B0F570016EF9D /* AvatarQDecoration.plist in Resources */,
-				0BBDB153229E7A4C000989D6 /* mid_cloth02.bundle in Resources */,
 				0B77D3EC225F21F5008D583E /* female_eyebrow_1.bundle in Resources */,
-				0B8E67BD229D3300000C8C86 /* male_hair_q_5.bundle in Resources */,
 				0B77D3E7225F21F5008D583E /* male_beard_5.bundle in Resources */,
 				0B0A8AA32122758100A09AB2 /* loading3.png in Resources */,
-				9B96747E22B3ADB9003F8D6B /* male_hair_q_4.bundle in Resources */,
 				0B77D3F7225F21F5008D583E /* female_hat_11.bundle in Resources */,
-				0B8E6821229D3316000C8C86 /* rock.bundle in Resources */,
+				9B03585E23040787006235E4 /* male_hair_q_1_t1.bundle in Resources */,
+				9B2F6DAC23165E6E0081E55C /* ani_dance.bundle in Resources */,
+				9B2F6DB623165E6E0081E55C /* ani_shuangshoubixin.bundle in Resources */,
+				9B2F6DA123165E6E0081E55C /* pose_danren_idle.bundle in Resources */,
 				0B77D3E6225F21F5008D583E /* male_beard_3.bundle in Resources */,
 				0B0A8A962122758100A09AB2 /* loading9.png in Resources */,
 				0B77D3D7225F21F5008D583E /* female_glass_1.bundle in Resources */,
-				0B8E680A229D3316000C8C86 /* pose_danren_01.bundle in Resources */,
+				9B03586523040787006235E4 /* male_hair_q_1_t2.bundle in Resources */,
+				9BFE7FA92315199D008EB060 /* cloth_12.bundle in Resources */,
 				0B8E685A229E2452000C8C86 /* mid_hat17.bundle in Resources */,
 				0B77D3E8225F21F5008D583E /* controller.bundle in Resources */,
-				0B8E67BA229D3300000C8C86 /* male_hair_q_6.bundle in Resources */,
+				9B2F6DA923165E6E0081E55C /* ani_dace_bg.bundle in Resources */,
+				9B03584C2304076F006235E4 /* female_hair_q_21.bundle in Resources */,
 				0B8E6866229E2452000C8C86 /* mid_hat20.bundle in Resources */,
 				0B77D396225F21F5008D583E /* bgImage.png in Resources */,
 				0B8E67C2229D3300000C8C86 /* glass_12.bundle in Resources */,
 				0B77D410225F21F5008D583E /* male_hat_3.bundle in Resources */,
 				0B77D3F5225F21F5008D583E /* male_hat_4.bundle in Resources */,
-				0B8E6772229D3300000C8C86 /* female_hair_q_13.bundle in Resources */,
 				0B8E67E7229D3300000C8C86 /* beard02.bundle in Resources */,
 				0B8E6766229D3300000C8C86 /* female_brows09.bundle in Resources */,
+				9B2F6DBB23165E6E0081E55C /* ani_danshoubixin.bundle in Resources */,
+				9B03584B2304076F006235E4 /* female_hair_q_20.bundle in Resources */,
+				9B0358492304076F006235E4 /* female_hair_q_21_t2.bundle in Resources */,
 				0B77D3C7225F21F5008D583E /* female_glass_16.bundle in Resources */,
 				0B77D3C5225F21F5008D583E /* male_glass_18.bundle in Resources */,
+				9B2F6DAF23165E6E0081E55C /* pose_shaungren_03_2.bundle in Resources */,
 				0B8E67D2229D3300000C8C86 /* mid_body.bundle in Resources */,
+				9BFE7FA02315199D008EB060 /* cloth_4.bundle in Resources */,
+				9B0358442304076F006235E4 /* female_hair_q_7.bundle in Resources */,
+				9B2F6DB223165E6E0081E55C /* ani_SJG_cam.bundle in Resources */,
 				0B04B19F226429A200E68446 /* Resource in Resources */,
 				0B77D3DA225F21F5008D583E /* male_glass_5.bundle in Resources */,
-				0BBDB14E229E7A4C000989D6 /* mid_cloth07.bundle in Resources */,
 				0B77D3CC225F21F5008D583E /* male_glass_10.bundle in Resources */,
-				0B8E6775229D3300000C8C86 /* female_hair_q_16.bundle in Resources */,
+				9B03584D2304076F006235E4 /* female_hair_q_12.bundle in Resources */,
 				0B77D42C225F21F5008D583E /* female_hair_22.bundle in Resources */,
 				0B77D423225F21F5008D583E /* male_hair_t_3.bundle in Resources */,
+				9B2F6DC323165E6E0081E55C /* pose_danren_rock.bundle in Resources */,
 				0B77D3B4225F21F5008D583E /* male_ok.bundle in Resources */,
-				0B8E67B7229D3300000C8C86 /* male_hair_q_2.bundle in Resources */,
 				0BAAF086224B0F570016EF9D /* AvatarQAnimations.plist in Resources */,
 				0B77D3D8225F21F5008D583E /* male_glass_1.bundle in Resources */,
+				9B2F6DA623165E6E0081E55C /* pose_5ren_3.bundle in Resources */,
 				0B8E67B3229D3300000C8C86 /* male_brows06.bundle in Resources */,
 				0B77D432225F21F5008D583E /* female_hair_t_4.bundle in Resources */,
-				0B8E676E229D3300000C8C86 /* female_hair_q_23.bundle in Resources */,
-				0B8E6810229D3316000C8C86 /* ani_dace_bg.bundle in Resources */,
 				0B77D402225F21F5008D583E /* male_hat_17.bundle in Resources */,
+				9B2F6DAE23165E6E0081E55C /* ani_SJG.bundle in Resources */,
 				0B77D40E225F21F5008D583E /* female_hat_12.bundle in Resources */,
+				9B0358412304076F006235E4 /* female_hair_q_8.bundle in Resources */,
 				0B77D3AD225F21F5008D583E /* female_guzhang.bundle in Resources */,
-				0BBDB155229E7A4C000989D6 /* mid_cloth03.bundle in Resources */,
+				9B0358462304076F006235E4 /* female_hair_q_21_t1.bundle in Resources */,
+				9B2F6DA823165E6E0081E55C /* ani_rock.bundle in Resources */,
 				0B77D3AE225F21F5008D583E /* male_guzhang.bundle in Resources */,
-				0B8E680C229D3316000C8C86 /* ani_SJG_sjg.bundle in Resources */,
 				0B77D3B5225F21F5008D583E /* female_danshoubixin.bundle in Resources */,
 				0B8E67CF229D3300000C8C86 /* glass_3.bundle in Resources */,
+				9B0358422304076F006235E4 /* female_hair_q_15.bundle in Resources */,
 				0B77D3C9225F21F5008D583E /* female_glass_20.bundle in Resources */,
 				0B77D3A6225F21F5008D583E /* female_pose_shuangshoubixin.bundle in Resources */,
 				0B8ED6DB20C0DC380011221E /* LaunchScreen.storyboard in Resources */,
 				0B77D3A4225F21F5008D583E /* pose_nvlounan_male.bundle in Resources */,
 				0B77D42F225F21F5008D583E /* male_hair_t_6.bundle in Resources */,
-				0B8E681B229D3316000C8C86 /* ani_dance.bundle in Resources */,
+				9B0358482304076F006235E4 /* female_hair_q_22.bundle in Resources */,
 				0B8ED6D820C0DC380011221E /* Assets.xcassets in Resources */,
 				0B77D3D0225F21F5008D583E /* female_glass_3.bundle in Resources */,
 				0B8E6863229E2452000C8C86 /* mid_hat16.bundle in Resources */,
 				0B77D3E3225F21F5008D583E /* male_beard_6.bundle in Resources */,
 				0B77D3A1225F21F5008D583E /* male_body.bundle in Resources */,
-				0B8E6773229D3300000C8C86 /* female_hair_q_11.bundle in Resources */,
-				0B8E6812229D3316000C8C86 /* ani_pose.bundle in Resources */,
 				0B77D3AF225F21F5008D583E /* female_hi.bundle in Resources */,
 				0B8E685F229E2452000C8C86 /* mid_hat01.bundle in Resources */,
+				9B03586323040787006235E4 /* male_hair_q_4.bundle in Resources */,
 				0B0A8A972122758100A09AB2 /* loading11.png in Resources */,
 				0B77D41A225F21F5008D583E /* female_hair_15.bundle in Resources */,
-				0B8E67B6229D3300000C8C86 /* male_hair_q_t_7.bundle in Resources */,
 				0B8E6864229E2452000C8C86 /* mid_hat18.bundle in Resources */,
-				0B8E6817229D3316000C8C86 /* ani_LRPP.bundle in Resources */,
-				0B8E6808229D3316000C8C86 /* ani_SZW_cam.bundle in Resources */,
+				9B0358432304076F006235E4 /* female_hair_q_21_t4.bundle in Resources */,
+				9B03586823040787006235E4 /* male_hair_q_0.bundle in Resources */,
 				0B77D3B3225F21F5008D583E /* female_ok.bundle in Resources */,
-				0B8E680E229D3316000C8C86 /* ani_idle.bundle in Resources */,
 				0B77D42B225F21F5008D583E /* female_hair_t_2.bundle in Resources */,
 				0BAAF085224B0F570016EF9D /* AvatarAnimations.plist in Resources */,
 				0B0A8A9D2122758100A09AB2 /* loading2.png in Resources */,
 				0B77D430225F21F5008D583E /* male_hair_6.bundle in Resources */,
 				0B8E6769229D3300000C8C86 /* female_brows02.bundle in Resources */,
 				0B8E67CD229D3300000C8C86 /* glass_21.bundle in Resources */,
+				9BFE7FA62315199D008EB060 /* cloth_5.bundle in Resources */,
+				9B2F6DBA23165E6E0081E55C /* ani_LRPP_cam.bundle in Resources */,
 				0B77D3DC225F21F5008D583E /* female_glass_5.bundle in Resources */,
 				0B8E67BF229D3300000C8C86 /* glass_8.bundle in Resources */,
 				0B0A8AA12122758100A09AB2 /* loading15.png in Resources */,
 				0B77D3EE225F21F5008D583E /* male_eyebrow_2.bundle in Resources */,
 				0B77D39C225F21F5008D583E /* female_clothes_2.bundle in Resources */,
-				0BBDB154229E7A4C000989D6 /* mid_cloth08.bundle in Resources */,
+				9BA247292313B5C9003AEDC3 /* male_hair_q_1_t4.bundle in Resources */,
+				9BFE7F992315199D008EB060 /* cloth_10.bundle in Resources */,
 				0B8E6859229E2452000C8C86 /* mid_hat07.bundle in Resources */,
 				0B77D3AC225F21F5008D583E /* female_pose.bundle in Resources */,
 				0B8ED6D620C0DC360011221E /* Main.storyboard in Resources */,
 				0B77D41B225F21F5008D583E /* female_hair_t_3.bundle in Resources */,
+				9B2F6DC423165E6E0081E55C /* ani_LRPP_shanzi.bundle in Resources */,
+				9B2F6DC823165E6E0081E55C /* ani_SZW.bundle in Resources */,
 				0B77D42A225F21F5008D583E /* male_hair_4.bundle in Resources */,
 				0B77D3B8225F21F5008D583E /* male_rock.bundle in Resources */,
+				9BA2472B2313B855003AEDC3 /* glass_1.bundle in Resources */,
 				0B8E67D3229D3300000C8C86 /* color_q.json in Resources */,
 				0B77D413225F21F5008D583E /* female_hat_1.bundle in Resources */,
 				0B8E67AF229D3300000C8C86 /* male_brows09.bundle in Resources */,
@@ -2136,35 +2259,37 @@
 				0B77D424225F21F5008D583E /* male_hair_3.bundle in Resources */,
 				0B77D3BB225F21F5008D583E /* qiuhun_ani_female.bundle in Resources */,
 				0B77D3BA225F21F5008D583E /* male_pose.bundle in Resources */,
+				9B2F6DC023165E6E0081E55C /* ani_guzhang.bundle in Resources */,
+				9B2F6DC623165E6E0081E55C /* ani_SZW_cam.bundle in Resources */,
 				0B8E67E2229D3300000C8C86 /* beard05.bundle in Resources */,
 				0B8E67AC229D3300000C8C86 /* male_brows01.bundle in Resources */,
 				0B0A8AB52122758100A09AB2 /* loading7.png in Resources */,
-				0B8E6818229D3316000C8C86 /* pose_5ren_3.bundle in Resources */,
-				9B96748922B3ADD8003F8D6B /* female_hair_q_22.bundle in Resources */,
-				0B8E67B9229D3300000C8C86 /* male_hair_q_0.bundle in Resources */,
+				9B0358502304076F006235E4 /* female_hair_q_21_t3.bundle in Resources */,
+				9B03586623040787006235E4 /* male_hair_q_2.bundle in Resources */,
 				0B77D3E1225F21F5008D583E /* female_glass_7.bundle in Resources */,
 				0B77D3D4225F21F5008D583E /* male_glass_21.bundle in Resources */,
-				9B96747F22B3ADB9003F8D6B /* male_hair_q_3.bundle in Resources */,
 				0B77D3C1225F21F5008D583E /* male_glass_16.bundle in Resources */,
+				9BFE7FA32315199D008EB060 /* cloth_6.bundle in Resources */,
+				9B03584E2304076F006235E4 /* female_hair_q_11.bundle in Resources */,
 				0B8E67C9229D3300000C8C86 /* glass_5.bundle in Resources */,
+				9B2F6DA223165E6E0081E55C /* pose_danren_dance.bundle in Resources */,
+				9B2F6DAD23165E6E0081E55C /* pose_shaungren_03_1.bundle in Resources */,
 				0B8E6763229D3300000C8C86 /* female_brows01.bundle in Resources */,
+				9B03584F2304076F006235E4 /* female_hair_q_16.bundle in Resources */,
 				0B8E685C229E2452000C8C86 /* mid_hat02.bundle in Resources */,
-				0B8E6820229D3316000C8C86 /* pose_shaungren_03_1.bundle in Resources */,
 				0B8E67D1229D3300000C8C86 /* glass_19.bundle in Resources */,
+				9B2F6DC223165E6E0081E55C /* pose_danren_hi.bundle in Resources */,
 				0B8E6797229D3300000C8C86 /* shape_list.json in Resources */,
-				0B8E681F229D3316000C8C86 /* ani_dace_cam.bundle in Resources */,
 				0B8E67AD229D3300000C8C86 /* male_brows03.bundle in Resources */,
+				9B2F6DB923165E6E0081E55C /* pose_danren_SZW.bundle in Resources */,
 				0B8E676A229D3300000C8C86 /* female_brows06.bundle in Resources */,
 				0B8E6768229D3300000C8C86 /* female_brows10.bundle in Resources */,
 				0B77D3D5225F21F5008D583E /* male_glass_19.bundle in Resources */,
 				0B77D3F3225F21F5008D583E /* female_eyelash_2.bundle in Resources */,
+				9B2F6D72231649BF0081E55C /* cloth_18.bundle in Resources */,
 				0B77D3DF225F21F5008D583E /* female_glass_15.bundle in Resources */,
-				0B8E6805229D3316000C8C86 /* ani_SJG.bundle in Resources */,
 				0B77D3A8225F21F5008D583E /* male_pose_ok.bundle in Resources */,
-				0B8E6778229D3300000C8C86 /* female_hair_q_10.bundle in Resources */,
-				9B96748622B3ADD8003F8D6B /* female_hair_q_19.bundle in Resources */,
 				0B77D3BD225F21F5008D583E /* qiuhun_ani_male.bundle in Resources */,
-				0BBDB156229E7A4C000989D6 /* mid_cloth04.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2206,9 +2331,9 @@
 			shellPath = /bin/sh;
 			shellScript = "APP_PATH=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}\"\n\n# This script loops through the frameworks embedded in the application and\n\n# removes unused architectures.\n\nfind \"$APP_PATH\" -name '*.framework' -type d | while read -r FRAMEWORK\n\ndo\n\nFRAMEWORK_EXECUTABLE_NAME=$(defaults read \"$FRAMEWORK/Info.plist\" CFBundleExecutable)\n\nFRAMEWORK_EXECUTABLE_PATH=\"$FRAMEWORK/$FRAMEWORK_EXECUTABLE_NAME\"\n\necho \"Executable is $FRAMEWORK_EXECUTABLE_PATH\"\n\nEXTRACTED_ARCHS=()\n\nfor ARCH in $ARCHS\n\ndo\n\necho \"Extracting $ARCH from $FRAMEWORK_EXECUTABLE_NAME\"\n\nlipo -extract \"$ARCH\" \"$FRAMEWORK_EXECUTABLE_PATH\" -o \"$FRAMEWORK_EXECUTABLE_PATH-$ARCH\"\n\nEXTRACTED_ARCHS+=(\"$FRAMEWORK_EXECUTABLE_PATH-$ARCH\")\n\ndone\n\necho \"Merging extracted architectures: ${ARCHS}\"\n\nlipo -o \"$FRAMEWORK_EXECUTABLE_PATH-merged\" -create \"${EXTRACTED_ARCHS[@]}\"\n\nrm \"${EXTRACTED_ARCHS[@]}\"\n\necho \"Replacing original executable with thinned version\"\n\nrm \"$FRAMEWORK_EXECUTABLE_PATH\"\n\nmv \"$FRAMEWORK_EXECUTABLE_PATH-merged\" \"$FRAMEWORK_EXECUTABLE_PATH\"\n\ndone\n";
 		};
-		CDBD666721B2A50A003F65C8 /* unzip */ = {
+		9BCA77792322765C00342A2D /* unzip */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 12;
+			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
@@ -2261,6 +2386,7 @@
 				0B388BE3223653110026B544 /* FUCamera.m in Sources */,
 				0B77CEB5225AF8DA008D583E /* FUStyleViewController.m in Sources */,
 				9BF4FC4D22C70A8100BEB1A0 /* FUAVPlayerView.m in Sources */,
+				9B0E315422F9323C00B0D138 /* FUGradientSlider.m in Sources */,
 				9BF4FC4722C705BC00BEB1A0 /* FUGroupVideoController.m in Sources */,
 				0B8547D421CA27CF007DA3AF /* FUGroupSelectedController.m in Sources */,
 				0B61F01F20C1551400D4AB3C /* FUManager.m in Sources */,
@@ -2268,15 +2394,18 @@
 				0B8547D721CA6D87007DA3AF /* FUGroupImageController.m in Sources */,
 				0B7EE4B42227CFEA00C02A08 /* FUMeshPoint.m in Sources */,
 				0B8547B021C8F595007DA3AF /* FUP2AColor.m in Sources */,
+				9B5337AD22FC4F2F00008901 /* FUNielianEditManager.m in Sources */,
 				0B4FDC392183442C00705F4A /* FUHomeBarBtn.m in Sources */,
 				9B3DD86822C1F0C200B32F7E /* FUHomeBarViewController.m in Sources */,
 				0B388BE7223653110026B544 /* FURequestManager.m in Sources */,
 				0BCFC90F22672EE10095E305 /* FUFigureHorizCollection.m in Sources */,
+				9B45EC3922FAD00D004B7818 /* FUAvatarEditManager.m in Sources */,
 				0BCFC91022672EE10095E305 /* FUFigureBottomCollection.m in Sources */,
 				0BCFC90D22672EE10095E305 /* FUFigureColorCollection.m in Sources */,
 				0B18539320C9215E0079F31D /* FUTool.m in Sources */,
 				0B4FDC402183442C00705F4A /* FUARFilterView.m in Sources */,
 				0B388BE8223653110026B544 /* UIColor+FU.m in Sources */,
+				9B45EC3622FAA970004B7818 /* FUStack.m in Sources */,
 				0B8ED6D320C0DC360011221E /* ViewController.m in Sources */,
 				0B8ED6DE20C0DC380011221E /* main.m in Sources */,
 				0B4FDC3D2183442C00705F4A /* FUHistoryViewController.m in Sources */,
@@ -2287,6 +2416,7 @@
 				0B8547B321C9EF2F007DA3AF /* FUGroupPhotoController.m in Sources */,
 				0B4FDC3B2183442C00705F4A /* FULoadingView.m in Sources */,
 				0B388BE2223653110026B544 /* CRender.m in Sources */,
+				9BD6BB0B22FBCCB8003D6F7C /* FUAvatarEditedDoModel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2428,8 +2558,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				CODE_SIGN_IDENTITY = "iPhone Developer: 洋 刘 (QMX4Y452W7)";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 35A6KD62ZJ;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2469,7 +2599,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.faceunity.p2aart;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				PROVISIONING_PROFILE_SPECIFIER = FUWildcard;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -2480,8 +2610,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
-				CODE_SIGN_IDENTITY = "iPhone Developer: 洋 刘 (QMX4Y452W7)";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 35A6KD62ZJ;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2520,7 +2650,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.faceunity.p2aart;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = FUWildcard;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;

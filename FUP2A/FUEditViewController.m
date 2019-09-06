@@ -16,9 +16,11 @@ FUFigureViewDelegate
 >
 {
 	BOOL transforming ;
-	FUFigureShapeType shapeType ;
+	__block FUFigureShapeType shapeType ;
 	
 	FUMeshPoint *currentMeshPoint ;
+	UIButton *_figureViewUndoBtn;
+	UIButton *_figureViewRedoBtn;
 }
 @property (nonatomic, strong) FUCamera *camera ;
 @property (weak, nonatomic) IBOutlet FUOpenGLView *renderView;
@@ -43,6 +45,10 @@ FUFigureViewDelegate
 @property (nonatomic, strong) dispatch_semaphore_t meshSigin ;
 
 @property (weak, nonatomic) IBOutlet UIButton *faceBtn;
+@property (weak, nonatomic) IBOutlet UIView *doAndUndoView;
+@property (weak, nonatomic) IBOutlet UIButton *undoBtn;
+@property (weak, nonatomic) IBOutlet UIButton *redoBtn;
+
 @end
 
 @implementation FUEditViewController
@@ -53,7 +59,10 @@ FUFigureViewDelegate
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
+	appManager.editVC = self;
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(HairsWriteToLocalSuccessNotMethod) name:HairsWriteToLocalSuccessNot object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(FUNielianEditManagerStackNotEmptyNotMethod) name:FUNielianEditManagerStackNotEmptyNot object:nil];
+	
 	self.currentAvatar = [FUManager shareInstance].currentAvatars.firstObject;
 	[self.currentAvatar enterFacepupMode];
 	
@@ -67,13 +76,33 @@ FUFigureViewDelegate
 	[[FUShapeParamsMode shareInstance] resetDefaultParamsWithAvatar:self.currentAvatar];
 	
 	self.meshSigin = dispatch_semaphore_create(1) ;
+	[self.currentAvatar recordOriginalColors];
+	
+	self.doAndUndoView.layer.shadowColor = [UIColor colorWithRed:35/255.0 green:53/255.0 blue:95/255.0 alpha:0.15].CGColor;
+	//[UIColor colorWithRed:35/255.0 green:53/255.0 blue:95/255.0 alpha:0.15].CGColor;
+	self.doAndUndoView.layer.shadowOffset = CGSizeMake(0,1);
+	self.doAndUndoView.layer.shadowOpacity = 1;
+	self.doAndUndoView.layer.shadowRadius = 6;
+	
 }
+-(void)FUNielianEditManagerStackNotEmptyNotMethod{
+	if (![FUNielianEditManager sharedInstance].undoStack.isEmpty) {
+		self.undoBtn.enabled = YES;
+	}
+	if (![FUNielianEditManager sharedInstance].redoStack.isEmpty) {
+		self.redoBtn.enabled = YES;
+	}
+}
+
 -(void)HairsWriteToLocalSuccessNotMethod{
 	[self figureViewDidChangeHair:self.willLoadHairName];
 	[self stopLoadingHairAnimation];
 }
 -(void)viewWillAppear:(BOOL)animated {
 	[super viewWillAppear:animated];
+	[[FUAvatarEditManager sharedInstance] clear];
+    [[FUNielianEditManager sharedInstance] clear];
+	[FUAvatarEditManager sharedInstance].enterEditVC = YES;
 	[self.camera startCapture];
 	
 	[self.currentAvatar resetScaleToFace];
@@ -108,10 +137,10 @@ FUFigureViewDelegate
 			self.figureView.glassesArray = isMale ? [FUManager shareInstance].maleGlasses : [FUManager shareInstance].femaleGlasses ;
 			self.figureView.hatArray = isMale ? [FUManager shareInstance].maleHats : [FUManager shareInstance].femaleHats ;
 			self.figureView.clothesArray = isMale ? [FUManager shareInstance].maleClothes : [FUManager shareInstance].femaleClothes ;
-			self.figureView.faceArray = @[@"捏脸"] ;
-			self.figureView.eyeArray = @[@"捏脸"] ;
-			self.figureView.mouthArray = @[@"捏脸"] ;
-			self.figureView.noseArray = @[@"捏脸"] ;
+			self.figureView.faceArray = @[@"捏脸", @"face_1", @"face_2", @"face_3", @"face_4"] ;
+			self.figureView.eyeArray = @[@"捏脸", @"eye_1", @"eye_2", @"eye_3", @"eye_4"] ;
+			self.figureView.mouthArray = @[@"捏脸", @"mouth_1", @"mouth_2", @"mouth_3", @"mouth_4"] ;
+			self.figureView.noseArray = @[@"捏脸", @"nose_1", @"nose_2", @"nose_3", @"nose_4"] ;
 		}
 			break;
 		case FUAvatarStyleQ:{
@@ -147,13 +176,18 @@ FUFigureViewDelegate
 	self.figureView.shoes = avatar.shoes ;
 	
 	self.figureView.skinColorArray = [FUManager shareInstance].skinColorArray;
-	self.figureView.skinLevel = avatar.skinLevel ;
+	self.figureView.skinProgress = avatar.skinColorProgress;
 	
 	self.figureView.irisColorArray = [FUManager shareInstance].irisColorArray;
 	self.figureView.irisLevel = avatar.irisLevel ;
+	self.figureView.irisProgress = avatar.irisColorProgress;
 	
 	self.figureView.lipsColorArray = [FUManager shareInstance].lipColorArray;
 	self.figureView.lipLevel = avatar.lipsLevel ;
+	self.figureView.lipProgress = avatar.lipColorProgress;
+	
+	
+	
 	
 	
 	self.figureView.hairColorArray = [FUManager shareInstance].hairColorArray;
@@ -167,6 +201,9 @@ FUFigureViewDelegate
 	
 	self.figureView.glassesColorArray = [FUManager shareInstance].glassColorArray;
 	self.figureView.glassesColor = avatar.glassColor ? avatar.glassColor : [FUManager shareInstance].glassColorArray[0] ;
+	
+	self.figureView.glassColorIndex = avatar.glassColorIndex;
+	self.figureView.glassFrameColorIndex = avatar.glassFrameColorIndex;
 	
 	self.figureView.hatColorArray = [FUManager shareInstance].hatColorArray;
 	self.figureView.hatColor = avatar.hatColor ? avatar.hatColor : [FUManager shareInstance].hatColorArray[0] ;
@@ -200,8 +237,19 @@ FUFigureViewDelegate
 		
 		[self.currentAvatar resetScaleToFace];
 		
+
+		self.faceBtn.hidden = YES ;
+		shapeType = FUFigureShapeTypeNone ;
+		return ;
+	}
+	
+	if ([self isModeChanged]) {
+		__weak typeof(self)weaklSelf = self ;
+		UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil message:@"是否保存当前形象编辑？" preferredStyle:UIAlertControllerStyleAlert];
+		
+		UIAlertAction *cancle = [UIAlertAction actionWithTitle:@"放弃" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
 		NSDictionary *dict = nil ;
-		switch (shapeType) {
+			switch (shapeType) {
 			case FUFigureShapeTypeFaceSide:
 			case FUFigureShapeTypeFaceFront: {
 				dict = [[FUShapeParamsMode shareInstance] resetHeadParams];
@@ -228,20 +276,10 @@ FUFigureViewDelegate
 		
 		if (dict) {
 			
-			[self resetParamsWithDict:dict];
+			[weaklSelf resetParamsWithDict:dict];
 		}
-		self.faceBtn.hidden = YES ;
-		shapeType = FUFigureShapeTypeNone ;
-		return ;
-	}
-	
-	if ([self isModeChanged]) {
-		__weak typeof(self)weaklSelf = self ;
-		UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil message:@"是否保存当前形象编辑？" preferredStyle:UIAlertControllerStyleAlert];
-		
-		UIAlertAction *cancle = [UIAlertAction actionWithTitle:@"放弃" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
 			[weaklSelf.camera stopCapture];
-			
+			[self.currentAvatar backToOriginalColors];
 			if (self.figureView.hair != self.currentAvatar.hair) {
 				NSString *hairPath = [[self.currentAvatar filePath] stringByAppendingPathComponent:self.currentAvatar.hair];
 				if (![hairPath hasSuffix:@"bundle"]) {
@@ -307,7 +345,7 @@ FUFigureViewDelegate
 			[self.currentAvatar setAvatarColors];
 			
 			[self.currentAvatar quitFacepupMode];
-			
+			[self.currentAvatar resetScaleToSmallBody];
 			[weaklSelf.navigationController popViewControllerAnimated:NO];
 		}];
 		[cancle setValue:[UIColor colorWithRed:34/255.0 green:34/255.0 blue:34/255.0 alpha:1.0] forKey:@"titleTextColor"];
@@ -325,13 +363,13 @@ FUFigureViewDelegate
 		[self.camera stopCapture];
 		[self.currentAvatar setAvatarColors];
 		[self.currentAvatar quitFacepupMode];
+		[self.currentAvatar resetScaleToSmallBody];
 		[self.navigationController popViewControllerAnimated:NO];
 	}
 }
 
 // 保存
 - (IBAction)downLoadAction:(UIButton *)sender {
-	
 	if (transforming) {
 		transforming = NO ;
 		self.faceBtn.hidden = YES ;
@@ -345,7 +383,7 @@ FUFigureViewDelegate
 		
 		return ;
 	}
-	
+	[self refreshCurrentAvatarState];
 	sender.userInteractionEnabled = NO ;
 	[self.camera stopCapture];
 	[self.currentAvatar setAvatarColors];
@@ -354,30 +392,13 @@ FUFigureViewDelegate
 		BOOL deformHead = [[FUShapeParamsMode shareInstance] propertiesIsChanged] ;
 		if (!deformHead && !self.currentAvatar.defaultModel) {
 			
-			self.currentAvatar.hair = self.figureView.hair ;
-			self.currentAvatar.clothes = self.figureView.clothes ;
-			self.currentAvatar.glasses = self.figureView.glasses ;
-			self.currentAvatar.beard = self.figureView.beard ;
-			self.currentAvatar.hat = self.figureView.hat ;
-			self.currentAvatar.shoes = self.figureView.shoes ;
-			self.currentAvatar.eyeLash = self.figureView.eyeLash ;
-			self.currentAvatar.eyeBrow = self.figureView.eyeBrow ;
-			
-			self.currentAvatar.skinLevel = self.figureView.skinLevel ;
-			self.currentAvatar.lipsLevel = self.figureView.lipLevel ;
-			self.currentAvatar.irisLevel = self.figureView.irisLevel ;
-			self.currentAvatar.hairColor = self.figureView.hairColor ;
-			self.currentAvatar.glassColor = self.figureView.glassesColor ;
-			self.currentAvatar.glassFrameColor = self.figureView.glassesFrameColor ;
-			self.currentAvatar.hatColor = self.figureView.hatColor ;
-			
-			[self.currentAvatar setAvatarColors];
 			
 			[self.currentAvatar quitFacepupMode];
 			
 			[self rewriteJsonInfoWithAvatar:self.currentAvatar];
 			
 			dispatch_async(dispatch_get_main_queue(), ^{
+				[self.currentAvatar resetScaleToSmallBody];
 				[self.navigationController popViewControllerAnimated:NO ];
 			});
 			return ;
@@ -394,6 +415,7 @@ FUFigureViewDelegate
 		
 		if (!avatar) {
 			dispatch_async(dispatch_get_main_queue(), ^{
+				[self.currentAvatar backToOriginalColors];
 				[self stopLoadingSaveAvartAnimation];
 				[SVProgressHUD showErrorWithStatus:@"模型保存失败，请重试"];
 				[self.camera startCapture];
@@ -401,31 +423,11 @@ FUFigureViewDelegate
 			});
 		}else {
 			
-			avatar.hair = self.figureView.hair ;
-			avatar.clothes = self.figureView.clothes ;
-			avatar.glasses = self.figureView.glasses ;
-			avatar.beard = self.figureView.beard ;
-			avatar.hat = self.figureView.hat ;
-			avatar.shoes = self.figureView.shoes ;
-			avatar.eyeLash = self.figureView.eyeLash ;
-			avatar.eyeBrow = self.figureView.eyeBrow ;
 			
-			avatar.face = self.figureView.face ;
-			avatar.eyes = self.figureView.eyes ;
-			avatar.mouth = self.figureView.mouth ;
-			avatar.nose = self.figureView.nose ;
-			
-			avatar.skinLevel = self.figureView.skinLevel ;
-			avatar.lipsLevel = self.figureView.lipLevel ;
-			avatar.irisLevel = self.figureView.irisLevel ;
-			avatar.hairColor = self.figureView.hairColor ;
-			avatar.glassColor = self.figureView.glassesColor ;
-			avatar.glassFrameColor = self.figureView.glassesFrameColor ;
-			avatar.hatColor = self.figureView.hatColor ;
 			
 			if ([[FUShapeParamsMode shareInstance] shouldDeformHair]) {
 				//     if (0) {
-				NSData *headData = [NSData dataWithContentsOfFile:[[avatar filePath] stringByAppendingPathComponent:@"head.bundle"]];
+				NSData *headData = [NSData dataWithContentsOfFile:[[avatar filePath] stringByAppendingPathComponent:FU_HEAD_BUNDLE]];
 				
 				NSString *baseHairPath = [[NSBundle mainBundle] pathForResource:avatar.hair ofType:@"bundle"] ;
 				NSData *baseHairData = [NSData dataWithContentsOfFile: baseHairPath];
@@ -484,14 +486,45 @@ FUFigureViewDelegate
 			
 			// 避免 body 还没有加载完成。闪现上一个模型的画面。
 			dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+			    [avatar resetScaleToSmallBody];
 				[self.navigationController popViewControllerAnimated:NO ];
 			});
 		}
 	});
 }
+-(void)refreshCurrentAvatarState{
+	self.currentAvatar.hair = self.figureView.hair ;
+	self.currentAvatar.clothes = self.figureView.clothes ;
+	self.currentAvatar.glasses = self.figureView.glasses ;
+	self.currentAvatar.beard = self.figureView.beard ;
+	self.currentAvatar.hat = self.figureView.hat ;
+	self.currentAvatar.shoes = self.figureView.shoes ;
+	self.currentAvatar.eyeLash = self.figureView.eyeLash ;
+	self.currentAvatar.eyeBrow = self.figureView.eyeBrow ;
+	
+	self.currentAvatar.skinColorProgress = self.figureView.skinProgress;
+	// 获取皮肤颜色
+	self.currentAvatar.skinColor = self.figureView.getSkinColor;
+	self.currentAvatar.lipsLevel = self.figureView.lipLevel ;
+	self.currentAvatar.lipColorProgress = self.figureView.lipProgress;
+	
+	self.currentAvatar.lipColor = self.figureView.getLipColor;
+	self.currentAvatar.irisLevel = self.figureView.irisLevel ;
+	self.currentAvatar.irisColorProgress = self.figureView.irisProgress;
+	self.currentAvatar.irisColor = self.figureView.getIrisColor;
+	self.currentAvatar.hairColor = self.figureView.hairColor ;
+	self.currentAvatar.glassColor = self.figureView.glassesColor ;
+	self.currentAvatar.glassFrameColor = self.figureView.glassesFrameColor ;
+	self.currentAvatar.glassColorIndex = self.figureView.glassColorIndex;
+	self.currentAvatar.glassFrameColorIndex = self.figureView.glassFrameColorIndex;
+	self.currentAvatar.hatColor = self.figureView.hatColor ;
+	
+	[self.currentAvatar setAvatarColors];
+	
+}
 
 - (void)rewriteJsonInfoWithAvatar:(FUAvatar *)avatar {
-	NSString *rootPath = avatar.isQType ? AvatarQPath : AvatarListPath ;
+	NSString *rootPath = CurrentAvatarStylePath ;
 	NSString *jsonPath = [[rootPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
 	NSData *tmpData = [[NSString stringWithContentsOfFile:jsonPath encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
 	if (tmpData != nil) {
@@ -516,7 +549,9 @@ FUFigureViewDelegate
 
 #pragma mark --- FUEditViewDelegate
 - (BOOL)isModeChanged  {
-	
+	if (![FUAvatarEditManager sharedInstance].undoStack.isEmpty || ![FUAvatarEditManager sharedInstance].redoStack.isEmpty) {
+		return YES;
+	}
 	// 装饰
 	if (self.figureView.hair != self.currentAvatar.hair
 		|| self.figureView.clothes != self.currentAvatar.clothes
@@ -549,8 +584,7 @@ FUFigureViewDelegate
 		|| (self.currentAvatar.glassFrameColor != nil && ![self.figureView.glassesFrameColor colorIsEqualTo: self.currentAvatar.glassFrameColor])
 		|| (self.currentAvatar.hatColor != nil && ![self.figureView.hatColor colorIsEqualTo: self.currentAvatar.hatColor])
 		|| self.currentAvatar.irisLevel != self.figureView.irisLevel
-		|| self.currentAvatar.lipsLevel != self.figureView.lipLevel
-		|| self.figureView.skinLevel != self.currentAvatar.skinLevel) {
+		|| self.currentAvatar.lipsLevel != self.figureView.lipLevel) {
 		
 		return YES ;
 	}
@@ -594,38 +628,38 @@ FUFigureViewDelegate
 }
 
 - (void)stopLoadingAnimation {
-		self.loadingView.hidden = YES ;
-		[self.view sendSubviewToBack:self.loadingView];
-		[self.labelTimer invalidate];
-		self.labelTimer = nil ;
-		[self.loadingImage stopAnimating ];
+	self.loadingView.hidden = YES ;
+	[self.view sendSubviewToBack:self.loadingView];
+	[self.labelTimer invalidate];
+	self.labelTimer = nil ;
+	[self.loadingImage stopAnimating ];
 }
 
 // 模型保存动画
 - (void)startLoadingSaveAvartAnimation {
-dispatch_async(dispatch_get_main_queue(), ^{
-	self.loadingLabel.text = @"模型保存中";
-	[self startLoadingAnimation];
+	dispatch_async(dispatch_get_main_queue(), ^{
+		self.loadingLabel.text = @"模型保存中";
+		[self startLoadingAnimation];
 	});
 }
 
 - (void)stopLoadingSaveAvartAnimation {
-dispatch_async(dispatch_get_main_queue(), ^{
-	[self stopLoadingAnimation];
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[self stopLoadingAnimation];
 	});
 }
 // 加载发型动画
 - (void)startLoadingHairAnimation {
-dispatch_async(dispatch_get_main_queue(), ^{
-	self.loadingLabel.text = @"发型加载中";
-	self.view.userInteractionEnabled = false;
-	[self startLoadingAnimation];
+	dispatch_async(dispatch_get_main_queue(), ^{
+		self.loadingLabel.text = @"发型加载中";
+		self.view.userInteractionEnabled = false;
+		[self startLoadingAnimation];
 	});
 }
 - (void)stopLoadingHairAnimation {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		self.view.userInteractionEnabled = true;
-	[self stopLoadingAnimation];
+		[self stopLoadingAnimation];
 	});
 }
 
@@ -695,7 +729,7 @@ dispatch_async(dispatch_get_main_queue(), ^{
 					//                    [self.currentAvatar resetScaleToShowShoes] ;
 					//                    break ;
 				case 8:
-					[self.currentAvatar resetScaleToSmallBody];
+					[self.currentAvatar resetScaleToShowShoes];
 					break ;
 				default:
 					[self.currentAvatar resetScaleToFace] ;
@@ -707,22 +741,23 @@ dispatch_async(dispatch_get_main_queue(), ^{
 }
 // 隐藏全部子页面
 - (void)figureViewDidHiddenAllTypeViews {
-	[self.currentAvatar resetScaleToBody];
+//	[self.currentAvatar resetScaleToBody];
 }
 
 // 头发
 - (void)figureViewDidChangeHair:(NSString *)hair {
-		NSString *filePath = nil ;
-		if ([hair isEqualToString:@"hair-noitem"] || [hair isEqualToString:@"hair_q_noitem"]) {
-			filePath = nil ;
-			[self.currentAvatar reloadHairWithPath:filePath];
+	self.currentAvatar.hair = hair;
+	NSString *filePath = nil ;
+	if ([hair isEqualToString:@"hair-noitem"] || [hair isEqualToString:@"hair_q_noitem"]) {
+		filePath = nil ;
+		[self.currentAvatar reloadHairWithPath:filePath];
+	}else {
+		if (self.currentAvatar.name) {
+			filePath = [[[self.currentAvatar filePath] stringByAppendingPathComponent:hair] stringByAppendingString:@".bundle"];
+			
 		}else {
-			if (self.currentAvatar.name) {
-				filePath = [[[self.currentAvatar filePath] stringByAppendingPathComponent:hair] stringByAppendingString:@".bundle"];
-				
-			}else {
-				filePath = [[[[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Resource"] stringByAppendingPathComponent:self.currentAvatar.name] stringByAppendingPathComponent:hair] stringByAppendingString:@".bundle"] ;
-			}
+			filePath = [[[[[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"Resource"] stringByAppendingPathComponent:self.currentAvatar.name] stringByAppendingPathComponent:hair] stringByAppendingString:@".bundle"] ;
+		}
 		
 		BOOL exsit = [[NSFileManager defaultManager] fileExistsAtPath:filePath];
 		if (exsit) {
@@ -734,7 +769,11 @@ dispatch_async(dispatch_get_main_queue(), ^{
 			[self startLoadingHairAnimation];
 			self.willLoadHairName = hair;
 		}
-		}
+	}
+	
+	
+	
+	NSLog(@"[FUAvatarEditManager sharedInstance].undoStack------%@",[FUAvatarEditManager sharedInstance].undoStack);
 }
 // 脸型
 - (void)figureViewDidChangeFace:(NSString *)face index:(NSInteger)index {
@@ -748,6 +787,7 @@ dispatch_async(dispatch_get_main_queue(), ^{
 	[self faceShapeWithDict:dict];
 	self.currentAvatar.face = face ;
 	self.downloadBtn.enabled = YES ;
+	
 }
 // 眼睛
 - (void)figureViewDidChangeEyes:(NSString *)eyes index:(NSInteger)index {
@@ -761,6 +801,7 @@ dispatch_async(dispatch_get_main_queue(), ^{
 	[self faceShapeWithDict:dict];
 	self.currentAvatar.eyes = eyes ;
 	self.downloadBtn.enabled = YES ;
+	
 }
 // 嘴型
 - (void)figureViewDidChangeMouth:(NSString *)mouth index:(NSInteger)index {
@@ -774,6 +815,7 @@ dispatch_async(dispatch_get_main_queue(), ^{
 	[self faceShapeWithDict:dict];
 	self.currentAvatar.mouth = mouth ;
 	self.downloadBtn.enabled = YES ;
+	
 }
 // 鼻子
 - (void)figureViewDidChangeNose:(NSString *)nose index:(NSInteger)index {
@@ -787,12 +829,13 @@ dispatch_async(dispatch_get_main_queue(), ^{
 	[self faceShapeWithDict:dict];
 	self.currentAvatar.nose = nose ;
 	self.downloadBtn.enabled = YES ;
+	
 }
 
 - (void)faceShapeActionWithKey:(NSString *)key shapeType:(FUFigureShapeType)type {
 	transforming = YES ;
 	[self showFigureView:NO];
-	
+
 	[self.currentAvatar resetScaleToShapeFaceFront];
 	
 	[self removeMeshPoints];
@@ -886,7 +929,7 @@ dispatch_async(dispatch_get_main_queue(), ^{
 			
 			CGPoint center = [self.currentAvatar getMeshPointOfIndex:point.index];
 			point.center = center;
-			point.defaultPoint = center ;
+			NSLog(@"center------%d---%f------%f",point.index,center.x,center.y);
 			
 			[self.containerView addSubview:point];
 			
@@ -896,6 +939,14 @@ dispatch_async(dispatch_get_main_queue(), ^{
 			point.userInteractionEnabled = YES ;
 			
 			[self.currentMeshPoints addObject:point];
+		}
+		if ([FUNielianEditManager sharedInstance].hadNotEdit) {
+			NSMutableDictionary * facePointDic = [NSMutableDictionary dictionary];
+			NSDictionary *faceParamDict = [[FUShapeParamsMode shareInstance] getCurrentHeadParams];
+			facePointDic[@"faceParam"] = faceParamDict;
+			facePointDic[@"point"] = [self.currentMeshPoints copy];
+			[FUNielianEditManager sharedInstance].orignalStateDic = facePointDic;
+			[FUNielianEditManager sharedInstance].hadNotEdit = NO;
 		}
 		
 		dispatch_semaphore_signal(self.meshSigin) ;
@@ -916,6 +967,7 @@ dispatch_async(dispatch_get_main_queue(), ^{
 			self.figureView.hidden = YES ;
 		}];
 	}
+	self.doAndUndoView.hidden = show;
 }
 
 // 胡子
@@ -929,7 +981,9 @@ dispatch_async(dispatch_get_main_queue(), ^{
 		filePath = [[NSBundle mainBundle] pathForResource:beard ofType:@"bundle"];
 	}
 	[self.currentAvatar reloadBeardWithPath:filePath];
+	self.currentAvatar.beard = beard;
 	self.downloadBtn.enabled = YES ;
+	
 }
 // 眉毛
 - (void)figureViewDidChangeEyeBrow:(NSString *)eyeBrow {
@@ -940,6 +994,7 @@ dispatch_async(dispatch_get_main_queue(), ^{
 	}
 	[self.currentAvatar reloadEyeBrowWithPath:hatPath];
 	self.downloadBtn.enabled = YES ;
+	
 }
 // 睫毛
 - (void)figureViewDidChangeeyeLash:(NSString *)eyeLash {
@@ -950,6 +1005,7 @@ dispatch_async(dispatch_get_main_queue(), ^{
 	}
 	[self.currentAvatar reloadEyeLashWithPath:hatPath];
 	self.downloadBtn.enabled = YES ;
+	
 }
 // 帽子
 - (void)figureViewDidChangeHat:(NSString *)hat {
@@ -958,8 +1014,10 @@ dispatch_async(dispatch_get_main_queue(), ^{
 	if (hat && ![hat isEqualToString:@"hat-noitem"]) {
 		hatPath = [[NSBundle mainBundle] pathForResource:hat ofType:@"bundle"];
 	}
+	self.currentAvatar.hat = hat;
 	[self.currentAvatar reloadHatWithPath:hatPath];
 	self.downloadBtn.enabled = YES ;
+	
 }
 // 衣服
 - (void)figureViewDidChangeClothes:(NSString *)clothes {
@@ -968,6 +1026,7 @@ dispatch_async(dispatch_get_main_queue(), ^{
 	if (![clothes isEqualToString:@"noitem"]) {
 		filePath = [[NSBundle mainBundle] pathForResource:clothes ofType:@"bundle"];
 	}
+	self.currentAvatar.clothes = clothes;
 	[self.currentAvatar reloadClothesWithPath:filePath];
 	self.downloadBtn.enabled = YES ;
 	
@@ -976,6 +1035,7 @@ dispatch_async(dispatch_get_main_queue(), ^{
 		NSString *shoesPath = [[NSBundle mainBundle] pathForResource:shoesName ofType:@"bundle"];
 		[self.currentAvatar reloadShoesWithPath:shoesPath];
 	}
+	
 }
 // 鞋子
 - (void)figureViewDidChangeShoes:(NSString *)shoes {
@@ -986,6 +1046,7 @@ dispatch_async(dispatch_get_main_queue(), ^{
 	}
 	[self.currentAvatar reloadShoesWithPath:filePath];
 	self.downloadBtn.enabled = YES ;
+	
 }
 
 // 眼镜
@@ -995,30 +1056,38 @@ dispatch_async(dispatch_get_main_queue(), ^{
 	if (![glasses containsString:@"noitem"]) {
 		filePath = [[NSBundle mainBundle] pathForResource:glasses ofType:@"bundle"];
 	}
+	self.currentAvatar.glasses = glasses;
 	[self.currentAvatar reloadGlassesWithPath:filePath];
 	self.downloadBtn.enabled = YES ;
+	
 }
 
 // 发色
-- (void)figureViewDidChangeHairColor:(FUP2AColor *)hairColor {
-	
+- (void)figureViewDidChangeHairColor:(FUP2AColor *)hairColor index:(int)index {
+	self.currentAvatar.hairColorIndex = index;
 	[self.currentAvatar facepupModeSetColor:hairColor key:@"hair_color"];
 	self.downloadBtn.enabled = YES ;
+	
 }
 // 肤色
 - (void)figureViewDidChangeSkinColor:(FUP2AColor *)skinColor {
 	[self.currentAvatar facepupModeSetColor:skinColor key:@"skin_color"];
 	self.downloadBtn.enabled = YES ;
+	
 }
 // 瞳色
-- (void)figureViewDidChangeIrisColor:(FUP2AColor *)irisColor {
+- (void)figureViewDidChangeIrisColor:(FUP2AColor *)irisColor index:(int)index {
+	self.currentAvatar.irisLevel = index;
 	[self.currentAvatar facepupModeSetColor:irisColor key:@"iris_color"];
 	self.downloadBtn.enabled = YES ;
+	
 }
 // 唇色
-- (void)figureViewDidChangeLipsColor:(FUP2AColor *)lipsColor {
+- (void)figureViewDidChangeLipsColor:(FUP2AColor *)lipsColor index:(int)index {
+self.currentAvatar.lipsLevel = index;
 	[self.currentAvatar facepupModeSetColor:lipsColor key:@"lip_color"];
 	self.downloadBtn.enabled = YES ;
+	
 }
 
 // 胡色
@@ -1026,23 +1095,133 @@ dispatch_async(dispatch_get_main_queue(), ^{
 	
 	[self.currentAvatar facepupModeSetColor:beardColor key:@"beard_color"];
 	self.downloadBtn.enabled = YES ;
+	
 }
 // 帽色
 - (void)figureViewDidChangeHatColor:(FUP2AColor *)hatColor {
 	[self.currentAvatar facepupModeSetColor:hatColor key:@"hat_color"];
 	self.downloadBtn.enabled = YES ;
+	
 }
 // 镜片色
-- (void)figureViewDidChangeGlassesColor:(FUP2AColor *)glassesColor {
-	[self.currentAvatar facepupModeSetColor:glassesColor key:@"glass_frame_color"];
+- (void)figureViewDidChangeGlassesColor:(FUP2AColor *)glassesColor index:(int)index {
+	[self.currentAvatar facepupModeSetColor:glassesColor key:@"glass_color"];
+	self.currentAvatar.glassColorIndex = index;
 	self.downloadBtn.enabled = YES ;
+	
 }
 // 镜框色
-- (void)figureViewDidChangeGlassesFrameColor:(FUP2AColor *)glassesFrameColor {
-	[self.currentAvatar facepupModeSetColor:glassesFrameColor key:@"glass_color"];
+- (void)figureViewDidChangeGlassesFrameColor:(FUP2AColor *)glassesFrameColor index:(int)index {
+	[self.currentAvatar facepupModeSetColor:glassesFrameColor key:@"glass_frame_color"];
+	self.currentAvatar.glassFrameColorIndex = index;
 	self.downloadBtn.enabled = YES ;
+	
 }
 
+// 撤销
+-(void)undo:(UIButton*)btn{
+	_figureViewUndoBtn = btn;
+	[[FUAvatarEditManager sharedInstance] undoStackPop:^(NSDictionary * config,BOOL isEmpty) {
+		[self setTheSpifyConfig:config];
+		if (isEmpty) {
+			btn.enabled = false;
+		}
+	}];
+	_figureViewRedoBtn.enabled = YES;
+}
+// 重做
+-(void)redo:(UIButton*)btn{
+	_figureViewRedoBtn = btn;
+	[[FUAvatarEditManager sharedInstance] redoStackPop:^(NSDictionary * config,BOOL isEmpty) {
+		[self setTheSpifyConfig:config];
+		if (isEmpty) {
+			btn.enabled = false;
+		}
+	}];
+	_figureViewUndoBtn.enabled = YES;
+}
+-(void)setTheSpifyConfig:(NSDictionary *)config{
+	NSLog(@"config---------%@",config);
+	for (NSString * key in config.allKeys) {
+		FUAvatarEditedDoModel * model = [[FUAvatarEditedDoModel alloc]init];
+		if ([key isEqualToString:@"hair"]){
+			//		[self figureViewDidChangeHair:config[key]];
+			
+			model.obj = config[key];
+			model.type = Hair;
+			
+		}else if ([key isEqualToString:@"hairColorIndex"]) {
+			model.obj = config[key];
+			model.type = HairColor;
+		}else if ([key isEqualToString:@"skinColorProgress"]) {
+			model.obj = config[key];
+			model.type = SkinColorProgress;
+		}else if ([key isEqualToString:@"face"]) {
+			model.obj = config[key];
+			if ([model.obj isKindOfClass:[NSDictionary class]]) {
+				NSDictionary * faceParamDict = model.obj;
+				[self resetParamsWithDict:faceParamDict];
+				model.obj = [NSNull null];
+			}
+		
+			model.type = Face;
+		}else if ([key isEqualToString:@"eyes"]) {
+			model.obj = config[key];
+			if ([model.obj isKindOfClass:[NSDictionary class]]) {
+				NSDictionary * faceParamDict = model.obj;
+				[self resetParamsWithDict:faceParamDict];
+				model.obj = [NSNull null];
+			}
+			model.type = Eyes;
+		}else if ([key isEqualToString:@"irisLevel"]) {
+			model.obj = config[key];
+			model.type = IrisLevel;
+		}else if ([key isEqualToString:@"mouth"]) {
+		
+			model.obj = config[key];
+						if ([model.obj isKindOfClass:[NSDictionary class]]) {
+				NSDictionary * faceParamDict = model.obj;
+				[self resetParamsWithDict:faceParamDict];
+				model.obj = [NSNull null];
+			}
+			model.type = Mouth;
+		}else if ([key isEqualToString:@"lipsLevel"]) {
+			model.obj = config[key];
+			model.type = LipsLevel;
+		}else if ([key isEqualToString:@"nose"]) {
+			model.obj = config[key];
+						if ([model.obj isKindOfClass:[NSDictionary class]]) {
+				NSDictionary * faceParamDict = model.obj;
+				[self resetParamsWithDict:faceParamDict];
+				model.obj = [NSNull null];
+			}
+			model.type = Nose;
+		}else if ([key isEqualToString:@"beard"]) {
+			model.obj = config[key];
+			model.type = Beard;
+		}else if ([key isEqualToString:@"glasses"]) {
+			model.obj = config[key];
+			model.type = Glasses;
+		}
+		else if ([key isEqualToString:@"glassColorIndex"]) {
+				model.obj = config[key];
+			model.type = GlassColorIndex;
+		}else if ([key isEqualToString:@"glassFrameColorIndex"]) {
+			model.obj = config[key];
+			model.type = GlassFrameColorIndex;
+		}else if ([key isEqualToString:@"hat"]) {
+			model.obj = config[key];
+			model.type = Hat;
+		}else if ([key isEqualToString:@"clothes"]) {
+			model.obj = config[key];
+			model.type = Clothes;
+		}
+		[FUAvatarEditManager sharedInstance].type = model.type;
+		[[NSNotificationCenter defaultCenter] postNotificationName:FUAvatarEditedDoNot object:model];
+	}
+	[FUAvatarEditManager sharedInstance].undo = NO;
+	[FUAvatarEditManager sharedInstance].redo = NO;
+}
 - (void)reloadPointCoordinates {
 	
 	dispatch_semaphore_wait(self.meshSigin, DISPATCH_TIME_FOREVER) ;
@@ -1067,7 +1246,9 @@ dispatch_async(dispatch_get_main_queue(), ^{
 		[point removeFromSuperview];
 	}
 	[self.currentMeshPoints removeAllObjects];
-	
+	[[FUNielianEditManager sharedInstance] clear];
+	self.undoBtn.enabled = NO;
+	self.redoBtn.enabled = NO;
 	dispatch_semaphore_signal(self.meshSigin) ;
 }
 
@@ -1150,6 +1331,76 @@ static double preY = 0.0 ;
 		}
 			break;
 	}
+	if (gester.state == UIGestureRecognizerStateEnded) {
+		NSLog(@"手势结束了----------");
+		NSMutableDictionary * facePointDic = [NSMutableDictionary dictionary];
+		NSArray * pointArr = [[NSArray alloc]initWithArray:self.currentMeshPoints copyItems:YES];
+		NSDictionary *faceParamDict;
+	
+		facePointDic[@"point"] = pointArr;
+
+		switch (shapeType) {
+			case FUFigureShapeTypeFaceSide:
+			case FUFigureShapeTypeFaceFront: {
+				faceParamDict = [[FUShapeParamsMode shareInstance] getCurrentHeadParams];
+			}
+				break;
+			case FUFigureShapeTypeLipsSide:
+			case FUFigureShapeTypeLipsFront:{
+				faceParamDict = [[FUShapeParamsMode shareInstance] getCurrentMouthParams];
+			}
+				break ;
+			case FUFigureShapeTypeEyesSide:
+			case FUFigureShapeTypeEyesFront:{
+				faceParamDict = [[FUShapeParamsMode shareInstance] getCurrentEyesParams];
+			}
+				break ;
+			case FUFigureShapeTypeNoseSide:
+			case FUFigureShapeTypeNoseFront: {
+				faceParamDict = [[FUShapeParamsMode shareInstance] getCurrentNoseParams];
+			}
+				break ;
+			default:
+				break;
+		}
+		facePointDic[@"faceParam"] = faceParamDict;
+		[[FUNielianEditManager sharedInstance] push:facePointDic];
+		
+	}
+}
+- (IBAction)undoClick:(UIButton *)sender {
+	[[FUNielianEditManager sharedInstance] undoStackPop:^(NSDictionary * config,BOOL isEmpty) {
+		[self undoAndRedoFacePoint:config];
+		if (isEmpty) {
+			sender.enabled = false;
+		}
+	}];
+	self.redoBtn.enabled = YES;
+}
+- (IBAction)redoClick:(UIButton *)sender {
+	[[FUNielianEditManager sharedInstance] redoStackPop:^(NSDictionary * config,BOOL isEmpty) {
+		[self undoAndRedoFacePoint:config];
+		if (isEmpty) {
+			sender.enabled = false;
+		}
+	}];
+	self.undoBtn.enabled = YES;
+}
+// 撤销和重做脸部点位
+-(void)undoAndRedoFacePoint:(NSDictionary *)config{
+	NSDictionary *faceParamDict = config[@"faceParam"];
+	NSLog(@"2-------faceParamDict---------%@",faceParamDict);
+	[self faceShapeWithDict:faceParamDict];
+	[self resetParamsWithDict:faceParamDict];
+	for (UIView * subView in self.containerView.subviews) {
+		[subView removeFromSuperview];
+	}
+	NSArray * pointArr = config[@"point"];
+	self.currentMeshPoints = [pointArr mutableCopy];
+	NSLog(@"self.currentMeshPoints--------%@",self.currentMeshPoints);
+	for (UIView * subView in pointArr) {
+			[self.containerView addSubview:subView];
+		}
 }
 
 // 左右
@@ -1253,7 +1504,10 @@ static double preY = 0.0 ;
 	}
 }
 -(void)dealloc{
+	NSLog(@"FUEditViewController销毁了-----");
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[[FUAvatarEditManager sharedInstance] clear];
+	[[FUNielianEditManager sharedInstance] clear];
 }
 
 - (void)didReceiveMemoryWarning {

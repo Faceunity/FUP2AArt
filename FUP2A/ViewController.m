@@ -83,20 +83,21 @@ FUHistoryViewControllerDelegate
 
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    
+	FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+
     if (firstLoad) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             self.lanchImage.hidden = NO ;
             [self.view sendSubviewToBack:self.lanchImage];
         });
         firstLoad = NO ;
+        	[avatar resetScaleToBody];
+
     }else {
-        
+
         [self.homeBar reloadModeData];
         [self.camera startCapture ];
     }
-	FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
-	[avatar resetScaleToBody];
 }
 
 -(void)viewWillDisappear:(BOOL)animated {
@@ -144,8 +145,7 @@ FUHistoryViewControllerDelegate
     [[FUManager shareInstance] reloadRenderAvatar:avatar];
     [avatar loadStandbyAnimation];
     
-    [avatar resetScaleToSmallBody];
-    
+	
     loadingBundles = NO ;
 }
 
@@ -273,6 +273,8 @@ static int frameIndex = 0 ;
             [weakSelf.homeBar reloadModeData];
             [weakSelf stopLoadingAnimation];
             [weakSelf.camera startCapture];
+			FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+            [avatar resetScaleToBody];
         });
     }) ;
 }

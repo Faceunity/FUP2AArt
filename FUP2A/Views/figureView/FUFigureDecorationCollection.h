@@ -23,6 +23,8 @@
 
 @property (nonatomic, copy) NSString *hair ;
 @property (nonatomic, strong) NSArray *hairArray ;
+// 根据发型名称滚动到指定图标
+-(void)scrollToTheHair:(NSString*)hair;
 
 @property (nonatomic, copy) NSString *face ;
 @property (nonatomic, strong) NSArray *faceArray ;
@@ -55,6 +57,7 @@
 @property (nonatomic, strong) NSArray *shoesArray ;
 -(void)recoverCollectionViewUI;
 - (void)loadDecorationData ;
+
 @end
 
 @interface FUFigureDecorationCell : UICollectionViewCell

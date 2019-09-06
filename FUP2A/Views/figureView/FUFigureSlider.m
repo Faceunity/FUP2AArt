@@ -17,14 +17,14 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    
+	
     [self setThumbImage:[UIImage imageNamed:@"figure-slider-dot"] forState:UIControlStateNormal];
-    
+	
     UIImage *bgImage = [UIImage imageNamed:@"figure-slider-tip-bg"];
     bgImgView = [[UIImageView alloc] initWithImage:bgImage];
     bgImgView.frame = CGRectMake(0, -bgImage.size.height, bgImage.size.width, bgImage.size.height);
     [self addSubview:bgImgView];
-    
+	
     tipLabel = [[UILabel alloc] initWithFrame:bgImgView.frame];
     tipLabel.text = @"";
     tipLabel.textColor = [UIColor whiteColor];
@@ -32,9 +32,10 @@
     tipLabel.textAlignment = NSTextAlignmentCenter;
     tipLabel.backgroundColor = [UIColor clearColor];
     [self addSubview:tipLabel];
-    
+	
     bgImgView.hidden = YES;
     tipLabel.hidden = YES;
+	//self.transform =  CGAffineTransformMakeScale(1, 2);
 }
 
 -(void)layoutSubviews {
@@ -45,8 +46,8 @@
 // 后设置 value
 - (void)setValue:(float)value animated:(BOOL)animated   {
     [super setValue:value animated:animated];
-    
-    
+	
+	
     tipLabel.text = [NSString stringWithFormat:@"%d",(int)(value * 100)];
     CGFloat tipX = value * (self.frame.size.width - 20) - tipLabel.frame.size.width * 0.5 + 10;
     CGRect tipFrame = tipLabel.frame;
@@ -58,4 +59,8 @@
     bgImgView.hidden = !self.isTracking ;
 }
 
+// 控制slider的宽和高，这个方法才是真正的改变slider滑道的高的
+- (CGRect)trackRectForBounds:(CGRect)bounds {
+    return CGRectMake(0, self.frame.size.height, CGRectGetWidth(self.frame), 4);
+}
 @end

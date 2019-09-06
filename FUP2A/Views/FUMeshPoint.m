@@ -31,29 +31,28 @@
 }
 
 
-+ (instancetype)meshPointWithIndex:(NSInteger)index {
-    
-    FUMeshPoint *point = [[FUMeshPoint alloc] initWithFrame:CGRectMake(10, 10, 10, 10)];
-    
-    point.index = index ;
-    
-    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 10, 10)];
-    label.textColor = [UIColor redColor];
-    label.font = [UIFont systemFontOfSize:3.0];
-    label.textAlignment = NSTextAlignmentCenter ;
-    label.text = [NSString stringWithFormat:@"%ld", point.index] ;
-    [point addSubview:label];
-    label.center = point.center ;
-    
-    return point ;
-}
 
 -(void)setSelected:(BOOL)selected {
     _selected = selected ;
     
     UIImage *image = selected ? [UIImage imageNamed:@"mesh_point_selected"] : [UIImage imageNamed:@"mesh_point"] ;
-    
-    self.image = image ;
+	
+	self.image = image ;
 }
-
+-(id)copyWithZone:(NSZone *)zone{
+	FUMeshPoint * copyPoint = [[FUMeshPoint alloc]init];
+	copyPoint.index = self.index;
+	copyPoint.direction = self.direction;
+	copyPoint.leftKey = [self.leftKey copy];
+	copyPoint.rightKey = [self.rightKey copy];
+	copyPoint.upKey = [self.upKey copy];
+	copyPoint.downKey = [self.downKey copy];
+	copyPoint.selected = self.selected;
+	copyPoint.frame = self.frame;
+	UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:appManager.editVC action:@selector(longPressAction:)];
+	longPress.minimumPressDuration = 0.01;
+	[copyPoint addGestureRecognizer:longPress];
+	copyPoint.userInteractionEnabled = YES ;
+	return copyPoint;
+}
 @end

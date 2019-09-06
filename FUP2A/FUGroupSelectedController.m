@@ -97,11 +97,11 @@ UINavigationControllerDelegate
 	
 	[self.camera startCapture];
 	if (self.bgImage) {
-		if (self.isbgImageChanged) {
+//		if (self.isbgImageChanged) {
 			[self exchangeRenderBackgroundWithImage:self.bgImage];
-		}else{
-			[self exchangeRenderBackgroundWithImage:self.bgImage WithRenderMode:GroupSelectedRunModeCommon];
-		}
+//		}else{
+//			[self exchangeRenderBackgroundWithImage:self.bgImage WithRenderMode:GroupSelectedRunModeCommon];
+//		}
 		self.isbgImageChanged = false;
 		
 	}
@@ -298,9 +298,16 @@ UINavigationControllerDelegate
 #else
 			CVPixelBufferRef mirrorBuffer;
 		//	[self.glView convertMirrorPixelBuffer2:buffer dstPixelBuffer:&mirrorBuffer];
-
-			[[FUP2AHelper shareInstance] recordBufferWithType:FUP2AHelperRecordTypeVideo buffer:buffer sampleBuffer:sampleBuffer];
-			
+			int h = (int)CVPixelBufferGetHeight(buffer);
+			int w = (int)CVPixelBufferGetWidth(buffer);
+	//		NSLog(@"h----------%d---------w---------%d",h,w);
+	  CVPixelBufferRef imageBuffer ;
+			if (!customRenderBackground) {
+             imageBuffer = [[CRender shareRenderer] cutoutPixelBufferInMirror:buffer WithRect:CGRectMake(0, 0, w, h)];
+            }else{
+            imageBuffer = buffer;
+			}
+			[[FUP2AHelper shareInstance] recordBufferWithType:FUP2AHelperRecordTypeVideo buffer:imageBuffer sampleBuffer:sampleBuffer];
 			FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
 			int index = [avatar getCurrentAnimationFrameIndex];
 			if (index == animationFrameCount - 1) {
@@ -683,6 +690,18 @@ UINavigationControllerDelegate
 	// 关闭相册
 	[picker dismissViewControllerAnimated:YES completion:nil];
 	[self.camera startCapture];
+	switch (self.sceneryModel) {
+			case FUSceneryModeSingle:
+				break;
+			case FUSceneryModeMultiple:
+				break ;
+			case FUSceneryModeAnimation: {
+			    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject ;
+			    [avatar restartAnimation];
+				self->renderMode = GroupSelectedRunModeVideoRecord ;
+			}
+				break;
+		}
 }
 
 - (void)exchangeRenderBackgroundWithImage:(UIImage *)image WithRenderMode:(GroupSelectedRunMode) newRenderMode{
@@ -701,11 +720,13 @@ UINavigationControllerDelegate
 		[avatar restartAnimation];
 		
 		renderMode = newRenderMode ;
+		[[FUP2AHelper shareInstance] cancleRecord];
 		[[FUP2AHelper shareInstance] startRecordWithType:FUP2AHelperRecordTypeVideo];
 	}
 }
 
 - (void)exchangeRenderBackgroundWithImage:(UIImage *)image {
+
 	[self exchangeRenderBackgroundWithImage:image WithRenderMode:GroupSelectedRunModeVideoRecord];
 	
 }

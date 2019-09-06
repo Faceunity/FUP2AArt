@@ -17,7 +17,7 @@
 	<array>
 		<dict>
 			<key>image</key>
-			<string>pose_shaungren_03_1</string>
+			<string>pose_shaungren_03_2</string>
 			<key>items</key>
 			<array>
 				<dict>
@@ -41,14 +41,6 @@
 			<key>gender</key>
 			<string>0</string>
 			<key>animation</key>
-			<string>ani_dance</string>
-			<key>image</key>
-			<string>ani_dance</string>
-		</dict>
-		<dict>
-			<key>gender</key>
-			<string>0</string>
-			<key>animation</key>
 			<string>ani_LRPP</string>
 			<key>image</key>
 			<string>ani_LRPP</string>
@@ -68,6 +60,62 @@
 			<string>ani_SZW</string>
 			<key>image</key>
 			<string>ani_SZW</string>
+		</dict>
+		<dict>
+			<key>gender</key>
+			<string>0</string>
+			<key>animation</key>
+			<string>ani_dance</string>
+			<key>image</key>
+			<string>ani_dance</string>
+		</dict>
+		<dict>
+			<key>gender</key>
+			<string>0</string>
+			<key>animation</key>
+			<string>ani_danshoubixin</string>
+			<key>image</key>
+			<string>ani_danshoubixin</string>
+		</dict>
+		<dict>
+			<key>gender</key>
+			<string>0</string>
+			<key>animation</key>
+			<string>ani_guzhang</string>
+			<key>image</key>
+			<string>ani_guzhang</string>
+		</dict>
+		<dict>
+			<key>gender</key>
+			<string>0</string>
+			<key>animation</key>
+			<string>ani_hi</string>
+			<key>image</key>
+			<string>ani_hi</string>
+		</dict>
+		<dict>
+			<key>gender</key>
+			<string>0</string>
+			<key>animation</key>
+			<string>ani_ok</string>
+			<key>image</key>
+			<string>ani_ok</string>
+		</dict>
+		<dict>
+			<key>gender</key>
+			<string>0</string>
+			<key>animation</key>
+			<string>ani_rock</string>
+			<key>image</key>
+			<string>ani_rock</string>
+		</dict>
+		<dict>
+			<key>gender</key>
+			<string>0</string>
+			<key>animation</key>
+			<string>ani_shuangshoubixin</string>
+			<key>image</key>
+			<string>ani_shuangshoubixin</string>
 		</dict>
 	</array>
 </dict>

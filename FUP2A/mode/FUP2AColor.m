@@ -44,7 +44,15 @@
     
     return model ;
 }
-
++ (FUP2AColor *)color:(UIColor*)color{
+  FUP2AColor *model = [[FUP2AColor alloc] init];
+	const CGFloat *colors = CGColorGetComponents( color.CGColor );
+    model.r = colors[0] * 255.0;
+    model.g = colors[1] * 255.0;
+    model.b = colors[2] * 255.0;
+    model.intensity = 1.0 ;
+    return model ;
+}
 + (FUP2AColor *)colorWithR:(double)r g:(double)g b:(double)b {
     FUP2AColor *model = [[FUP2AColor alloc] init];
     
@@ -65,6 +73,9 @@
     model.intensity = intensity ;
     
     return model ;
+}
+-(NSString *)description{
+   return [NSString stringWithFormat:@"{\"r\":%f,\"g\":%f,\"b\":%f,\"intensity\":%f}",self.r,self.g,self.b,self.intensity];
 }
 
 @end

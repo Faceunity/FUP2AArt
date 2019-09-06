@@ -322,7 +322,7 @@ static int frameID = 0;
             NSString *imagePath = [filePath stringByAppendingPathComponent:@"image.png"] ;
             [imageData writeToFile:imagePath atomically:YES];
 
-            [data writeToFile:[filePath stringByAppendingPathComponent:@"server.bundle"] atomically:YES];
+            [data writeToFile:[filePath stringByAppendingPathComponent:FU_SERVER_BUNDLE] atomically:YES];
 
             if (self->currentType == FUCurrentViewTypeNone) {
                 [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
@@ -351,7 +351,9 @@ static int frameID = 0;
                     self.loadingContainer.hidden = YES ;
 
                     NSLog(@"------------------------------------------------------------------------------ create avatar completed ~");
-
+                    [avatar resetScaleToBody];
+					[avatar setTheDefaultColors];
+					
                     [self.navigationController popViewControllerAnimated:YES ];
                 });
             }else {

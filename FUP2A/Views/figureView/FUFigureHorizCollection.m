@@ -23,6 +23,8 @@
     
     self.dataSource = self ;
     self.delegate = self ;
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(FUAvatarEditedDoNotMethod:) name:FUAvatarEditedDoNot object:nil];
+
 }
 
 - (void)scrollCurrentToCenterWithAnimation:(BOOL)animation {
@@ -33,7 +35,7 @@
 
 - (void)loadCollectionData {
     
-    selectedIndex = [self.glassesArray containsObject:self.glasses] ? [self.glassesArray indexOfObject:self.glassesArray] : 0 ;
+    selectedIndex = [self.glassesArray containsObject:self.glasses] ? [self.glassesArray indexOfObject:self.glasses] : 0 ;
     [self reloadData];
 }
 
@@ -67,6 +69,31 @@
     }
 }
 
+-(void)FUAvatarEditedDoNotMethod:(NSNotification *)not{
+	FUAvatarEditedDoModel * model = [not object];
+	switch (model.type) {
+		case Glasses:
+		{
+			//	[self scrollToTheHair:model.obj];
+			NSString * glassesName = model.obj;
+			NSLog(@"glassesName------%@",glassesName);
+			if ([glassesName isEqual:[NSNull null]]) {
+				glassesName = @"glasses-noitem";
+			}
+			int index = [self.glassesArray indexOfObject:glassesName];
+			selectedIndex = index;
+			[self reloadData];
+			[self scrollCurrentToCenterWithAnimation:YES];
+
+			if ([self.mDelegate respondsToSelector:@selector(didChangeGlasses:)]) {
+				[self.mDelegate didChangeGlasses:glassesName];
+			}
+		}
+			break;
+		default:
+			break;
+	}
+}
 @end
 
 
