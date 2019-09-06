@@ -28,9 +28,13 @@
 - (BOOL)eyesParamsIsChanged ;
 // 重置 头/嘴/眼/鼻 参数 - 返回重置之后的参数s值
 - (NSDictionary *)resetHeadParams;
+- (NSDictionary *)getCurrentHeadParams;
 - (NSDictionary *)resetMouthParams;
+- (NSDictionary *)getCurrentMouthParams;
 - (NSDictionary *)resetNoseParams;
+- (NSDictionary *)getCurrentNoseParams;
 - (NSDictionary *)resetEyesParams;
+- (NSDictionary *)getCurrentEyesParams;
 
 // 最终捏脸参数列表
 - (NSArray *)finalShapeParams ;

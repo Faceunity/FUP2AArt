@@ -70,8 +70,10 @@ FUARFilterViewDelegate
     
     [self.firstAvatar quitARMode];
     [[FUManager shareInstance] setMaxFaceNum:1];
-    
+    [[FUManager shareInstance].currentAvatars.firstObject resetScaleToSmallBody];
     [self.navigationController popViewControllerAnimated:NO];
+     NSString *filterName = @"noitem";
+      [self ARFilterViewDidSelectedARFilter:filterName];
 }
 
 - (IBAction)onCameraChange:(id)sender {

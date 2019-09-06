@@ -32,6 +32,9 @@
 
 @property (nonatomic, strong) FUP2AColor *glassesFrameColor ;
 @property (nonatomic, strong) FUP2AColor *glassesColor ;
+@property (nonatomic, assign) int glassColorIndex;
+@property (nonatomic, assign) int glassFrameColorIndex ;
+
 
 // dataSource
 

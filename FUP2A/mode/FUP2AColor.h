@@ -23,6 +23,7 @@
 - (BOOL)colorIsEqualTo:(FUP2AColor *)color ;
 
 + (instancetype)colorWithDict:(NSDictionary *)dict ;
++ (FUP2AColor *)color:(UIColor*)color ;
 + (FUP2AColor *)colorWithR:(double)r g:(double)g b:(double)b ;
 + (FUP2AColor *)colorWithR:(double)r g:(double)g b:(double)b intensity:(double)intensity;
 

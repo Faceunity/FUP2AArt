@@ -169,6 +169,8 @@
  */
 - (FUAvatar *)createAvatarWithData:(NSData *)data avatarName:(NSString *)name gender:(FUGender)gender ;
 
+
+-(void)reCreateHairBundles:(FUAvatar *)avatar;
 /**
  是否正在生成 Avatar 模型
 

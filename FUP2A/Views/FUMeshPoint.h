@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "FUP2ADefine.h"
 
-@interface FUMeshPoint : UIImageView
+@interface FUMeshPoint : UIImageView<NSCopying>
 
 @property (nonatomic, assign) NSInteger index ;
 @property (nonatomic, assign) FUMeshPiontDirection direction ;
@@ -18,11 +18,9 @@
 @property (nonatomic, copy) NSString *upKey ;
 @property (nonatomic, copy) NSString *downKey ;
 
-@property (nonatomic, assign) CGPoint defaultPoint ;
 
 @property (nonatomic, assign) BOOL selected ;
 
 + (instancetype)meshPointWithDicInfo:(NSDictionary *)dict ;
 
-+ (instancetype)meshPointWithIndex:(NSInteger)index ;
 @end

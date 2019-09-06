@@ -58,21 +58,25 @@ typedef enum : NSInteger {
 - (void)figureViewDidChangeGlasses:(NSString *)glasses ;
 
 // 发色
-- (void)figureViewDidChangeHairColor:(FUP2AColor *)hairColor ;
+- (void)figureViewDidChangeHairColor:(FUP2AColor *)hairColor index:(int)index ;
 // 肤色
 - (void)figureViewDidChangeSkinColor:(FUP2AColor *)skinColor ;
 // 瞳色
-- (void)figureViewDidChangeIrisColor:(FUP2AColor *)irisColor ;
+- (void)figureViewDidChangeIrisColor:(FUP2AColor *)irisColor index:(int)index ;
 // 唇色
-- (void)figureViewDidChangeLipsColor:(FUP2AColor *)lipsColor ;
+- (void)figureViewDidChangeLipsColor:(FUP2AColor *)lipsColor index:(int)index ;
 // 胡色
 - (void)figureViewDidChangeBeardColor:(FUP2AColor *)beardColor ;
 // 帽色
 - (void)figureViewDidChangeHatColor:(FUP2AColor *)hatColor ;
 // 镜片色
-- (void)figureViewDidChangeGlassesColor:(FUP2AColor *)glassesColor ;
+- (void)figureViewDidChangeGlassesColor:(FUP2AColor *)glassesColor  index:(int)index ;
 // 镜框色
-- (void)figureViewDidChangeGlassesFrameColor:(FUP2AColor *)glassesFrameColor ;
+- (void)figureViewDidChangeGlassesFrameColor:(FUP2AColor *)glassesFrameColor index:(int)index ;
+// 撤销
+-(void)undo:(UIButton*)btn;
+// 重做
+-(void)redo:(UIButton*)btn;
 @end
 
 
@@ -86,14 +90,23 @@ typedef enum : NSInteger {
 
 @property (nonatomic, copy) NSString *beard ;
 @property (nonatomic, strong) FUP2AColor *beardColor ;
- 
+
 @property (nonatomic, copy) NSString *eyeBrow ;
 
 @property (nonatomic, copy) NSString *eyeLash ;
 
 @property (nonatomic, copy) NSString *glasses ;
+@property (nonatomic, strong) FUP2AColor *skinColor ;
+-(FUP2AColor*)getSkinColor;
+@property (nonatomic, strong) FUP2AColor *lipColor ;
+-(FUP2AColor*)getLipColor;
+@property (nonatomic, strong) FUP2AColor *irisColor ;
+-(FUP2AColor*)getIrisColor;
 @property (nonatomic, strong) FUP2AColor *glassesColor ;
 @property (nonatomic, strong) FUP2AColor *glassesFrameColor ;
+
+@property (nonatomic, assign) int glassColorIndex;
+@property (nonatomic, assign) int glassFrameColorIndex ;
 
 @property (nonatomic, copy) NSString *hat ;
 @property (nonatomic, strong) FUP2AColor *hatColor ;
@@ -109,9 +122,13 @@ typedef enum : NSInteger {
 @property (nonatomic, copy) NSString *nose ;
 
 // colors
-@property (nonatomic, assign) double skinLevel ;
 @property (nonatomic, assign) double lipLevel ;
 @property (nonatomic, assign) double irisLevel ;
+
+// colors Progress
+@property (nonatomic, assign) double skinProgress ;
+@property (nonatomic, assign) double lipProgress ;
+@property (nonatomic, assign) double irisProgress ;
 
 
 #pragma mark --- data source

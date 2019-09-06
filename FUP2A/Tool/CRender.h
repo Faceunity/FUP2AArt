@@ -17,6 +17,8 @@
 - (CVPixelBufferRef)cutoutPixelBuffer:(CVPixelBufferRef)pixelBuffer WithSize:(CGSize)size;
 
 - (CVPixelBufferRef)cutoutPixelBuffer:(CVPixelBufferRef)pixelBuffer WithRect:(CGRect)rect;
+// 添加镜像
+- (CVPixelBufferRef)cutoutPixelBufferInMirror:(CVPixelBufferRef)pixelBuffer WithRect:(CGRect)rect;
 
 /**   加背景贴图  **/
 @property (nonatomic, strong) UIImage *bgImage ;

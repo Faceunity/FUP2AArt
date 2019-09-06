@@ -594,7 +594,102 @@ static CRender *_shareRenderer = nil;
     
     return renderTarget;
 }
-
+// 添加镜像
+- (CVPixelBufferRef)cutoutPixelBufferInMirror:(CVPixelBufferRef)pixelBuffer WithRect:(CGRect)rect {
+	
+    if (pixelBuffer == NULL) return pixelBuffer;
+	
+    if (!_videoTextureCache) {
+        NSLog(@"No video texture cache");
+        return pixelBuffer;
+    }
+	
+    if ([EAGLContext currentContext] != _context) {
+        [EAGLContext setCurrentContext:_context]; // 非常重要的一行代码
+    }
+	
+    CGSize size = rect.size ;
+	
+    frameWidth = (int)CVPixelBufferGetWidth(pixelBuffer);
+    frameHeight = (int)CVPixelBufferGetHeight(pixelBuffer);
+	
+    int renderframeWidth = (int)CVPixelBufferGetWidth(renderTarget);
+    int renderframeHeight = (int)CVPixelBufferGetHeight(renderTarget);
+	
+    if (size.height != renderframeHeight || size.width != renderframeWidth) {
+		
+        [self setupBufferWithSize:size];
+//        return nil;
+    }
+	
+    OSType type = CVPixelBufferGetPixelFormatType(pixelBuffer);
+	
+    if (type == kCVPixelFormatType_32BGRA) {
+		
+        [self cleanUpTextures];
+		
+        CVReturn err = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault, _videoTextureCache, pixelBuffer, NULL, GL_TEXTURE_2D, GL_RGBA, frameWidth, frameHeight,GL_BGRA, GL_UNSIGNED_BYTE, 0, &_texture);
+		
+        if (!_texture || err) {
+            NSLog(@"Camera CVOpenGLESTextureCacheCreateTextureFromImage failed (error: %d)", err);
+            return pixelBuffer;
+        }
+		
+        glBindTexture(GL_TEXTURE_2D, CVOpenGLESTextureGetName(_texture));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		
+        GLuint textureHandle = CVOpenGLESTextureGetName(_texture);
+		
+        glUseProgram(program);
+		
+        glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferHandle);
+		
+        // Set the view port to the entire view.
+        glViewport(0, 0, size.width, size.height);
+		
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+		
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, textureHandle);
+        glUniform1i(displayInputTextureUniform, 4);
+		
+		
+        GLfloat vertices[] =  {
+            1,-1,
+            -1, -1,
+            1, 1,
+            -1,  1,
+        };
+		
+        // 更新顶点数据
+        glVertexAttribPointer(rgbPositionAttribute, 2, GL_FLOAT, 0, 0, vertices);
+        glEnableVertexAttribArray(rgbPositionAttribute);
+		
+        GLfloat quadTextureData[] =  {
+            rect.origin.x / (float)frameWidth,rect.origin.y / (float)frameHeight,                                           // 01
+            (rect.origin.x + rect.size.width) / (float)frameWidth,rect.origin.y / (float)frameHeight,                       // 11
+            rect.origin.x / (float)frameWidth,(rect.origin.y + rect.size.height)/(float)frameHeight,                        // 00
+            (rect.origin.x + rect.size.width) / (float)frameWidth,(rect.origin.y + rect.size.height)/(float)frameHeight,    // 10
+        };
+        glVertexAttribPointer(rgbTextureCoordinateAttribute, 2, GL_FLOAT, 0, 0, quadTextureData);
+		
+        glEnableVertexAttribArray(rgbTextureCoordinateAttribute);
+		
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		
+        glFinish();
+		
+    }
+	
+//    [self copyBuffer:renderTarget toBuffer:pixelBuffer];
+//    return pixelBuffer ;
+	
+    return renderTarget;
+}
 -(void)setBgImage:(UIImage *)bgImage {
     
     // 图片修正

@@ -35,7 +35,7 @@
     
     self.dataSource = [NSMutableArray arrayWithCapacity:1];
     
-    NSString *sourcePath = [FUManager shareInstance].avatarStyle == FUAvatarStyleNormal ? AvatarListPath : AvatarQPath ;
+    NSString *sourcePath = CurrentAvatarStylePath ;
     
     NSArray *array = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:sourcePath error:nil] ;
     array = [array sortedArrayUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
@@ -108,7 +108,7 @@
                     [fileManager removeItemAtPath:filePath error:nil];
                 }
                 // delete avatar info
-                NSString *rootPath = avatar.isQType ? AvatarQPath : AvatarListPath ;
+                NSString *rootPath = CurrentAvatarStylePath ;
                 NSString *jsonPath = [[rootPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
                 if ([fileManager fileExistsAtPath:jsonPath]) {
                     [fileManager removeItemAtPath:jsonPath error:nil];

@@ -12,10 +12,11 @@
 #import "FUManager.h"
 #import "FUAvatar.h"
 
-@interface FUStyleViewController ()
+@interface FUStyleViewController ()<FULoadingViewDelegate>
 @property (weak, nonatomic) IBOutlet UIButton *QStyleButton;
 @property (weak, nonatomic) IBOutlet UIButton *NormalStyleButton;
-
+@property (weak, nonatomic) IBOutlet UIView *loadingContainer;
+@property (nonatomic, strong) FULoadingView *loadingView ;
 
 @end
 
@@ -27,7 +28,8 @@
 
 - (IBAction)qstyleSelected:(UIButton *)sender {
     
-    [SVProgressHUD show];
+        self.loadingContainer.hidden = NO;
+        [self.loadingView startLoading];
     self.QStyleButton.enabled = false;
     self.NormalStyleButton.enabled = false;
     __weak typeof(self)weakSelf = self ;
@@ -76,6 +78,15 @@
     [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
     }];
 }
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([segue.identifier isEqualToString:@"FUStyleLoadingView"]) {
+        UIViewController *vc = segue.destinationViewController ;
+        self.loadingView = (FUPhotoLoadingView *)vc.view ;
+        self.loadingView.mDelegate = self ;
+    }
+}
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

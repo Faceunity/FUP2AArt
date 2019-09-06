@@ -49,7 +49,7 @@
 		[[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
 	}
 	
-	//[self.navigationController popToRootViewControllerAnimated:YES];
+	[[FUManager shareInstance].currentAvatars.firstObject resetScaleToSmallBody];
 	UIViewController * lasTwoVC =  self.navigationController.viewControllers[1];
 	[self.navigationController popToViewController:lasTwoVC animated:true];
 

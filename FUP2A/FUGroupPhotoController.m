@@ -96,6 +96,7 @@
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
+     [[FUManager shareInstance].currentAvatars.firstObject resetScaleToSmallBody];
     [self.navigationController setNavigationBarHidden:YES animated:YES];
 }
 
@@ -193,7 +194,10 @@
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
 }
-
+-(void)dealloc{
+ NSLog(@"FUGroupPhotoController-------销毁了");
+	
+}
 @end
 
 

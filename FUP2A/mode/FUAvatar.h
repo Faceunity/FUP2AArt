@@ -6,19 +6,32 @@
 //  Copyright © 2018年 L. All rights reserved.
 //
 
+
+#define fu_iris_color_index @"iris_color_index"
+#define fu_lip_color_index @"lip_color_index"
+
+#define fu_skin_color_progress @"skin_color_progress"
+
+#define fu_glass_color_index @"glass_color_index"
+#define fu_glass_frame_color_index @"glass_frame_color_index"
+
+
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "FUP2ADefine.h"
 
 @class FUP2AColor ;
-@interface FUAvatar : NSObject
+@interface FUAvatar : NSObject<NSCopying>
 
 @property (nonatomic, copy) NSString *name ;
+@property (nonatomic, copy) NSString *uuid ;
 @property (nonatomic, assign) FUGender gender ;
 @property (nonatomic, copy) NSString *imagePath ;
 
 // 是否是新版本
 @property (nonatomic, assign) BOOL isQType ;
+// 是否创建了所有的匹配发型，针对自定义生成的avatar
+@property (nonatomic, assign) BOOL createdHairBundles;
 
 // 是否是预置模型
 @property (nonatomic, assign) BOOL defaultModel ;
@@ -43,17 +56,25 @@
 @property (nonatomic, assign) double bearLabel ;
 
 // colors
-@property (nonatomic, assign) double skinLevel ;
 @property (nonatomic, assign) double irisLevel ;
 @property (nonatomic, assign) double lipsLevel ;
+
+
+@property (nonatomic, assign) double skinColorProgress;
+@property (nonatomic, assign) double irisColorProgress;
+@property (nonatomic, assign) double lipColorProgress;
 @property (nonatomic, strong) FUP2AColor *skinColor ;
 @property (nonatomic, strong) FUP2AColor *lipColor ;
 @property (nonatomic, strong) FUP2AColor *irisColor ;
 @property (nonatomic, strong) FUP2AColor *hairColor ;
+@property (nonatomic, assign) int hairColorIndex ;
 @property (nonatomic, strong) FUP2AColor *glassColor ;
 @property (nonatomic, strong) FUP2AColor *glassFrameColor ;
+@property (nonatomic, assign) int glassColorIndex;
+@property (nonatomic, assign) int glassFrameColorIndex ;
 @property (nonatomic, strong) FUP2AColor *beardColor ;
-@property (nonatomic, strong) FUP2AColor *hatColor ;
+@property (nonatomic, strong) FUP2AColor *hatColor;
+@property (nonatomic, strong) NSMutableDictionary *orignalColorDic;   // 记录初始状态颜色值，在编辑失败时重新赋值
 
 /**
  用 JSON 文件初始化 avatar
@@ -379,7 +400,21 @@
  重新开始播放动画
  */
 - (void)restartAnimation ;
+-(void)setTheDefaultColors;
+/**
+ 记录默认的颜色状态；
+ */
+-(void)recordOriginalColors;
+/**
+ 在编辑失败时，返回默认的颜色状态；
+ */
+- (void)backToOriginalColors;
 
+
+#pragma mark ----- 获取配置
+-(NSDictionary*)getColorDicFromFUP2AColor:(FUP2AColor*)color;
+-(NSDictionary*)getColorsDictionary;
+-(NSDictionary*)getInfoDictionary;
 @end
 
 
