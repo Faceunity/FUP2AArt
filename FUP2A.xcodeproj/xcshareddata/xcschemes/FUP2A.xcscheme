@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "0B8ED6CA20C0DC360011221E"
-               BuildableName = "FUP2A.app"
+               BuildableName = "DigiMe-Art.app"
                BlueprintName = "FUP2A"
                ReferencedContainer = "container:FUP2A.xcodeproj">
             </BuildableReference>
@@ -27,19 +27,17 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
-      <Testables>
-      </Testables>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0B8ED6CA20C0DC360011221E"
-            BuildableName = "FUP2A.app"
+            BuildableName = "DigiMe-Art.app"
             BlueprintName = "FUP2A"
             ReferencedContainer = "container:FUP2A.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
-      <AdditionalOptions>
-      </AdditionalOptions>
+      <Testables>
+      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -57,13 +55,11 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0B8ED6CA20C0DC360011221E"
-            BuildableName = "FUP2A.app"
+            BuildableName = "DigiMe-Art.app"
             BlueprintName = "FUP2A"
             ReferencedContainer = "container:FUP2A.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -76,7 +72,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0B8ED6CA20C0DC360011221E"
-            BuildableName = "FUP2A.app"
+            BuildableName = "DigiMe-Art.app"
             BlueprintName = "FUP2A"
             ReferencedContainer = "container:FUP2A.xcodeproj">
          </BuildableReference>

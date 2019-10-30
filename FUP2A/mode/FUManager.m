@@ -362,6 +362,24 @@ static FUManager *fuManager = nil ;
 			[tmpArray addObject:color];
 		}
 		
+		// shape data
+		NSData *shapeJson = [[NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"shape_list" ofType:@"json"] encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
+		NSDictionary *shapeDict = [NSJSONSerialization JSONObjectWithData:shapeJson options:NSJSONReadingMutableContainers error:nil];
+		
+		NSArray *shapeKeys = shapeDict.allKeys ;
+		for (NSString *key in shapeKeys) {
+			NSArray *paramsArray = [shapeDict objectForKey:key];
+			
+			if ([key isEqualToString:@"face"]) {
+				self.qFaces = paramsArray ;
+			}else if ([key isEqualToString:@"eye"]){
+				self.qEyes = paramsArray ;
+			}else if ([key isEqualToString:@"mouth"]){
+				self.qMouths = paramsArray ;
+			}else if ([key isEqualToString:@"nose"]){
+				self.qNoses = paramsArray ;
+			}
+		}
 		if ([key isEqualToString:@"lip_color"]) {
 			self.lipColorArray = [tmpArray copy];
 		}else if ([key isEqualToString:@"iris_color"]){
@@ -834,7 +852,7 @@ static int ARFilterID = 0 ;
 	// 头发
 	int hairLabel = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"hair_label"];
 	avatar.hairLabel = hairLabel ;
-	NSString *defaultHair = [self gethairNameWithNum:hairLabel andGender:gender];
+	NSString *defaultHair = [self gethairNameWithNum:hairLabel andGender:gender isQ:isQ];
 	//    if ([defaultHair isEqualToString:@"hair-noitem"]) {
 	//        defaultHair = gender == FUGenderMale ? @"male_hair_2" : @"female_td2" ;
 	//    }
@@ -919,7 +937,7 @@ static int ARFilterID = 0 ;
 	[avatarInfoData writeToFile:avatarInfoPath atomically:YES];
 	appManager.localizeHairBundlesSuccess = false;
 	// create other hairs
-	[self createHairBundles:avatar WithData:data];
+	[self createHairBundles:avatar WithData:data IsQ:isQ];
 	return avatar ;
 }
 -(void)createHairBundles:(FUAvatar *)avatar WithData:(NSData *)data{
@@ -930,6 +948,44 @@ static int ARFilterID = 0 ;
 	dispatch_async(dispatch_get_global_queue(0, 0), ^{
 		NSArray *hairs ;
 		hairs = self.qHairs ;
+		for (NSString *hairName in hairs) {
+			if ([hairName isEqualToString:@"hair-noitem"] || [hairName isEqualToString:@"hair_q_noitem"] || [hairName isEqualToString:defaultHair]) {
+				continue ;
+			}
+			NSString *hairPath = [[NSBundle mainBundle] pathForResource:hairName ofType:@"bundle"];
+			NSData *d0 = [NSData dataWithContentsOfFile:hairPath];
+			
+			//            CFAbsoluteTime startProcessHair1 = CFAbsoluteTimeGetCurrent() ;
+			NSData *d1 = [[FUP2AClient shareInstance] createAvatarHairWithServerData:data defaultHairData:d0];
+			//            NSLog(@"------------ process hair time: %f ms - hair name: %@", (CFAbsoluteTimeGetCurrent() - startProcessHair1) * 1000.0, hairName);
+			if (d1 == nil) {
+				NSLog(@"---- error path: %@", hairPath);
+			}
+			NSString *hp = [[[avatar filePath] stringByAppendingPathComponent:hairName] stringByAppendingString:@".bundle"];
+			[d1 writeToFile:hp atomically:YES];
+		}
+		dispatch_sync(dispatch_get_main_queue(), ^{
+			appManager.localizeHairBundlesSuccess = true;
+		});
+		avatar.createdHairBundles = true;
+		[[NSNotificationCenter defaultCenter] postNotificationName:HairsWriteToLocalSuccessNot object:nil];
+		self->isCreatingAvatar = NO ;
+	});
+}
+-(void)createHairBundles:(FUAvatar *)avatar WithData:(NSData *)data IsQ:(BOOL)isq{
+	if (data == nil) {
+		return;
+	}
+	NSString *defaultHair = avatar.hair;
+	dispatch_async(dispatch_get_global_queue(0, 0), ^{
+		NSArray *hairs ;
+		if (isq) {
+			hairs = self.qHairs ;
+		}else{
+			NSMutableArray * maleHairs = [NSMutableArray arrayWithArray:self.maleHairs];
+			[maleHairs addObjectsFromArray:self.femaleHairs];
+			hairs = maleHairs;
+		}
 		for (NSString *hairName in hairs) {
 			if ([hairName isEqualToString:@"hair-noitem"] || [hairName isEqualToString:@"hair_q_noitem"] || [hairName isEqualToString:defaultHair]) {
 				continue ;
@@ -1262,7 +1318,113 @@ static float CenterScale = 0.3 ;
 	
 	return hairName ;
 }
-
+- (NSString *)gethairNameWithNum:(int)num andGender:(FUGender)g isQ:(BOOL)isq{
+	
+	NSString *hairName = @"hair-noitem" ;
+	
+	switch (num) {
+		case -1:
+			if (g == FUGenderMale) {
+				NSArray * hairArr;
+				if (isq){
+					hairArr = @[@"male_hair_1",@"male_hair_1_t1",@"male_hair_1_t2",@"male_hair_1_t3",@"male_hair_1_t4"];
+				}else{
+					hairArr = @[@"male_hair_1",@"male_hair_t_1",@"male_hair_t_2",@"male_hair_t_3",@"male_hair_1_t4"];
+				}
+				int value = arc4random() % hairArr.count;
+				hairName = hairArr[value];
+			}else if (g == FUGenderFemale) {
+				hairName = @"female_hair_11";
+			}
+			
+		case 0:
+			hairName = @"male_hair_0";
+			break;
+			
+		case 1:{
+			NSArray * hairArr;
+			if (isq){
+				hairArr = @[@"male_hair_1",@"male_hair_1_t1",@"male_hair_1_t2",@"male_hair_1_t3",@"male_hair_1_t4"];
+			}else{
+				hairArr = @[@"male_hair_1",@"male_hair_t_1",@"male_hair_t_2",@"male_hair_t_3",@"male_hair_1_t4"];
+			}
+			int value = arc4random() % hairArr.count;
+			hairName = hairArr[value];
+		}
+			break;
+		case 2:
+		case 3:
+			hairName = [NSString stringWithFormat:@"male_hair_%d", num];
+			break;
+		case 4:{
+			NSArray * hairArr;
+			if (isq){
+				hairArr = @[@"male_hair_4",@"male_hair_4_t1",@"male_hair_4_t2"];
+			}else{
+				hairArr = @[@"male_hair_4"];
+			}
+			int value = arc4random() % hairArr.count;
+			hairName = hairArr[value];
+		}
+			break;
+		case 5:
+		case 6:
+			hairName = [NSString stringWithFormat:@"male_hair_%d", num];
+			break;
+		case 7:
+		case 8:
+		case 9:
+		case 10:
+			hairName = [NSString stringWithFormat:@"female_hair_%d", num];
+			break;
+		case 11:
+		case 12:
+			hairName = [NSString stringWithFormat:@"female_hair_%d", num];
+			break;
+		case 13:
+		case 14:
+			hairName = @"female_hair_13";
+			break;
+		case 15:
+		case 16:
+			hairName = [NSString stringWithFormat:@"female_hair_%d", num];
+			break;
+		case 17:
+		case 18:
+			hairName = @"female_hair_17";
+			break;
+		case 19:
+		case 20:
+			hairName = [NSString stringWithFormat:@"female_hair_%d", num];
+			break;
+		case 21:
+		{
+			NSArray * hairArr;
+			if (isq){
+				hairArr = @[@"female_hair_21",@"female_hair_21_t1",@"female_hair_21_t2",@"female_hair_21_t3",@"female_hair_21_t4"];
+			}else{
+				hairArr = @[@"female_hair_21"];
+			}
+			int value = arc4random() % hairArr.count;
+			hairName = hairArr[value];
+		}
+			break;
+			
+		case 22:
+			hairName = @"female_hair_22";
+			
+		case 23:
+		case 24:
+			hairName = @"female_hair_23";
+			break;
+			
+			
+		default:
+			break;
+	}
+	
+	return hairName ;
+}
 - (NSString *)gethairNameWithNum:(int)num andGender:(FUGender)g{
 	
 	NSString *hairName = @"hair-noitem" ;

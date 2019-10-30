@@ -332,6 +332,7 @@ FUFigureHorizCollectionDelegate
 				subView = self.decorationView ;
 				self.colorSliderSuperView.hidden = YES ;
 				self.decorationCollection.currentType = self.avatarStyle == FUAvatarStyleNormal && self.avatarIsMale == NO ? FUFigureDecorationCollectionTypeEyeLash : FUFigureDecorationCollectionTypeEyeBrow ;
+				self.doAndUndoViewBottomConstriants.constant = 240;
 			}
 		}
 			break;
@@ -350,11 +351,15 @@ FUFigureHorizCollectionDelegate
 				}
 			}else { //  normal: 眼镜
 				subView = self.glassesView ;
+				self.doAndUndoViewBottomConstriants.constant = 155;
 				if ([self.glassesArray indexOfObject:self.glasses] != 0) {
 					self.glassesFrameCollection.hidden = NO ;
 					self.glassesColorCollection.hidden = NO ;
 					self.glassesLabel.hidden = NO ;
-					self.glassesFrameLabel.hidden = NO ;				}
+					self.glassesFrameLabel.hidden = NO ;
+					self.doAndUndoViewBottomConstriants.constant = 300;
+					
+				}
 			}
 		}
 			break;
@@ -373,6 +378,7 @@ FUFigureHorizCollectionDelegate
 					self.decorationColorCollection.hidden = NO ;
 					self.decorationColorCollection.currentType = FUFigureColorTypeHatColor ;
 				}
+				self.doAndUndoViewBottomConstriants.constant = 240;
 			}
 		}
 			break;
@@ -387,6 +393,7 @@ FUFigureHorizCollectionDelegate
 				subView = self.decorationView ;
 				self.colorSliderSuperView.hidden = YES ;
 				self.decorationCollection.currentType = FUFigureDecorationCollectionTypeClothes ;
+				self.doAndUndoViewBottomConstriants.constant = 240;
 			}
 		}
 			break;
@@ -469,8 +476,14 @@ FUFigureHorizCollectionDelegate
 
 - (void)decorationCollectionDidSelectedItem:(NSString *)itemName index:(NSInteger)index decorationType:(FUFigureDecorationCollectionType)type {
 	double old_doAndUndoViewBottomConstriants = self.doAndUndoViewBottomConstriants.constant;
+	FUAvatar *currentAvatar = [FUManager shareInstance].currentAvatars.firstObject;
 	switch (type) {
 		case FUFigureDecorationCollectionTypeHair:{
+		 if(([itemName isEqualToString:@"female_hair_q_12"] || [itemName isEqualToString:@"male_hair_t_3"] || [itemName isEqualToString:@"male_hair_t_2"] || [itemName isEqualToString:@"male_hair_t_2"] || [itemName isEqualToString:@"female_hair_20"]) && ![currentAvatar.hat containsString:@"noitem"])
+		{
+			[SVProgressHUD showInfoWithStatus:@"此发型暂不支持帽子哦"];
+			return;
+		}
 			self.hair = itemName ;
 			if (!self.colorSliderSuperView.hidden) {
 				self.decorationColorCollection.hidden = YES;
@@ -549,6 +562,11 @@ FUFigureHorizCollectionDelegate
 		}
 			break;
 		case FUFigureDecorationCollectionTypeHat:{
+		 if(([currentAvatar.hair isEqualToString:@"female_hair_q_12"] || [currentAvatar.hair isEqualToString:@"male_hair_t_3"] || [currentAvatar.hair isEqualToString:@"male_hair_t_2"] || [currentAvatar.hair isEqualToString:@"male_hair_t_2"] || [currentAvatar.hair isEqualToString:@"female_hair_20"]) && ![itemName containsString:@"noitem"])
+		{
+			[SVProgressHUD showInfoWithStatus:@"此发型暂不支持帽子哦"];
+			return;
+		}
 			self.hat = itemName ;
 			if ([FUAvatarEditManager sharedInstance].undo || [FUAvatarEditManager sharedInstance].redo) {
 				if (self.type == [FUAvatarEditManager sharedInstance].type) {

@@ -20,288 +20,376 @@
 
 static FUShapeParamsMode *model = nil ;
 + (instancetype)shareInstance {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        model = [[FUShapeParamsMode alloc] init] ;
-    });
-    return model ;
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		model = [[FUShapeParamsMode alloc] init] ;
+	});
+	return model ;
 }
 
 -(instancetype)init {
-    self = [super init];
-    if (self) {
-        unsigned int count ;
-        objc_property_t *properties = class_copyPropertyList([FUShapeParamsMode class], &count) ;
-        
-        NSMutableArray *mutableNameArray = [NSMutableArray arrayWithCapacity:1];
-        for (int i = 0 ; i < count; i ++) {
-            const char *name = property_getName(properties[i]) ;
-            NSString *proName = [NSString stringWithFormat:@"%s", name];
-            if (![proName isEqualToString:@"propertyNames"] && ![proName isEqualToString:@"avatar"] && ![proName isEqualToString:@"defaultValues"]) {
-                [mutableNameArray addObject:proName];
-            }
-        }
-        free(properties) ;
-        
-        self.propertyNames = [mutableNameArray copy];
-    }
-    return self ;
+	self = [super init];
+	if (self) {
+		unsigned int count ;
+		objc_property_t *properties = class_copyPropertyList([FUShapeParamsMode class], &count) ;
+		
+		NSMutableArray *mutableNameArray = [NSMutableArray arrayWithCapacity:1];
+		for (int i = 0 ; i < count; i ++) {
+			const char *name = property_getName(properties[i]) ;
+			NSString *proName = [NSString stringWithFormat:@"%s", name];
+			if (![proName isEqualToString:@"propertyNames"] && ![proName isEqualToString:@"avatar"] && ![proName isEqualToString:@"defaultValues"]) {
+				[mutableNameArray addObject:proName];
+			}
+		}
+		free(properties) ;
+		
+		self.propertyNames = [mutableNameArray copy];
+	}
+	return self ;
 }
 
 - (void)resetDefaultParamsWithAvatar:(FUAvatar *)avatar {
-    _avatar = avatar ;
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
-    for (NSString *proName in self.propertyNames) {
-        double value = [avatar getFacepupModeParamWith:proName];
-        [[FUShapeParamsMode shareInstance] setValue:@(value) forKey:proName];
-        [dict setObject:@(value) forKey:proName];
-    }
-    [FUShapeParamsMode shareInstance].defaultValues = [dict copy];
+	_avatar = avatar ;
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+	for (NSString *proName in self.propertyNames) {
+		double value = [avatar getFacepupModeParamWith:proName];
+		[[FUShapeParamsMode shareInstance] setValue:@(value) forKey:proName];
+		[dict setObject:@(value) forKey:proName];
+	}
+	[FUShapeParamsMode shareInstance].defaultValues = [dict copy];
 }
 
 - (void)recordParam:(NSString *)key value:(double)value {
-    if ([[FUShapeParamsMode shareInstance].propertyNames containsObject:key]) {
-        [[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
-    }
+	if ([[FUShapeParamsMode shareInstance].propertyNames containsObject:key]) {
+		[[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
+	}
 }
 
 - (double)valueWithKey:(NSString *)key {
-    if ([self.propertyNames containsObject:key]) {
-        return [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue] ;
-    }
-    return 0.0 ;
+	if ([self.propertyNames containsObject:key]) {
+		return [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue] ;
+	}
+	return 0.0 ;
 }
 
 - (BOOL)propertiesIsChanged {
-    for (NSString *propertyName in self.propertyNames) {
-        double value0 = [[[FUShapeParamsMode shareInstance] valueForKey:propertyName] doubleValue];
-        double value1 = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:propertyName] doubleValue];
-        if (value0 != value1) {
-            return YES ;
-        }
-    }
-    return NO ;
+	for (NSString *propertyName in self.propertyNames) {
+		double value0 = [[[FUShapeParamsMode shareInstance] valueForKey:propertyName] doubleValue];
+		double value1 = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:propertyName] doubleValue];
+		if (value0 != value1) {
+			return YES ;
+		}
+	}
+	return NO ;
 }
 
 - (BOOL)headParamsIsChanged {
-    NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
-    for (NSString *propertyName in self.propertyNames) {
-        if ([propertyName hasPrefix:@"Head"]
-            || [propertyName hasPrefix:@"head"]
-            || [propertyName hasPrefix:@"cheek"]
-            || [propertyName hasPrefix:@"jaw"]) {
-            
-            [mouthArray addObject:propertyName];
-        }
-    }
-    
-    for (NSString *key in mouthArray) {
-        double value1 = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
-        double value0 = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
-        if (value0 != value1) {
-            return YES ;
-        }
-    }
-    return NO ;
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"Head"]
+			|| [propertyName hasPrefix:@"head"]
+			|| [propertyName hasPrefix:@"cheek"]
+			|| [propertyName hasPrefix:@"jaw"]) {
+			
+			[mouthArray addObject:propertyName];
+		}
+	}
+	
+	for (NSString *key in mouthArray) {
+		double value1 = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
+		double value0 = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
+		if (value0 != value1) {
+			return YES ;
+		}
+	}
+	return NO ;
 }
 - (BOOL)mouthParamsIsChanged {
-    NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
-    for (NSString *propertyName in self.propertyNames) {
-        if ([propertyName hasPrefix:@"upperLip"]
-            || [propertyName hasPrefix:@"lowerLip"]
-            || [propertyName hasPrefix:@"mouth"]
-            || [propertyName hasPrefix:@"lipCorner"]) {
-            
-            [mouthArray addObject:propertyName];
-        }
-    }
-    
-    for (NSString *key in mouthArray) {
-        double value1 = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
-        double value0 = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
-        if (value0 != value1) {
-            return YES ;
-        }
-    }
-    return NO ;
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"upperLip"]
+			|| [propertyName hasPrefix:@"lowerLip"]
+			|| [propertyName hasPrefix:@"mouth"]
+			|| [propertyName hasPrefix:@"lipCorner"]) {
+			
+			[mouthArray addObject:propertyName];
+		}
+	}
+	
+	for (NSString *key in mouthArray) {
+		double value1 = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
+		double value0 = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
+		if (value0 != value1) {
+			return YES ;
+		}
+	}
+	return NO ;
 }
 - (BOOL)noseParamsIsChanged {
-    NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
-    for (NSString *propertyName in self.propertyNames) {
-        if ([propertyName hasPrefix:@"nos"]) {
-            
-            [mouthArray addObject:propertyName];
-        }
-    }
-    
-    for (NSString *key in mouthArray) {
-        double value1 = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
-        double value0 = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
-        if (value0 != value1) {
-            return YES ;
-        }
-    }
-    return NO ;
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"nos"]) {
+			
+			[mouthArray addObject:propertyName];
+		}
+	}
+	
+	for (NSString *key in mouthArray) {
+		double value1 = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
+		double value0 = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
+		if (value0 != value1) {
+			return YES ;
+		}
+	}
+	return NO ;
 }
 - (BOOL)eyesParamsIsChanged {
-    NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
-    for (NSString *propertyName in self.propertyNames) {
-        if ([propertyName hasPrefix:@"Eye_"]) {
-            
-            [mouthArray addObject:propertyName];
-        }
-    }
-    
-    for (NSString *key in mouthArray) {
-        double value1 = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
-        double value0 = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
-        if (value0 != value1) {
-            return YES ;
-        }
-    }
-    return NO ;
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"Eye_"]) {
+			
+			[mouthArray addObject:propertyName];
+		}
+	}
+	
+	for (NSString *key in mouthArray) {
+		double value1 = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
+		double value0 = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
+		if (value0 != value1) {
+			return YES ;
+		}
+	}
+	return NO ;
 }
 
 - (NSDictionary *)resetHeadParams {
-    NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
-    for (NSString *propertyName in self.propertyNames) {
-        if ([propertyName hasPrefix:@"Head"]
-            || [propertyName hasPrefix:@"head"]
-            || [propertyName hasPrefix:@"cheek"]
-            || [propertyName hasPrefix:@"jaw"]) {
-            
-            [mouthArray addObject:propertyName];
-        }
-    }
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
-    for (NSString *key in mouthArray) {
-        double value = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
-        [[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
-        [dict setObject:@(value) forKey:key];
-    }
-    return [dict copy];
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"Head"]
+			|| [propertyName hasPrefix:@"head"]
+			|| [propertyName hasPrefix:@"cheek"]
+			|| [propertyName hasPrefix:@"jaw"]) {
+			
+			[mouthArray addObject:propertyName];
+		}
+	}
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+	for (NSString *key in mouthArray) {
+		double value = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
+		[[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
+		[dict setObject:@(value) forKey:key];
+	}
+	return [dict copy];
 }
 - (NSDictionary *)getCurrentHeadParams {
-    NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
-    for (NSString *propertyName in self.propertyNames) {
-        if ([propertyName hasPrefix:@"Head"]
-            || [propertyName hasPrefix:@"head"]
-            || [propertyName hasPrefix:@"cheek"]
-            || [propertyName hasPrefix:@"jaw"]) {
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"Head"]
+			|| [propertyName hasPrefix:@"head"]
+			|| [propertyName hasPrefix:@"cheek"]
+			|| [propertyName hasPrefix:@"jaw"]) {
 			
-            [mouthArray addObject:propertyName];
-        }
-    }
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
-    for (NSString *key in mouthArray) {
-        double value = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
-        [[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
-        [dict setObject:@(value) forKey:key];
-    }
-    return [dict copy];
+			[mouthArray addObject:propertyName];
+		}
+	}
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+	for (NSString *key in mouthArray) {
+		double value = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
+		[[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
+		[dict setObject:@(value) forKey:key];
+	}
+	return [dict copy];
+}
+/**
+ 获取默认脸型点位
+ 
+ @return
+ */
+- (NSDictionary *)getDefaultHeadParams {
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"Head"]
+			|| [propertyName hasPrefix:@"head"]
+			|| [propertyName hasPrefix:@"cheek"]
+			|| [propertyName hasPrefix:@"jaw"]) {
+			
+			[mouthArray addObject:propertyName];
+		}
+	}
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+	for (NSString *key in mouthArray) {
+		double value = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
+		[dict setObject:@(value) forKey:key];
+	}
+	return [dict copy];
 }
 - (NSDictionary *)resetMouthParams {
-    NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
-    for (NSString *propertyName in self.propertyNames) {
-        if ([propertyName hasPrefix:@"upperLip"]
-            || [propertyName hasPrefix:@"lowerLip"]
-            || [propertyName hasPrefix:@"mouth"]
-            || [propertyName hasPrefix:@"lipCorner"]) {
-            
-            [mouthArray addObject:propertyName];
-        }
-    }
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
-    for (NSString *key in mouthArray) {
-        double value = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
-        [[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
-        [dict setObject:@(value) forKey:key];
-    }
-    return [dict copy];
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"upperLip"]
+			|| [propertyName hasPrefix:@"lowerLip"]
+			|| [propertyName hasPrefix:@"mouth"]
+			|| [propertyName hasPrefix:@"lipCorner"]) {
+			
+			[mouthArray addObject:propertyName];
+		}
+	}
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+	for (NSString *key in mouthArray) {
+		double value = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
+		[[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
+		[dict setObject:@(value) forKey:key];
+	}
+	return [dict copy];
 }
 - (NSDictionary *)getCurrentMouthParams {
-    NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
-    for (NSString *propertyName in self.propertyNames) {
-        if ([propertyName hasPrefix:@"upperLip"]
-            || [propertyName hasPrefix:@"lowerLip"]
-            || [propertyName hasPrefix:@"mouth"]
-            || [propertyName hasPrefix:@"lipCorner"]) {
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"upperLip"]
+			|| [propertyName hasPrefix:@"lowerLip"]
+			|| [propertyName hasPrefix:@"mouth"]
+			|| [propertyName hasPrefix:@"lipCorner"]) {
 			
-            [mouthArray addObject:propertyName];
-        }
-    }
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
-    for (NSString *key in mouthArray) {
-        double value = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
-        [[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
-        [dict setObject:@(value) forKey:key];
-    }
-    return [dict copy];
+			[mouthArray addObject:propertyName];
+		}
+	}
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+	for (NSString *key in mouthArray) {
+		double value = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
+		[[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
+		[dict setObject:@(value) forKey:key];
+	}
+	return [dict copy];
+}
+/**
+ 获取默认嘴巴点位
+ 
+ @return
+ */
+- (NSDictionary *)getDefaultMouthParams {
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"upperLip"]
+			|| [propertyName hasPrefix:@"lowerLip"]
+			|| [propertyName hasPrefix:@"mouth"]
+			|| [propertyName hasPrefix:@"lipCorner"]) {
+			
+			[mouthArray addObject:propertyName];
+		}
+	}
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+	for (NSString *key in mouthArray) {
+		double value = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
+		[dict setObject:@(value) forKey:key];
+	}
+	return [dict copy];
 }
 - (NSDictionary *)resetNoseParams {
-    NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
-    for (NSString *propertyName in self.propertyNames) {
-        if ([propertyName hasPrefix:@"nos"]) {
-            
-            [mouthArray addObject:propertyName];
-        }
-    }
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
-    for (NSString *key in mouthArray) {
-        double value = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
-        [[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
-        [dict setObject:@(value) forKey:key];
-    }
-    return [dict copy];
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"nos"]) {
+			
+			[mouthArray addObject:propertyName];
+		}
+	}
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+	for (NSString *key in mouthArray) {
+		double value = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
+		[[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
+		[dict setObject:@(value) forKey:key];
+	}
+	return [dict copy];
 }
 - (NSDictionary *)getCurrentNoseParams {
-    NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
-    for (NSString *propertyName in self.propertyNames) {
-        if ([propertyName hasPrefix:@"nos"]) {
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"nos"]) {
 			
-            [mouthArray addObject:propertyName];
-        }
-    }
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
-    for (NSString *key in mouthArray) {
-        double value = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
-        [[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
-        [dict setObject:@(value) forKey:key];
-    }
-    return [dict copy];
+			[mouthArray addObject:propertyName];
+		}
+	}
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+	for (NSString *key in mouthArray) {
+		double value = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
+		[[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
+		[dict setObject:@(value) forKey:key];
+	}
+	return [dict copy];
+}
+/**
+ 获取默认鼻子点位
+ 
+ @return
+ */
+- (NSDictionary *)getDefaultNoseParams {
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"nos"]) {
+			
+			[mouthArray addObject:propertyName];
+		}
+	}
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+	for (NSString *key in mouthArray) {
+		double value = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
+		[dict setObject:@(value) forKey:key];
+	}
+	return [dict copy];
 }
 
+
 - (NSDictionary *)resetEyesParams {
-    NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
-    for (NSString *propertyName in self.propertyNames) {
-        if ([propertyName hasPrefix:@"Eye_"]) {
-            
-            [mouthArray addObject:propertyName];
-        }
-    }
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
-    for (NSString *key in mouthArray) {
-        double value = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
-        [[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
-        [dict setObject:@(value) forKey:key];
-    }
-    return [dict copy];
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"Eye_"]) {
+			
+			[mouthArray addObject:propertyName];
+		}
+	}
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+	for (NSString *key in mouthArray) {
+		double value = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
+		[[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
+		[dict setObject:@(value) forKey:key];
+	}
+	return [dict copy];
 }
 - (NSDictionary *)getCurrentEyesParams {
-    NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
-    for (NSString *propertyName in self.propertyNames) {
-        if ([propertyName hasPrefix:@"Eye_"]) {
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"Eye_"]) {
 			
-            [mouthArray addObject:propertyName];
-        }
-    }
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
-    for (NSString *key in mouthArray) {
-        double value = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
-        [[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
-        [dict setObject:@(value) forKey:key];
-    }
-    return [dict copy];
+			[mouthArray addObject:propertyName];
+		}
+	}
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+	for (NSString *key in mouthArray) {
+		double value = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
+		[[FUShapeParamsMode shareInstance] setValue:@(value) forKey:key] ;
+		[dict setObject:@(value) forKey:key];
+	}
+	return [dict copy];
+}
+
+/**
+ 获取默认眼镜点位
+ 
+ @return
+ */
+- (NSDictionary *)getDefaultEyesParams {
+	NSMutableArray *mouthArray = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		if ([propertyName hasPrefix:@"Eye_"]) {
+			
+			[mouthArray addObject:propertyName];
+		}
+	}
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+	for (NSString *key in mouthArray) {
+		double value = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
+		[dict setObject:@(value) forKey:key];
+	}
+	return [dict copy];
 }
 
 //- (void)setAllPropertiesToDefault {
@@ -309,24 +397,24 @@ static FUShapeParamsMode *model = nil ;
 //}
 
 - (NSArray *)finalShapeParams {
-    
-    NSMutableArray *params = [NSMutableArray arrayWithCapacity:1];
-    for (NSString *propertyName in self.propertyNames) {
-        id value = [[FUShapeParamsMode shareInstance] valueForKey:propertyName];
-        [params addObject:value];
-    }
-    return [params copy];
+	
+	NSMutableArray *params = [NSMutableArray arrayWithCapacity:1];
+	for (NSString *propertyName in self.propertyNames) {
+		id value = [[FUShapeParamsMode shareInstance] valueForKey:propertyName];
+		[params addObject:value];
+	}
+	return [params copy];
 }
 
 - (BOOL)shouldDeformHair {
-    NSArray *array = @[@"HeadBone_stretch", @"HeadBone_shrink", @"HeadBone_wide", @"HeadBone_narrow", @"Head_wide", @"Head_narrow", @"head_shrink", @"head_stretch"];
-    for (NSString *key in array) {
-        double value1 = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
-        double value0 = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
-        if (value0 != value1) {
-            return YES ;
-        }
-    }
-    return NO ;
+	NSArray *array = @[@"HeadBone_stretch", @"HeadBone_shrink", @"HeadBone_wide", @"HeadBone_narrow", @"Head_wide", @"Head_narrow", @"head_shrink", @"head_stretch"];
+	for (NSString *key in array) {
+		double value1 = [[[FUShapeParamsMode shareInstance] valueForKey:key] doubleValue];
+		double value0 = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:key] doubleValue];
+		if (value0 != value1) {
+			return YES ;
+		}
+	}
+	return NO ;
 }
 @end
