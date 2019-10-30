@@ -1051,16 +1051,17 @@ typedef enum : NSInteger {
 -(void)setTheDefaultColors{
 	
 	NSDictionary * dict = @{
-							@"iris_color": @{@"r":@(105), @"g":@(66), @"b":@(45)},
-							@"hair_color" :@{@"r":@(31), @"g":@(31), @"b":@(31), @"intensity":@(1.0)},
-							@"beard_color" :@{@"r":@(0), @"g":@(0), @"b":@(0)}
-							};
+		@"iris_color": @{@"r":@(105), @"g":@(66), @"b":@(45)},
+		@"hair_color" :@{@"r":@(31), @"g":@(31), @"b":@(31), @"intensity":@(1.0)},
+		@"beard_color" :@{@"r":@(0), @"g":@(0), @"b":@(0)}
+	};
 	int skin_color_index = [self facePupGetColorIndexWithKey:@"skin_color_index"];
 	self.skinColor = [FUManager shareInstance].skinColorArray[(skin_color_index >=0) ? skin_color_index : 0];
-    self.skinColorProgress = skin_color_index * (1.0 / [FUManager shareInstance].skinColorArray.count);
-    int fu_lip_color_index_t = [self facePupGetColorIndexWithKey:fu_lip_color_index];
+	self.skinColorProgress = skin_color_index * (1.0 / [FUManager shareInstance].skinColorArray.count);
+	int fu_lip_color_index_t = [self facePupGetColorIndexWithKey:fu_lip_color_index];
 	self.lipColor =[FUManager shareInstance].lipColorArray[(fu_lip_color_index_t >=0) ? fu_lip_color_index_t : 0];
-	self.lipColorProgress = fu_lip_color_index_t * (1.0 / [FUManager shareInstance].lipColorArray.count);
+	self.lipsLevel = fu_lip_color_index_t;
+	//	self.lipColorProgress = fu_lip_color_index_t * (1.0 / [FUManager shareInstance].lipColorArray.count);
 	self.irisColor = [FUP2AColor colorWithDict:dict[@"iris_color"]] ;
 	self.hairColor = [FUP2AColor colorWithDict:dict[@"hair_color"]] ;
 	self.glassColor = [FUP2AColor colorWithDict:dict[@"glass_color"]] ;
@@ -1171,7 +1172,7 @@ typedef enum : NSInteger {
 	self.hatColor = [FUP2AColor colorWithDict:dict[@"hat_color"]] ;
 }
 // 专门监听avatar的编辑活动
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context{
 	FUAvatarEditManager * editManager = [FUAvatarEditManager sharedInstance];
 	if (!editManager.enterEditVC || editManager.undo || editManager.redo) {
 		return;
@@ -1182,16 +1183,20 @@ typedef enum : NSInteger {
 		
 		if (change[@"old"] == nil || [change[@"old"] isEqual:[NSNull null]]) {
 			if ([keyPath isEqualToString:@"face"]) {
-				NSDictionary * faceParamDict = [[FUShapeParamsMode shareInstance] resetHeadParams];
+				NSDictionary * faceParamDict = [[FUShapeParamsMode shareInstance] getDefaultHeadParams];
 				oldConfig[keyPath] = faceParamDict;
-			}else if ([keyPath isEqualToString:@"eyes"]) {
-				NSDictionary * eyesParamDict = [[FUShapeParamsMode shareInstance] resetEyesParams];
-				oldConfig[keyPath] = eyesParamDict;
-			}else if ([keyPath isEqualToString:@"mouth"]) {
-				NSDictionary * mouthParamDict = [[FUShapeParamsMode shareInstance] resetMouthParams];
-				oldConfig[keyPath] = mouthParamDict;
+			}else if ([keyPath isEqualToString:@"irisLevel"] || [keyPath isEqualToString:@"eyes"]) {
+				NSDictionary * faceParamDict = [[FUShapeParamsMode shareInstance] getDefaultEyesParams];
+				oldConfig[@"eyes"] = faceParamDict;
+				oldConfig[@"irisLevel"] = @(self.skinColorProgress);
+				[editManager push:oldConfig];
+			}else if ([keyPath isEqualToString:@"mouth"] || [keyPath isEqualToString:@"lipsLevel"]) {
+				NSDictionary * faceParamDict = [[FUShapeParamsMode shareInstance] getDefaultMouthParams];
+				oldConfig[@"mouth"] = faceParamDict;
+				oldConfig[@"lipsLevel"] = @(self.skinColorProgress);
+				[editManager push:oldConfig];
 			}else if ([keyPath isEqualToString:@"nose"]) {
-				NSDictionary * noseParamDict = [[FUShapeParamsMode shareInstance] resetNoseParams];
+				NSDictionary * noseParamDict = [[FUShapeParamsMode shareInstance] getDefaultNoseParams];
 				oldConfig[keyPath] = noseParamDict;
 			}else{
 				oldConfig[keyPath] = change[@"old"];
@@ -1214,27 +1219,29 @@ typedef enum : NSInteger {
 				[editManager push:oldConfig];
 			}
 		}else if ([keyPath isEqualToString:@"skinColorProgress"] || [keyPath isEqualToString:@"face"]) {
-			if (![editManager exsit:@"face"] || ![editManager exsit:@"skinColorProgress"]) {
-				NSDictionary * faceParamDict = [[FUShapeParamsMode shareInstance] resetHeadParams];
+			if (![editManager exsit:keyPath]) {
+				NSDictionary * faceParamDict = [[FUShapeParamsMode shareInstance] getDefaultHeadParams];
 				oldConfig[@"face"] = faceParamDict;
 				oldConfig[@"skinColorProgress"] = @(self.skinColorProgress);
 				[editManager push:oldConfig];
 			}
 		}else if ([keyPath isEqualToString:@"irisLevel"] || [keyPath isEqualToString:@"eyes"]) {
 			if (![editManager exsit:@"eyes"]) {
-				NSDictionary * faceParamDict = [[FUShapeParamsMode shareInstance] resetEyesParams];
-				oldConfig[keyPath] = faceParamDict;
+				NSDictionary * faceParamDict = [[FUShapeParamsMode shareInstance] getDefaultEyesParams];
+				oldConfig[@"eyes"] = faceParamDict;
+				oldConfig[@"irisLevel"] = @(self.skinColorProgress);
 				[editManager push:oldConfig];
 			}
 		}else if ([keyPath isEqualToString:@"mouth"] || [keyPath isEqualToString:@"lipsLevel"]) {
 			if (![editManager exsit:@"mouth"]) {
-				NSDictionary * faceParamDict = [[FUShapeParamsMode shareInstance] resetMouthParams];
-				oldConfig[keyPath] = faceParamDict;
+				NSDictionary * faceParamDict = [[FUShapeParamsMode shareInstance] getDefaultMouthParams];
+				oldConfig[@"mouth"] = faceParamDict;
+				oldConfig[@"lipsLevel"] = @(self.skinColorProgress);
 				[editManager push:oldConfig];
 			}
 		}else if ([keyPath isEqualToString:@"nose"]) {
 			if (![editManager exsit:@"nose"]) {
-				NSDictionary * faceParamDict = [[FUShapeParamsMode shareInstance] resetNoseParams];
+				NSDictionary * faceParamDict = [[FUShapeParamsMode shareInstance] getDefaultNoseParams];
 				oldConfig[keyPath] = faceParamDict;
 				[editManager push:oldConfig];
 			}

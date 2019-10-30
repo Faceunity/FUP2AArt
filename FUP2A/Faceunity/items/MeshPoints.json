@@ -3,7 +3,7 @@
         "面部正面": [
                  {
                  "index":2935,
-                 "direction":0,
+                  "direction":0,
                  "left":"cheek_wide",
                  "right":"cheekbone_narrow",
                  },

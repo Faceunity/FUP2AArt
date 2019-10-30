@@ -58,6 +58,8 @@
     }
 	UIViewController * lasTwoVC =  self.navigationController.viewControllers[1];
 	[self.navigationController popToViewController:lasTwoVC animated:true];
+    [[FUManager shareInstance].currentAvatars.firstObject resetScaleToBody];
+
 }
 
 - (IBAction)saveImage:(UIButton *)sender {

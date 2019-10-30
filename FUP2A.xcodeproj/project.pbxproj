@@ -408,6 +408,13 @@
 		9B57F67922BC738100E26620 /* AGLKContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B57F67822BC738100E26620 /* AGLKContext.m */; };
 		9B5C539B23150A5F007DDC21 /* FUP2AHelper.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B5C539A23150A5F007DDC21 /* FUP2AHelper.framework */; };
 		9B5C539C23150A5F007DDC21 /* FUP2AHelper.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9B5C539A23150A5F007DDC21 /* FUP2AHelper.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9B6E4C75235EEE5900B2E695 /* anim_six.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B6E4C6E235EEE5900B2E695 /* anim_six.bundle */; };
+		9B6E4C76235EEE5900B2E695 /* anim_heart.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B6E4C6F235EEE5900B2E695 /* anim_heart.bundle */; };
+		9B6E4C77235EEE5900B2E695 /* anim_fist.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B6E4C70235EEE5900B2E695 /* anim_fist.bundle */; };
+		9B6E4C78235EEE5900B2E695 /* anim_two.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B6E4C71235EEE5900B2E695 /* anim_two.bundle */; };
+		9B6E4C79235EEE5900B2E695 /* anim_merge.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B6E4C72235EEE5900B2E695 /* anim_merge.bundle */; };
+		9B6E4C7A235EEE5900B2E695 /* anim_one.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B6E4C73235EEE5900B2E695 /* anim_one.bundle */; };
+		9B6E4C7B235EEE5900B2E695 /* anim_palm.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B6E4C74235EEE5900B2E695 /* anim_palm.bundle */; };
 		9B6F211F22C9D03E009EFCEA /* FUAVUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B6F211E22C9D03E009EFCEA /* FUAVUtilities.m */; };
 		9B8F886822C466FB00C119A7 /* FUP2AClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B8F886722C466FB00C119A7 /* FUP2AClient.framework */; };
 		9B8F886922C466FB00C119A7 /* FUP2AClient.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9B8F886722C466FB00C119A7 /* FUP2AClient.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -779,7 +786,7 @@
 		0B8E6855229E2452000C8C86 /* mid_hat08.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_hat08.bundle; sourceTree = "<group>"; };
 		0B8E6856229E2452000C8C86 /* mid_hat21.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_hat21.bundle; sourceTree = "<group>"; };
 		0B8E6857229E2452000C8C86 /* mid_hat05.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = mid_hat05.bundle; sourceTree = "<group>"; };
-		0B8ED6CB20C0DC360011221E /* FUP2A.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FUP2A.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0B8ED6CB20C0DC360011221E /* DigiMe-Art.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DigiMe-Art.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0B8ED6CE20C0DC360011221E /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		0B8ED6CF20C0DC360011221E /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		0B8ED6D120C0DC360011221E /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
@@ -903,6 +910,13 @@
 		9B57F67722BC738100E26620 /* AGLKContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AGLKContext.h; sourceTree = "<group>"; };
 		9B57F67822BC738100E26620 /* AGLKContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AGLKContext.m; sourceTree = "<group>"; };
 		9B5C539A23150A5F007DDC21 /* FUP2AHelper.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FUP2AHelper.framework; path = FUP2A/Tool/FUP2AHelper/FUP2AHelper.framework; sourceTree = "<group>"; };
+		9B6E4C6E235EEE5900B2E695 /* anim_six.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = anim_six.bundle; sourceTree = "<group>"; };
+		9B6E4C6F235EEE5900B2E695 /* anim_heart.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = anim_heart.bundle; sourceTree = "<group>"; };
+		9B6E4C70235EEE5900B2E695 /* anim_fist.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = anim_fist.bundle; sourceTree = "<group>"; };
+		9B6E4C71235EEE5900B2E695 /* anim_two.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = anim_two.bundle; sourceTree = "<group>"; };
+		9B6E4C72235EEE5900B2E695 /* anim_merge.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = anim_merge.bundle; sourceTree = "<group>"; };
+		9B6E4C73235EEE5900B2E695 /* anim_one.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = anim_one.bundle; sourceTree = "<group>"; };
+		9B6E4C74235EEE5900B2E695 /* anim_palm.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = anim_palm.bundle; sourceTree = "<group>"; };
 		9B6F211D22C9D03E009EFCEA /* FUAVUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FUAVUtilities.h; sourceTree = "<group>"; };
 		9B6F211E22C9D03E009EFCEA /* FUAVUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FUAVUtilities.m; sourceTree = "<group>"; };
 		9B8F886722C466FB00C119A7 /* FUP2AClient.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FUP2AClient.framework; path = FUP2A/Faceunity/P2A/FUP2AClient.framework; sourceTree = "<group>"; };
@@ -1509,6 +1523,7 @@
 		0B8E66EB229D32FF000C8C86 /* animation */ = {
 			isa = PBXGroup;
 			children = (
+				9B6E4C6D235EEE5900B2E695 /* PoseTrack */,
 				9B2F6D8023165E6C0081E55C /* ani_dace_bg.bundle */,
 				9B2F6D9623165E6D0081E55C /* ani_dace_cam.bundle */,
 				9B2F6D8323165E6C0081E55C /* ani_dance.bundle */,
@@ -1716,7 +1731,7 @@
 		0B8ED6CC20C0DC360011221E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0B8ED6CB20C0DC360011221E /* FUP2A.app */,
+				0B8ED6CB20C0DC360011221E /* DigiMe-Art.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1835,6 +1850,20 @@
 			path = FUGradientSlider;
 			sourceTree = "<group>";
 		};
+		9B6E4C6D235EEE5900B2E695 /* PoseTrack */ = {
+			isa = PBXGroup;
+			children = (
+				9B6E4C6E235EEE5900B2E695 /* anim_six.bundle */,
+				9B6E4C6F235EEE5900B2E695 /* anim_heart.bundle */,
+				9B6E4C70235EEE5900B2E695 /* anim_fist.bundle */,
+				9B6E4C71235EEE5900B2E695 /* anim_two.bundle */,
+				9B6E4C72235EEE5900B2E695 /* anim_merge.bundle */,
+				9B6E4C73235EEE5900B2E695 /* anim_one.bundle */,
+				9B6E4C74235EEE5900B2E695 /* anim_palm.bundle */,
+			);
+			path = PoseTrack;
+			sourceTree = "<group>";
+		};
 		9BA3CD7F22B882A400B09E8E /* Manager */ = {
 			isa = PBXGroup;
 			children = (
@@ -1875,7 +1904,7 @@
 			);
 			name = FUP2A;
 			productName = FUP2A;
-			productReference = 0B8ED6CB20C0DC360011221E /* FUP2A.app */;
+			productReference = 0B8ED6CB20C0DC360011221E /* DigiMe-Art.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -1967,6 +1996,7 @@
 				0B8E67CB229D3300000C8C86 /* glass_13.bundle in Resources */,
 				0B77D3C8225F21F5008D583E /* female_glass_8.bundle in Resources */,
 				0B77D39F225F21F5008D583E /* color.json in Resources */,
+				9B6E4C78235EEE5900B2E695 /* anim_two.bundle in Resources */,
 				0B8E6861229E2452000C8C86 /* mid_hat11.bundle in Resources */,
 				0B77D3AA225F21F5008D583E /* pose_nvlounan_female.bundle in Resources */,
 				9BFE7FA72315199D008EB060 /* cloth_3.bundle in Resources */,
@@ -1994,6 +2024,7 @@
 				0B8E6860229E2452000C8C86 /* mid_hat10.bundle in Resources */,
 				9B0358402304076F006235E4 /* female_hair_q_10.bundle in Resources */,
 				0B8E67B5229D3300000C8C86 /* male_brows04.bundle in Resources */,
+				9B6E4C75235EEE5900B2E695 /* anim_six.bundle in Resources */,
 				0B8E6798229D3300000C8C86 /* controller.md in Resources */,
 				0B77D3B0225F21F5008D583E /* female_rock.bundle in Resources */,
 				0B8E67AE229D3300000C8C86 /* male_brows07.bundle in Resources */,
@@ -2086,6 +2117,7 @@
 				0B77D3AB225F21F5008D583E /* pose_nanbaonv_male.bundle in Resources */,
 				0B77D3F1225F21F5008D583E /* female_eyelash_3.bundle in Resources */,
 				0B757786229FCE98004954D3 /* tongue.bundle in Resources */,
+				9B6E4C77235EEE5900B2E695 /* anim_fist.bundle in Resources */,
 				0B77D414225F21F5008D583E /* female_hat_20.bundle in Resources */,
 				0B8E6862229E2452000C8C86 /* mid_hat12.bundle in Resources */,
 				0B8E67B2229D3300000C8C86 /* male_brows02.bundle in Resources */,
@@ -2248,6 +2280,8 @@
 				9B2F6DC423165E6E0081E55C /* ani_LRPP_shanzi.bundle in Resources */,
 				9B2F6DC823165E6E0081E55C /* ani_SZW.bundle in Resources */,
 				0B77D42A225F21F5008D583E /* male_hair_4.bundle in Resources */,
+				9B6E4C7B235EEE5900B2E695 /* anim_palm.bundle in Resources */,
+				9B6E4C7A235EEE5900B2E695 /* anim_one.bundle in Resources */,
 				0B77D3B8225F21F5008D583E /* male_rock.bundle in Resources */,
 				9BA2472B2313B855003AEDC3 /* glass_1.bundle in Resources */,
 				0B8E67D3229D3300000C8C86 /* color_q.json in Resources */,
@@ -2269,6 +2303,7 @@
 				0B77D3E1225F21F5008D583E /* female_glass_7.bundle in Resources */,
 				0B77D3D4225F21F5008D583E /* male_glass_21.bundle in Resources */,
 				0B77D3C1225F21F5008D583E /* male_glass_16.bundle in Resources */,
+				9B6E4C79235EEE5900B2E695 /* anim_merge.bundle in Resources */,
 				9BFE7FA32315199D008EB060 /* cloth_6.bundle in Resources */,
 				9B03584E2304076F006235E4 /* female_hair_q_11.bundle in Resources */,
 				0B8E67C9229D3300000C8C86 /* glass_5.bundle in Resources */,
@@ -2282,6 +2317,7 @@
 				0B8E6797229D3300000C8C86 /* shape_list.json in Resources */,
 				0B8E67AD229D3300000C8C86 /* male_brows03.bundle in Resources */,
 				9B2F6DB923165E6E0081E55C /* pose_danren_SZW.bundle in Resources */,
+				9B6E4C76235EEE5900B2E695 /* anim_heart.bundle in Resources */,
 				0B8E676A229D3300000C8C86 /* female_brows06.bundle in Resources */,
 				0B8E6768229D3300000C8C86 /* female_brows10.bundle in Resources */,
 				0B77D3D5225F21F5008D583E /* male_glass_19.bundle in Resources */,
@@ -2560,6 +2596,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 35A6KD62ZJ;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2585,6 +2622,7 @@
 					"$(PROJECT_DIR)/FUP2A/Faceunity/P2A/fuauth",
 				);
 				MACH_O_TYPE = mh_execute;
+				MARKETING_VERSION = 1.6.1;
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-isystem",
@@ -2597,7 +2635,7 @@
 					"\"${PODS_ROOT}/Headers/Public/SVProgressHUD\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.faceunity.p2aart;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "DigiMe-Art";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = 1;
@@ -2612,6 +2650,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 35A6KD62ZJ;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2637,6 +2676,7 @@
 					"$(PROJECT_DIR)/FUP2A/Faceunity/P2A/fuauth",
 				);
 				MACH_O_TYPE = mh_execute;
+				MARKETING_VERSION = 1.6.1;
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-isystem",
@@ -2649,7 +2689,7 @@
 					"\"${PODS_ROOT}/Headers/Public/SVProgressHUD\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.faceunity.p2aart;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "DigiMe-Art";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = 1;
 			};

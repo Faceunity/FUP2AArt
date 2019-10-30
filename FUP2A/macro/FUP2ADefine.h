@@ -36,7 +36,7 @@ typedef NS_ENUM(NSInteger, FUMeshPiontDirection) {
 
 #define TOKENURL        @"https://api2.faceunity.com:7070/token?company=faceunity"
 #define UPLOADURL       @"https://api-ptoa.faceunity.com/api/p2a/upload"
-#define DOWNLOADURL     @"https://api.faceunity.com/api/p2a/download"
+#define DOWNLOADURL     @"https://api-ptoa.faceunity.com/api/p2a/download"
 
 
 #define documentPath        NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject
