@@ -21,7 +21,17 @@ typedef NS_ENUM(NSInteger, FURenderMode){
     FURenderCommonMode             = 0,
     FURenderPreviewMode            = 1,
 };
-
+typedef NS_ENUM(NSInteger, FUVideoRecordState){
+    Original             = 0,
+    Recording            = 1,
+	Completed            = 2,
+};
+// Sta音频的播放状态
+typedef NS_ENUM(NSInteger, FUStaPlayState){
+    StaOriginal             = 0,
+    StaPlaying            = 1,
+	StaCompleted            = 2,
+};
 typedef NS_ENUM(NSInteger, FUSceneryMode) {
     FUSceneryModeSingle             = 0,
     FUSceneryModeMultiple           = 1,
@@ -34,9 +44,9 @@ typedef NS_ENUM(NSInteger, FUMeshPiontDirection) {
     FUMeshPiontDirectionAll              = 2,   // 0 && 1
 };
 
-#define TOKENURL        @"https://api2.faceunity.com:7070/token?company=faceunity"
-#define UPLOADURL       @"https://api-ptoa.faceunity.com/api/p2a/upload"
-#define DOWNLOADURL     @"https://api-ptoa.faceunity.com/api/p2a/download"
+//#define TOKENURL        @"https://api2.faceunity.com:7070/token?company=faceunity"
+//#define UPLOADURL       @"https://api-ptoa.faceunity.com/api/p2a/upload"
+//#define DOWNLOADURL     @"https://api-ptoa.faceunity.com/api/p2a/download"
 
 
 #define documentPath        NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject
@@ -53,6 +63,8 @@ typedef NS_ENUM(NSInteger, FUMeshPiontDirection) {
 
 #define FU_HEAD_BUNDLE @"head.bundle"
 #define FU_SERVER_BUNDLE @"server.bundle"
+
+#define FUAppConfig @"FUAppConfig.json"
 
 // ========================================================通知==============================================================
 // 编辑基本设置  如发型、颜色的通知
@@ -76,3 +88,12 @@ typedef NS_ENUM(NSInteger, FUMeshPiontDirection) {
 #define FUGradientSlider_minColorArr {246,192,167}
 #define FUGradientSlider_maxColorArr {70, 37, 21}
 
+//屏幕的高度
+#define HEIGHT [UIScreen mainScreen].bounds.size.height
+//屏幕的宽度
+#define WIDTH  [UIScreen mainScreen].bounds.size.width
+
+#define BubbleImageViewY_Macro 20
+
+#pragma mark ===================错误码================
+static int const FUAppVersionInvalid = 3001;

@@ -35,4 +35,12 @@ typedef void (^PopCompleteBlock)(NSDictionary * config,BOOL isEmpty);
 -(void)clear;
 @end
 
+
+@interface FUAvatarChangeModel : NSObject
+@property (nonatomic, strong) NSMutableDictionary *oldConfig;
+@property (nonatomic, strong) NSMutableDictionary *currentConfig;
+
+@end
+
+
 NS_ASSUME_NONNULL_END

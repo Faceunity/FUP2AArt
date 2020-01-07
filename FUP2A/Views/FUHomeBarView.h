@@ -33,7 +33,7 @@
 @end
 
 @interface FUHomeBarView : UIView
-
+@property (nonatomic, assign) BOOL showTopView ;
 @property (nonatomic, assign) id<FUHomeBarViewDelegate>delegate ;
 
 //// 隐藏上半部

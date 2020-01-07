@@ -98,6 +98,7 @@
 }
 
 - (void)showModeCollection:(BOOL)show {
+    self.showTopView = show;
     if (show) {
         if ([self.delegate respondsToSelector:@selector(homeBarViewShouldShowTopView:)]) {
             [self.delegate homeBarViewShouldShowTopView:YES];

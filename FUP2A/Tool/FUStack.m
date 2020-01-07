@@ -53,17 +53,17 @@
 	}
 	return NO;
 }
--(NSString *)description{
-	NSMutableString * string = [NSMutableString string];
-	for (NSDictionary * obj in self.container) {
-		for (NSString * key in obj) {
-			id value = obj[key];
-			[string stringByAppendingString:[NSString stringWithFormat:@"%@:%@",key,value]];
-		}
-		[string stringByAppendingString:@"---------------------------------------"];
-	}
-	return string;
-}
+//-(NSString *)description{
+//	NSMutableString * string = [NSMutableString string];
+//	for (NSDictionary * obj in self.container) {
+//		for (NSString * key in obj) {
+//			id value = obj[key];
+//			[string stringByAppendingString:[NSString stringWithFormat:@"%@:%@",key,value]];
+//		}
+//		[string stringByAppendingString:@"---------------------------------------"];
+//	}
+//	return string;
+//}
 
 @end
 

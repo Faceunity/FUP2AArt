@@ -8,12 +8,9 @@
 
 #import "FUManager.h"
 #import "authpack.h"
-#import "FURenderer.h"
 #import "FURequestManager.h"
 #import "FUAvatar.h"
 #import "FUP2AColor.h"
-#import <FUP2AHelper/FUP2AHelper.h>
-
 @interface FUManager ()
 {
 	// render 句柄
@@ -22,6 +19,8 @@
 	int arItems[2] ;
 	// 输出 buffer
 	CVPixelBufferRef renderTarget;
+	// 截图
+	CVPixelBufferRef screenShotTarget;
 	// 图像宽高
 	CGSize frameSize ;
 	// 光线检测
@@ -30,6 +29,13 @@
 	dispatch_semaphore_t signal;
 	
 	__block BOOL isCreatingAvatar ;
+	
+	int plane_mg_ptr;   // 全身驱动时的阴影句柄
+	int hair_mask_ptr;  // hair_mask 句柄
+	int q_controller_config_ptr;   // controller 配置文件道具句柄
+	int q_controller_bg_ptr;   // 绑定在q_controller上的背景道具句柄
+	int q_controller_cam;   // 绑定在q_controller上的_cam.bundle道具句柄
+	
 }
 @end
 
@@ -49,19 +55,18 @@ static FUManager *fuManager = nil ;
 	if (self) {
 		
 		[self initFaceUnity];
-		
+		// 生成空buffer
 		[self creatPixelBuffer];
-		
+		// 设置鉴权
 		[[FUP2AHelper shareInstance] setupHelperWithAuthPackage:&g_auth_package authSize:sizeof(g_auth_package)];
-		
+		// 加载抗锯齿
 		[self loadFxaa];
 		
 		// 加载舌头
 		NSData *tongueData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"tongue.bundle" ofType:nil]];
 		[FURenderer loadTongueModel:(void *)tongueData.bytes size:(int)tongueData.length];
 		
-		NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"background" ofType:@"bundle"];
-		[self reloadBackGroundWithFilePath:bgPath];
+
 		
 		self.currentAvatars = [NSMutableArray arrayWithCapacity:1];
 		
@@ -70,10 +75,32 @@ static FUManager *fuManager = nil ;
 		signal = dispatch_semaphore_create(1);
 		
 		isCreatingAvatar = NO ;
+		
+		
+		
+		NSString *controller =   @"q_controller.bundle";
+		NSString *controllerPath = [[NSBundle mainBundle] pathForResource:controller ofType:nil];
+		self.defalutQController = [FURenderer itemWithContentsOfFile:controllerPath];
+		
+		NSString *controller_config_path = [[NSBundle mainBundle] pathForResource:@"controller_config" ofType:@"bundle"];
+		[self reBindItemWithToController:controller_config_path withPtr:&q_controller_config_ptr];
+		
+		
+		NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"default_bg.bundle" ofType:nil];
+		[self reloadBackGroundAndBindToController:bgPath];
+		
+		
 	}
 	return self ;
 }
-
+/// 获取当前q_controller 里面捏脸参数的值
+-(float*)getCurrenShapeValue{
+	int arrCount = 91;
+	float *shapeArr = malloc(sizeof(float)  * arrCount);
+	
+	[FURenderer itemGetParamfv:self.defalutQController withName:@"facepup_expression" buffer:shapeArr length:arrCount];
+	return shapeArr;
+}
 -(void)setAvatarStyle:(FUAvatarStyle)avatarStyle {
 	_avatarStyle = avatarStyle ;
 	
@@ -130,28 +157,41 @@ static FUManager *fuManager = nil ;
 	// p2a bin
 	if (firstSetup) {
 		NSString *corePath = [[NSBundle mainBundle] pathForResource:@"p2a_client_core" ofType:@"bin"];
-		[[FUP2AClient shareInstance] setupClientWithCoreDataPath:corePath customDataPath:qPath authPackage:&g_auth_package authSize:sizeof(g_auth_package)];
-	}else {
-		[[FUP2AClient shareInstance] reSetupCustomData:qPath];
+		[[fuPTAClient shareInstance] setupCore:corePath authPackage:&g_auth_package authSize:sizeof(g_auth_package)];
 	}
+	[[fuPTAClient shareInstance] setupCustomData:qPath];
 }
 
 - (void)creatPixelBuffer {
 	
 	CGSize size = [UIScreen mainScreen].currentMode.size;
-	
+	int width = size.width - (int)size.width % 2;    // 将奇数的屏幕宽度改为偶数，解决录制视频右边绿线的问题，例如 iphoneX  size.width == 1125
 	if (!renderTarget) {
 		NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
 												  @(kCVPixelFormatType_32BGRA),
-											  (NSString*) kCVPixelBufferWidthKey : @(size.width),
+											  (NSString*) kCVPixelBufferWidthKey : @(width),
 											  (NSString*) kCVPixelBufferHeightKey : @(size.height),
 											  (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
 											  (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
 		CVPixelBufferCreate(kCFAllocatorDefault,
-							size.width, size.height,
+							width, size.height,
 							kCVPixelFormatType_32BGRA,
 							(__bridge CFDictionaryRef)pixelBufferOptions,
 							&renderTarget);
+	}
+	
+	if (!screenShotTarget) {
+		NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
+												  @(kCVPixelFormatType_32BGRA),
+											  (NSString*) kCVPixelBufferWidthKey : @(460),
+											  (NSString*) kCVPixelBufferHeightKey : @(630),
+											  (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
+											  (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
+		CVPixelBufferCreate(kCFAllocatorDefault,
+							460, 630,
+							kCVPixelFormatType_32BGRA,
+							(__bridge CFDictionaryRef)pixelBufferOptions,
+							&screenShotTarget);
 	}
 }
 
@@ -160,35 +200,15 @@ static FUManager *fuManager = nil ;
 	NSString *filePath = [[NSBundle mainBundle] pathForResource:@"fxaa" ofType:@"bundle"];
 	mItems[0] = [FURenderer itemWithContentsOfFile:filePath];
 }
-
-/**
- 加载背景道具
- 
- @param filePath 背景道具所在路径
- */
-- (void)reloadBackGroundWithFilePath:(NSString *)filePath {
-	
-	if (filePath == nil) {
-		
-		if (mItems[1] != 0) {
-			[FURenderer destroyItem:mItems[1]];
-			mItems[1] = 0 ;
-		}
-		return ;
-	}
-	
-	int destroyItem = mItems[1] ;
-	
-	mItems[1] = [FURenderer itemWithContentsOfFile:filePath];
-	
-	if (destroyItem != 0) {
-		
-		[FURenderer destroyItem:destroyItem];
-		destroyItem = 0 ;
-	}
+/// 绑定背景道具到controller
+/// @param filePath 新背景道具路径
+-(void)reloadBackGroundAndBindToController:(NSString *)filePath
+{
+    [self reBindItemWithToController:filePath withPtr:&q_controller_bg_ptr];
+   
 }
 
-/**
+/*
  背景道具是否存在
  
  @return 是否存在
@@ -196,7 +216,14 @@ static FUManager *fuManager = nil ;
 - (BOOL)isBackgroundItemExist {
 	return mItems[1] != 0 ;
 }
-
+/**
+ 更新Cam道具
+ 
+ @param camPath 辅助道具路径
+ */
+- (void)reloadCamItemWithPath:(NSString *)camPath {
+	 [self reBindItemWithToController:camPath withPtr:&q_controller_cam];
+}
 #pragma mark ----- 以下数据
 -(NSString *)appVersion {
 	NSString* versionStr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
@@ -204,7 +231,7 @@ static FUManager *fuManager = nil ;
 }
 
 -(NSString *)sdkVersion {
-	NSString *version = [[FUP2AClient shareInstance] getClientVersion];
+	NSString *version = [[fuPTAClient shareInstance] getVersion];
 	return [NSString stringWithFormat:@"SDK v%@", version] ;
 }
 
@@ -362,24 +389,6 @@ static FUManager *fuManager = nil ;
 			[tmpArray addObject:color];
 		}
 		
-		// shape data
-		NSData *shapeJson = [[NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"shape_list" ofType:@"json"] encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
-		NSDictionary *shapeDict = [NSJSONSerialization JSONObjectWithData:shapeJson options:NSJSONReadingMutableContainers error:nil];
-		
-		NSArray *shapeKeys = shapeDict.allKeys ;
-		for (NSString *key in shapeKeys) {
-			NSArray *paramsArray = [shapeDict objectForKey:key];
-			
-			if ([key isEqualToString:@"face"]) {
-				self.qFaces = paramsArray ;
-			}else if ([key isEqualToString:@"eye"]){
-				self.qEyes = paramsArray ;
-			}else if ([key isEqualToString:@"mouth"]){
-				self.qMouths = paramsArray ;
-			}else if ([key isEqualToString:@"nose"]){
-				self.qNoses = paramsArray ;
-			}
-		}
 		if ([key isEqualToString:@"lip_color"]) {
 			self.lipColorArray = [tmpArray copy];
 		}else if ([key isEqualToString:@"iris_color"]){
@@ -417,6 +426,9 @@ static FUManager *fuManager = nil ;
 	// clothes
 	expDic = ornamentArray[2] ;
 	_qClothes = expDic[@"items"] ;
+    _qMaleSuit = @[@"taozhuang_2",@"taozhuang_3",@"taozhuang_6",@"taozhuang_jiaju_2",@"taozhuang_lifu_1",@"taozhuang_lifu_2"];
+//  @[@"cloth_1",@"cloth_2",@"cloth_19",@"taozhuang_nanmicaifu"];
+	_qFemaleSuit = @[@"taozhuang_5",@"taozhuang_8",@"taozhuang_jiaju_1"];
 	
 	// hats
 	expDic = ornamentArray[3] ;
@@ -434,7 +446,24 @@ static FUManager *fuManager = nil ;
 	_qEyeBrow = expDic[@"items"] ;
 	
 	expDic = ornamentArray[7] ;
-	_qBeard = expDic[@"items"] ;
+	_qBeard = expDic[@"items"];
+	
+	expDic = ornamentArray[8] ;
+	_qUpper = expDic[@"items"];
+	_qMaleUpper = @[@"shangyi_chushi",@"shangyi_maoyi_2",@"waitao_3"];
+//  @[@"shangyi_chushi",@"shangyi_POLO_1",@"shangyi_Txu_1",@"shangyi_chenshan_1",@"shangyi_chenshan_2",@"shangyi_chenshan_3",@"shangyi_maoyi_1",@"shangyi_maoyi_2",@"shangyi_weiyi_1",@"shangyi_weiyi_2",@"shangyi_weiyi_3",@"cloth_1_upper",@"cloth_2_upper",@"cloth_19_upper",@"taozhuang_nanmicaifu_upper"];
+	_qFemaleUpper = @[@"shangyi_chenshan_6",@"shangyi_maoyi_3",@"waitao_2",@"waitao_4"];
+    
+//    @[@"shangyi_chenshan_4",@"shangyi_chenshan_5",@"shangyi_chenshan_6",@"shangyi_diaodai_1",@"shangyi_maoyi_3",@"cloth_12_upper",@"cloth_14_upper",@"cloth_18_upper"];
+	expDic = ornamentArray[9] ;
+	_qLower = expDic[@"items"];
+	expDic = ornamentArray[10] ;
+	_qShoes = expDic[@"items"];
+	expDic = ornamentArray[11] ;
+	_qDecorations = expDic[@"items"];
+	
+	
+	
 	
 	// mesh points
 	NSData *meshData = [[NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"MeshPoints" ofType:@"json"] encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
@@ -523,7 +552,7 @@ static FUManager *fuManager = nil ;
 			}
 			
 			FUAvatar *avatar = [FUAvatar avatarWithInfoDic:dict];
-			//	[avatar setTheDefaultColors];
+			[avatar setThePrefabricateColors];
 			[_avatarList addObject:avatar];
 		}
 		
@@ -561,14 +590,49 @@ static FUManager *fuManager = nil ;
 		FUAvatar *lastAvatar = self.currentAvatars.firstObject ;
 		[lastAvatar destroyAvatar];
 		[self.currentAvatars removeObject:lastAvatar];
-		mItems[2] = 0 ;
 	}
 	
 	// 创建新的
-	mItems[2] = [avatar loadAvatar];
+	[avatar loadAvatar];
+	mItems[2] = self.defalutQController ;
 	// 保存到当前 render 列表里面
 	[self.currentAvatars addObject:avatar];
 	
+	dispatch_semaphore_signal(signal);
+}
+
+
+
+/**
+ 普通模式下切换 Avatar,不销毁controller.bundle
+ 
+ @param avatar Avatar
+ */
+- (void)reloadRenderAvatarInSameController:(FUAvatar *)avatar {
+	
+	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+	
+	// 销毁上一个 avatar
+	if (self.currentAvatars.count != 0) {
+		FUAvatar *lastAvatar = self.currentAvatars.firstObject ;
+		[lastAvatar destroyAvatarResouce];
+		[self.currentAvatars removeObject:lastAvatar];
+	}
+	if (avatar == nil) {
+		dispatch_semaphore_signal(signal) ;
+		return ;
+	}
+	if ([avatar.name isEqualToString:@"Star"]) {   // 如何是明星模式，采用如下加载方式
+		// 创建新的
+		[avatar loadStarAvatar];
+	}else{
+		// 创建新的
+		[avatar loadAvatar];
+	}
+	mItems[2] = self.defalutQController ;
+	// 保存到当前 render 列表里面
+	[self.currentAvatars addObject:avatar];
+	[avatar loadIdleModePose];
 	dispatch_semaphore_signal(signal);
 }
 
@@ -582,11 +646,11 @@ static FUManager *fuManager = nil ;
 	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
 	
 	// 创建新的
-	int handle = [avatar loadAvatar];
+	[avatar loadAvatar];
 	// 保存到当前 render 列表里面
 	[self.currentAvatars addObject:avatar];
 	
-	mItems[self.currentAvatars.count + 1] = handle ;
+	mItems[2] = self.defalutQController ;
 	
 	dispatch_semaphore_signal(signal);
 }
@@ -603,30 +667,41 @@ static FUManager *fuManager = nil ;
 	}
 	
 	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+	[avatar setCurrentAvatarIndex:avatar.currentInstanceId];    // 设置当前avatar的nama序号，使所有的操作都基于当前avatar
 	
 	NSInteger index = [self.currentAvatars indexOfObject:avatar];
 	
-	[avatar destroyAvatar];
+	[avatar destroyAvatarResouce];
 	
-	mItems[index + 2] = 0 ;
 	
-	// 调整 render 顺序
-	if (index < self.currentAvatars.count -1) {
-		
-		for (NSInteger i = index + 2; i < self.currentAvatars.count + 2; i ++) {
-			mItems[i] = mItems[i + 1] ;
-			mItems[i + 1] = 0 ;
-			
-			if (i == sizeof(mItems)/sizeof(int) - 1) {
-				break ;
-			}
-		}
-	}
+
 	
 	[self.currentAvatars removeObject:avatar];
 	
 	dispatch_semaphore_signal(signal);
 }
+
+
+/**
+ 绑定hair_mask.bundle
+ */
+- (void)bindHairMask {
+	NSString *hair_mask_Path = [[NSBundle mainBundle] pathForResource:@"hair_mask.bundle" ofType:nil];
+	hair_mask_ptr = [self bindItemWithToController:hair_mask_Path];
+}
+
+/**
+ 销毁hair_mask.bundle
+ */
+- (void)destoryHairMask {
+	if (hair_mask_ptr > 0) {
+	// 解绑
+	[FURenderer unBindItems:_defalutQController items:&hair_mask_ptr itemsCount:1];
+	// 销毁
+	[FURenderer destroyItem:hair_mask_ptr];
+	}
+}
+
 
 /**
  进入 AR滤镜 模式
@@ -639,6 +714,88 @@ static FUManager *fuManager = nil ;
 		int handle = [avatar getControllerHandle];
 		arItems[0] = handle ;
 	}
+}
+/**
+ 设置手势动画
+ -- 会切换 controller 所在句柄
+ */
+- (void)loadPoseTrackAnim {
+	
+	NSString * anim_fistPath = [[NSBundle mainBundle] pathForResource:@"anim_fist.bundle" ofType:nil];
+	[self bindItemWithToController:anim_fistPath];
+	NSString * anim_mergePath = [[NSBundle mainBundle] pathForResource:@"anim_merge.bundle" ofType:nil];
+	[self bindItemWithToController:anim_mergePath];
+	NSString * anim_palmPath = [[NSBundle mainBundle] pathForResource:@"anim_palm.bundle" ofType:nil];
+	[self bindItemWithToController:anim_palmPath];
+	NSString * anim_twoPath = [[NSBundle mainBundle] pathForResource:@"anim_two.bundle" ofType:nil];
+	[self bindItemWithToController:anim_twoPath];
+	NSString * anim_heartPath = [[NSBundle mainBundle] pathForResource:@"anim_heart.bundle" ofType:nil];
+	[self bindItemWithToController:anim_heartPath];
+	NSString * anim_onePath = [[NSBundle mainBundle] pathForResource:@"anim_one.bundle" ofType:nil];
+	[self bindItemWithToController:anim_onePath];
+	NSString * anim_sixPath = [[NSBundle mainBundle] pathForResource:@"anim_six.bundle" ofType:nil];
+	[self bindItemWithToController:anim_sixPath];
+	
+	NSString * anim_eightPath = [[NSBundle mainBundle] pathForResource:@"anim_eight.bundle" ofType:nil];
+	[self bindItemWithToController:anim_eightPath];
+	NSString * anim_okPath = [[NSBundle mainBundle] pathForResource:@"anim_ok.bundle" ofType:nil];
+	[self bindItemWithToController:anim_okPath];
+	NSString * anim_thumbPath = [[NSBundle mainBundle] pathForResource:@"anim_thumb.bundle" ofType:nil];
+	[self bindItemWithToController:anim_thumbPath];
+	NSString * anim_holdPath = [[NSBundle mainBundle] pathForResource:@"anim_hold.bundle" ofType:nil];
+	[self bindItemWithToController:anim_holdPath];
+	NSString * anim_korheartPath = [[NSBundle mainBundle] pathForResource:@"anim_korheart.bundle" ofType:nil];
+	[self bindItemWithToController:anim_korheartPath];
+	NSString * anim_rockPath = [[NSBundle mainBundle] pathForResource:@"anim_rock.bundle" ofType:nil];
+	[self bindItemWithToController:anim_rockPath];
+	
+	
+	
+}
+
+/**
+ 全身追踪绑定脚下阴影
+ */
+
+- (void)bindPlaneShadow {
+	NSString *plane_mg_Path = [[NSBundle mainBundle] pathForResource:@"plane_mg.bundle" ofType:nil];
+	plane_mg_ptr = [self bindItemWithToController:plane_mg_Path];
+}
+/**
+ 解绑全身追踪绑定脚下阴影
+ */
+- (void)unBindPlaneShadow {
+	if (plane_mg_ptr > 0) {
+		
+		// 解绑
+		
+		[FURenderer unBindItems:_defalutQController items:&plane_mg_ptr itemsCount:1];
+		// 销毁
+		[FURenderer destroyItem:plane_mg_ptr];
+	}
+	
+	
+}
+/// 重新绑定道具
+/// @param filePath 新的道具路径
+/// @param ptr 道具句柄
+- (void)reBindItemWithToController:(NSString *)filePath withPtr:(int *)ptr{
+	if (*ptr > 0) {
+
+	// 解绑
+	[FURenderer unBindItems:_defalutQController items:ptr itemsCount:1];
+	// 销毁
+	[FURenderer destroyItem:*ptr];
+	
+	}
+	*ptr = [self bindItemWithToController:filePath];
+	
+}
+- (int)bindItemWithToController:(NSString *)filePath {
+	// 创建道具
+	int tmpHandle = [FURenderer itemWithContentsOfFile:filePath];
+	[FURenderer bindItems:_defalutQController items:&tmpHandle itemsCount:1];
+	return tmpHandle;
 }
 
 /**
@@ -654,6 +811,34 @@ static FUManager *fuManager = nil ;
 	if (self.currentAvatars.count != 0) {
 		FUAvatar *lastAvatar = self.currentAvatars.firstObject ;
 		[lastAvatar destroyAvatar];
+		[self.currentAvatars removeObject:lastAvatar];
+		arItems[0] = 0 ;
+	}
+	
+	if (avatar == nil) {
+		dispatch_semaphore_signal(signal) ;
+		return ;
+	}
+	
+	arItems[0] = [avatar loadAvatarWithARMode];
+	// 保存到当前 render 列表里面
+	[self.currentAvatars addObject:avatar];
+	
+	dispatch_semaphore_signal(signal);
+}
+/**
+ 在 AR滤镜 模式下切换 Avatar   不销毁controller
+ 
+ @param avatar Avatar
+ */
+- (void)reloadRenderAvatarInARModeInSameController:(FUAvatar *)avatar {
+	
+	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+	
+	// 销毁上一个 avatar
+	if (self.currentAvatars.count != 0) {
+		FUAvatar *lastAvatar = self.currentAvatars.firstObject ;
+		[lastAvatar destroyAvatarResouce];
 		[self.currentAvatars removeObject:lastAvatar];
 		arItems[0] = 0 ;
 	}
@@ -694,7 +879,30 @@ static FUManager *fuManager = nil ;
 	
 	dispatch_semaphore_signal(signal);
 }
-
+/**
+ 在正常渲染avatar的模式下，切换AR滤镜
+ 
+ @param filePath  滤镜 路径
+ */
+- (void)reloadFilterWithPath:(NSString *)filePath {
+	
+	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+	
+	if (mItems[3] != 0) {
+		[FURenderer destroyItem:mItems[3]];
+		mItems[3] = 0 ;
+	}
+	
+	if (filePath == nil || ![[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
+		
+		dispatch_semaphore_signal(signal);
+		return ;
+	}
+	
+	mItems[3] = [FURenderer itemWithContentsOfFile:filePath];
+	
+	dispatch_semaphore_signal(signal);
+}
 
 /**
  检测人脸接口
@@ -731,6 +939,41 @@ static FUManager *fuManager = nil ;
 	dispatch_semaphore_signal(signal);
 	return pixelBuffer ;
 }
+/**
+ 检测人脸接口
+ 
+ @param sampleBuffer  图像数据
+ @return              图像数据
+ */
+- (CVPixelBufferRef)trackFaceWithBuffer:(CMSampleBufferRef)sampleBuffer CurrentlLightingValue:(float *)currntLightingValue {
+	
+	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+	
+	CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
+	
+	CVPixelBufferLockBaseAddress(pixelBuffer, 0) ;
+	
+	void *baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) ;
+	int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
+	int width  = (int)CVPixelBufferGetWidth(pixelBuffer) ;
+	
+	[FURenderer trackFace:FU_FORMAT_BGRA_BUFFER inputData:baseAddress width:width height:height];
+	
+	CVPixelBufferUnlockBaseAddress(pixelBuffer, 0) ;
+	
+	if (CGSizeEqualToSize(frameSize, CGSizeZero)) {
+		frameSize = CGSizeMake(width, height) ;
+	}
+	
+	CFDictionaryRef metadataDict = CMCopyDictionaryOfAttachments(NULL,sampleBuffer, kCMAttachmentMode_ShouldPropagate);
+	NSDictionary *metadata = [[NSMutableDictionary alloc] initWithDictionary:(__bridge NSDictionary*)metadataDict];
+	CFRelease(metadataDict);
+	NSDictionary *exifMetadata = [[metadata objectForKey:(NSString *)kCGImagePropertyExifDictionary] mutableCopy];
+	lightingValue = [[exifMetadata objectForKey:(NSString *)kCGImagePropertyExifBrightnessValue] floatValue];
+	*currntLightingValue = lightingValue;
+	dispatch_semaphore_signal(signal);
+	return pixelBuffer ;
+}
 
 static int frameId = 0 ;
 /**
@@ -739,10 +982,16 @@ static int frameId = 0 ;
  @param pixelBuffer 图像数据
  @param renderMode  render 模式
  @param landmarks   landmarks 数组
+ @param landmarks IsFrontCamera 当前是否是前置输入
  @return            处理之后的图像
  */
-- (CVPixelBufferRef)renderP2AItemWithPixelBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks {
-	
+- (CVPixelBufferRef)renderP2AItemWithPixelBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks IsFrontCamera:(BOOL)isFrontCamera {
+	if (isFrontCamera) {
+		CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
+		pixelBuffer = mirrored_pixel;
+	}else{
+		[[FURenderer shareRenderer] setInputCameraMatrix:0 flip_y:0 rotate_mode:0];
+	}
 	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
 	
 	float expression[56] = {0};
@@ -774,6 +1023,251 @@ static int frameId = 0 ;
 		is_valid = [FURenderer isTracking];
 	}
 	
+	//	TAvatarInfo info;
+	//	info.p_translation = translation;
+	//	info.p_rotation = rotation;
+	//	info.p_expression = expression;
+	//	info.rotation_mode = rotation_mode;
+	//	info.pupil_pos = pupil_pos;
+	//	info.is_valid = is_valid ;
+	
+	TAvatarInfo info;
+	info.p_translation = translation;
+	info.p_rotation = rotation;
+	info.p_expression = expression;
+	info.rotation_mode = rotation_mode;
+	info.pupil_pos = pupil_pos;
+	info.is_valid = is_valid;
+	
+	int nama_render_option = NAMA_RENDER_FEATURE_FULL | FU_FORMAT_GL_CURRENT_FRAMEBUFFER;
+	
+	CVPixelBufferLockBaseAddress(renderTarget, 0);
+	
+	void *bytes = (void *)CVPixelBufferGetBaseAddress(renderTarget);
+	int stride1 = (int)CVPixelBufferGetBytesPerRow(renderTarget);
+	int h1 = (int)CVPixelBufferGetHeight(renderTarget);
+	[[FURenderer shareRenderer] renderBundles:&info inFormat:FU_FORMAT_AVATAR_INFO outPtr:bytes outFormat:FU_FORMAT_BGRA_BUFFER width:stride1/4 height:h1 frameId:frameId ++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
+	CVPixelBufferUnlockBaseAddress(renderTarget, 0);
+	
+	
+	dispatch_semaphore_signal(signal);
+	
+	return renderTarget ;
+}
+
+/**
+ Avatar 处理接口
+ 
+ @param pixelBuffer 图像数据
+ @param renderMode  render 模式
+ @param landmarks   landmarks 数组
+ @return            处理之后的图像
+ */
+- (CVPixelBufferRef)renderP2AItemWithPixelBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks {
+	
+	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+	int h = (int)CVPixelBufferGetHeight(renderTarget);
+	int w = (int)CVPixelBufferGetWidth(renderTarget);
+	CVPixelBufferRef mirrored_pixel = NULL;
+	NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
+											  @(kCVPixelFormatType_32BGRA),
+										  (NSString*) kCVPixelBufferWidthKey : @(w),
+										  (NSString*) kCVPixelBufferHeightKey : @(h),
+										  (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
+										  (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
+	CVPixelBufferCreate(kCFAllocatorDefault,
+						w, h,
+						kCVPixelFormatType_32BGRA,
+						(__bridge CFDictionaryRef)pixelBufferOptions,
+						&mirrored_pixel);
+	
+	CVPixelBufferLockBaseAddress(mirrored_pixel, 0);
+	void* pod1 = (void *)CVPixelBufferGetBaseAddress(mirrored_pixel);
+	
+	float expression[56] = {0};
+	float translation[3] = {0};
+	float rotation[4] = {0};
+	rotation[3] = 1;
+	float rotation_mode[1] = {0};
+	float pupil_pos[2] = {0};
+	int is_valid = 0 ;
+	
+	if (renderMode == FURenderPreviewMode) {
+		CVPixelBufferLockBaseAddress(pixelBuffer, 0) ;
+		
+		void *baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) ;
+		int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
+		int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer) ;
+		
+		[FURenderer trackFaceWithTongue:FU_FORMAT_BGRA_BUFFER inputData:baseAddress width:stride/4 height:height];
+		
+		[FURenderer getFaceInfo:0 name:@"expression_aligned" pret:expression number:56];
+		[FURenderer getFaceInfo:0 name:@"translation" pret:translation number:3];
+		[FURenderer getFaceInfo:0 name:@"rotation_aligned" pret:rotation number:4];
+		[FURenderer getFaceInfo:0 name:@"rotation_mode" pret:rotation_mode number:1];
+		[FURenderer getFaceInfo:0 name:@"pupil_pos" pret:pupil_pos number:2];
+		[FURenderer getFaceInfo:0 name:@"landmarks" pret:landmarks number:150];
+		
+		CVPixelBufferUnlockBaseAddress(pixelBuffer, 0) ;
+		
+		is_valid = [FURenderer isTracking];
+	}
+	
+	TAvatarInfo info;
+	info.p_translation = translation;
+	info.p_rotation = rotation;
+	info.p_expression = expression;
+	info.rotation_mode = rotation_mode;
+	info.pupil_pos = pupil_pos;
+	info.is_valid = is_valid;
+	
+	
+	CVPixelBufferLockBaseAddress(renderTarget, 0);
+	
+	int stride1 = (int)CVPixelBufferGetBytesPerRow(renderTarget);
+	int h1 = (int)CVPixelBufferGetHeight(renderTarget);
+	[[FURenderer shareRenderer] renderBundles:&info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod1 outFormat:FU_FORMAT_BGRA_BUFFER width:stride1/4 height:h1 frameId:frameId ++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
+    void* pod0 = (void *)CVPixelBufferGetBaseAddress(renderTarget);
+    
+     for (int i = 0; i < h1; i++){
+     	memcpy((uint8_t*)pod0 + stride1 * (h1-i-1),(uint8_t*)pod1 + stride1 * i, stride1);
+	 }
+	
+	CVPixelBufferUnlockBaseAddress(renderTarget, 0);
+	
+	CVPixelBufferUnlockBaseAddress(mirrored_pixel, 0);
+	CVPixelBufferRelease(mirrored_pixel);
+	
+	dispatch_semaphore_signal(signal);
+	
+	return renderTarget ;
+}
+
+/**
+ Avatar 语音驱动模式下的处理接口
+ 
+ @param pixelBuffer 图像数据
+ @param renderMode  render 模式
+ @param landmarks   landmarks 数组
+ @return            处理之后的图像
+ */
+- (CVPixelBufferRef)renderP2AItemInFUStaWithPixelBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks {
+	
+	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+	
+	
+	
+	int h = (int)CVPixelBufferGetHeight(renderTarget);
+	int w = (int)CVPixelBufferGetWidth(renderTarget);
+	CVPixelBufferRef mirrored_pixel = NULL;
+	NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
+											  @(kCVPixelFormatType_32BGRA),
+										  (NSString*) kCVPixelBufferWidthKey : @(w),
+										  (NSString*) kCVPixelBufferHeightKey : @(h),
+										  (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
+										  (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
+	CVPixelBufferCreate(kCFAllocatorDefault,
+						w, h,
+						kCVPixelFormatType_32BGRA,
+						(__bridge CFDictionaryRef)pixelBufferOptions,
+						&mirrored_pixel);
+	
+	CVPixelBufferLockBaseAddress(mirrored_pixel, 0);
+	int mirrored_h = (int)CVPixelBufferGetHeight(mirrored_pixel);
+	int mirrored_w = (int)CVPixelBufferGetWidth(mirrored_pixel);
+	void* pod1 = (void *)CVPixelBufferGetBaseAddress(mirrored_pixel);
+	
+	
+	
+	
+	
+	
+	float expression[56] = {0};
+	float translation[3] = {0};
+	float rotation[4] = {0};
+	rotation[3] = 1;
+	float rotation_mode[1] = {0};
+	float pupil_pos[2] = {0};
+	int is_valid = 0 ;
+	
+	if (renderMode == FURenderPreviewMode) {
+		CVPixelBufferLockBaseAddress(pixelBuffer, 0) ;
+		
+		void *baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) ;
+		int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
+		int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer) ;
+		
+		[FURenderer trackFaceWithTongue:FU_FORMAT_BGRA_BUFFER inputData:baseAddress width:stride/4 height:height];
+		
+		[FURenderer getFaceInfo:0 name:@"expression" pret:expression number:56];
+		[FURenderer getFaceInfo:0 name:@"translation" pret:translation number:3];
+		[FURenderer getFaceInfo:0 name:@"rotation" pret:rotation number:4];
+		[FURenderer getFaceInfo:0 name:@"rotation_mode" pret:rotation_mode number:1];
+		[FURenderer getFaceInfo:0 name:@"pupil_pos" pret:pupil_pos number:2];
+		[FURenderer getFaceInfo:0 name:@"landmarks" pret:landmarks number:150];
+		
+		CVPixelBufferUnlockBaseAddress(pixelBuffer, 0) ;
+		
+		is_valid = [FURenderer isTracking];
+	}
+	
+	
+	TAvatarInfo info;
+	info.p_translation = translation;
+	info.p_rotation = rotation;
+	info.p_expression = expression;
+	info.rotation_mode = rotation_mode;
+	info.pupil_pos = pupil_pos;
+	info.is_valid = is_valid;
+	
+	int nama_render_option = NAMA_RENDER_FEATURE_FULL | FU_FORMAT_GL_CURRENT_FRAMEBUFFER;
+	
+	CVPixelBufferLockBaseAddress(renderTarget, 0);
+	void *bytes = (void *)CVPixelBufferGetBaseAddress(renderTarget);
+	int stride1 = (int)CVPixelBufferGetBytesPerRow(renderTarget);
+	int w1 = (int)CVPixelBufferGetWidth(renderTarget);
+	int h1 = (int)CVPixelBufferGetHeight(renderTarget);
+	[[FURenderer shareRenderer] renderBundles:&info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod1 outFormat:FU_FORMAT_BGRA_BUFFER width:stride1/4 height:h1 frameId:frameId ++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
+	
+	
+	void* pod0 = (void *)CVPixelBufferGetBaseAddress(renderTarget);
+	
+	for (int i = 0; i < h1; i++)
+	{
+		memcpy((uint8_t*)pod0 + stride1 * (h1-i-1),(uint8_t*)pod1 + stride1 * i, stride1);
+	}
+	CVPixelBufferUnlockBaseAddress(renderTarget, 0);
+	
+	CVPixelBufferUnlockBaseAddress(mirrored_pixel, 0);
+	CVPixelBufferRelease(mirrored_pixel);
+	
+	dispatch_semaphore_signal(signal);
+	
+	return renderTarget ;
+}
+
+
+static int screenshotFrameId = 0 ;
+/**
+ Avatar 截图
+ 
+ @param pixelBuffer 图像数据
+ @return            处理之后的图像
+ */
+- (CVPixelBufferRef)screenshotP2AItemWithPixelBuffer:(CVPixelBufferRef)pixelBuffer{
+	
+	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+	
+	float expression[56] = {0};
+	float translation[3] = {0};
+	float rotation[4] = {0};
+	rotation[3] = 1;
+	float rotation_mode[1] = {0};
+	float pupil_pos[2] = {0};
+	int is_valid = 0 ;
+	
+	
+	
 	TAvatarInfo info;
 	info.p_translation = translation;
 	info.p_rotation = rotation;
@@ -782,22 +1276,46 @@ static int frameId = 0 ;
 	info.pupil_pos = pupil_pos;
 	info.is_valid = is_valid ;
 	
-	CVPixelBufferLockBaseAddress(renderTarget, 0);
+	CVPixelBufferLockBaseAddress(screenShotTarget, 0);
 	
-	void *bytes = (void *)CVPixelBufferGetBaseAddress(renderTarget);
-	int stride1 = (int)CVPixelBufferGetBytesPerRow(renderTarget);
-	int h1 = (int)CVPixelBufferGetHeight(renderTarget);
+	void *bytes = (void *)CVPixelBufferGetBaseAddress(screenShotTarget);
+	int stride1 = (int)CVPixelBufferGetBytesPerRow(screenShotTarget);
+	int h1 = (int)CVPixelBufferGetHeight(screenShotTarget);
 	
-	[[FURenderer shareRenderer] renderItems:&info inFormat:FU_FORMAT_AVATAR_INFO outPtr:bytes outFormat:FU_FORMAT_BGRA_BUFFER width:stride1/4 height:h1 frameId:frameId ++ items:mItems itemCount:sizeof(mItems)/sizeof(int) flipx:NO];
-	
-	CVPixelBufferUnlockBaseAddress(renderTarget, 0);
-	
+	[[FURenderer shareRenderer] renderBundles:&info inFormat:FU_FORMAT_AVATAR_INFO outPtr:bytes outFormat:FU_FORMAT_BGRA_BUFFER width:stride1/4.0 height:h1 frameId:screenshotFrameId ++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
+	CVPixelBufferUnlockBaseAddress(screenShotTarget, 0);
 	dispatch_semaphore_signal(signal);
-	
-	return renderTarget ;
+	return screenShotTarget ;
 }
-
-
+// 处理前置摄像头的图像
+-(CVPixelBufferRef)dealTheFrontCameraPixelBuffer:(CVPixelBufferRef) pixelBuffer{
+	int h = (int)CVPixelBufferGetHeight(pixelBuffer);
+	int w = (int)CVPixelBufferGetWidth(pixelBuffer);
+	CVPixelBufferRef mirrored_pixel = NULL;
+	NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
+											  @(kCVPixelFormatType_32BGRA),
+										  (NSString*) kCVPixelBufferWidthKey : @(w),
+										  (NSString*) kCVPixelBufferHeightKey : @(h),
+										  (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
+										  (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
+	CVPixelBufferCreate(kCFAllocatorDefault,
+						w, h,
+						kCVPixelFormatType_32BGRA,
+						(__bridge CFDictionaryRef)pixelBufferOptions,
+						&mirrored_pixel);
+	
+	CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+	void* pod0 = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
+	CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+	CVPixelBufferLockBaseAddress(mirrored_pixel, 0);
+	void* pod1 = (void *)CVPixelBufferGetBaseAddress(mirrored_pixel);
+	CVPixelBufferUnlockBaseAddress(mirrored_pixel, 0);
+	
+	fuRotateImage(
+				  pod0, 0, w, h, 0, 1, 0, pod1,NULL);
+	[[FURenderer shareRenderer] setInputCameraMatrix:0 flip_y:0 rotate_mode:0];
+	return mirrored_pixel;
+}
 static int ARFilterID = 0 ;
 /**
  AR 滤镜处理接口
@@ -805,25 +1323,221 @@ static int ARFilterID = 0 ;
  @param pixelBuffer 图像数据
  @return            处理之后的图像数据
  */
-- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer {
+- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer{
 	
 	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
 	
-	CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+	int h = (int)CVPixelBufferGetHeight(pixelBuffer);
+	int w = (int)CVPixelBufferGetWidth(pixelBuffer);
+	CVPixelBufferRef mirrored_pixel = NULL;
+	NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
+											  @(kCVPixelFormatType_32BGRA),
+										  (NSString*) kCVPixelBufferWidthKey : @(w),
+										  (NSString*) kCVPixelBufferHeightKey : @(h),
+										  (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
+										  (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
+	CVPixelBufferCreate(kCFAllocatorDefault,
+						w, h,
+						kCVPixelFormatType_32BGRA,
+						(__bridge CFDictionaryRef)pixelBufferOptions,
+						&mirrored_pixel);
 	
+	CVPixelBufferLockBaseAddress(mirrored_pixel, 0);
+	void* pod1 = (void *)CVPixelBufferGetBaseAddress(mirrored_pixel);
+	
+	CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+	void* pod0 = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
 	int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer) ;
 	int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
 	void *bytes = CVPixelBufferGetBaseAddress(pixelBuffer) ;
+	void *newbytes = NULL;
+	// int fu3DBodyTrackerRun(void* model_ptr, int human_handle, void* img, int w, int h, int fu_image_format, int rotation_mode);
+	int width = (int)CVPixelBufferGetWidth(pixelBuffer) ;
 	
-	[[FURenderer shareRenderer] renderItems:bytes inFormat:FU_FORMAT_BGRA_BUFFER outPtr:bytes outFormat:FU_FORMAT_BGRA_BUFFER width:stride/4 height:height frameId:ARFilterID ++ items:arItems itemCount:2 flipx:NO];
+	[[FURenderer shareRenderer] renderBundles:bytes inFormat:FU_FORMAT_BGRA_BUFFER outPtr:pod1 outFormat:FU_FORMAT_BGRA_BUFFER width:stride/4 height:height frameId:ARFilterID ++ items:arItems itemCount:2];
+	//	fuRenderBundles(FU_FORMAT_BGRA_BUFFER,bytes,FU_FORMAT_BGRA_BUFFER,bytes,width,height,ARFilterID++,arItems,2);
 	
+	
+	
+	// flip y because nama direct get data from opengl
+	
+	
+	for (int i = 0; i < height; i++)
+	{
+		memcpy((uint8_t*)pod0 + stride * (height-i-1),(uint8_t*)pod1 + stride * i, stride);
+	}
 	CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+	CVPixelBufferUnlockBaseAddress(mirrored_pixel, 0);
+	CVPixelBufferRelease(mirrored_pixel);
+	
 	
 	dispatch_semaphore_signal(signal);
 	
-	return pixelBuffer ;
+	return pixelBuffer;
 }
 
+/**
+ AR 滤镜处理接口
+ 
+ @param pixelBuffer 图像数据
+ @return            处理之后的图像数据
+ */
+- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr {
+	
+	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+	int h = (int)CVPixelBufferGetHeight(pixelBuffer);
+	int w = (int)CVPixelBufferGetWidth(pixelBuffer);
+	CVPixelBufferRef mirrored_pixel = NULL;
+	NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
+											  @(kCVPixelFormatType_32BGRA),
+										  (NSString*) kCVPixelBufferWidthKey : @(w),
+										  (NSString*) kCVPixelBufferHeightKey : @(h),
+										  (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
+										  (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
+	CVPixelBufferCreate(kCFAllocatorDefault,
+						w, h,
+						kCVPixelFormatType_32BGRA,
+						(__bridge CFDictionaryRef)pixelBufferOptions,
+						&mirrored_pixel);
+	
+	CVPixelBufferLockBaseAddress(mirrored_pixel, 0);
+	void* pod1 = (void *)CVPixelBufferGetBaseAddress(mirrored_pixel);
+	
+	CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+	void* pod0 = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
+	int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer) ;
+	int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
+	void *bytes = CVPixelBufferGetBaseAddress(pixelBuffer) ;
+	void *newbytes = NULL;
+	// int fu3DBodyTrackerRun(void* model_ptr, int human_handle, void* img, int w, int h, int fu_image_format, int rotation_mode);
+	int width = (int)CVPixelBufferGetWidth(pixelBuffer) ;
+    [FURenderer run3DBodyTracker:human3dPtr humanHandle:0 inPtr:bytes inFormat:FU_FORMAT_BGRA_BUFFER w:stride/4 h:height rotationMode:0];
+	[[FURenderer shareRenderer] renderBundles:bytes inFormat:FU_FORMAT_BGRA_BUFFER outPtr:pod1 outFormat:FU_FORMAT_BGRA_BUFFER width:stride/4 height:height frameId:ARFilterID ++ items:arItems itemCount:2];
+	//	fuRenderBundles(FU_FORMAT_BGRA_BUFFER,bytes,FU_FORMAT_BGRA_BUFFER,bytes,width,height,ARFilterID++,arItems,2);
+	
+	
+	
+	// flip y because nama direct get data from opengl
+	
+	
+	fuRotateImage(pod1, 0, w, h, 0, 0, 1, pod0,NULL);
+	
+	CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+	CVPixelBufferUnlockBaseAddress(mirrored_pixel, 0);
+	CVPixelBufferRelease(mirrored_pixel);
+	
+	
+	dispatch_semaphore_signal(signal);
+	
+	return pixelBuffer;
+}
+
+/**
+ AR 滤镜处理接口
+ 
+ @param pixelBuffer 图像数据
+ @param human3dPtr  human3d.bundle 的句柄
+ @param renderMode  FURenderCommonMode 为预览模式，FURenderPreviewMode为人脸追踪模式
+ @return            处理之后的图像数据
+ */
+- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode{
+	
+	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+	
+	float expression[56] = {0};
+	float translation[3] = {0};
+	float rotation[4] = {0};
+	rotation[3] = 1;
+	float rotation_mode[1] = {0};
+	float pupil_pos[2] = {0};
+	int is_valid = 0 ;
+	
+	if (renderMode == FURenderPreviewMode) {
+		CVPixelBufferLockBaseAddress(pixelBuffer, 0) ;
+		void *baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) ;
+		int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
+		int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer) ;
+		
+		[FURenderer trackFaceWithTongue:FU_FORMAT_BGRA_BUFFER inputData:baseAddress width:stride/4 height:height];
+		
+		[FURenderer getFaceInfo:0 name:@"expression_aligned" pret:expression number:56];
+		[FURenderer getFaceInfo:0 name:@"translation" pret:translation number:3];
+		[FURenderer getFaceInfo:0 name:@"rotation_aligned" pret:rotation number:4];
+		[FURenderer getFaceInfo:0 name:@"rotation_mode" pret:rotation_mode number:1];
+		[FURenderer getFaceInfo:0 name:@"pupil_pos" pret:pupil_pos number:2];
+		CVPixelBufferUnlockBaseAddress(pixelBuffer, 0) ;
+		is_valid = [FURenderer isTracking];
+	}
+    
+	TAvatarInfo info;
+	info.p_translation = translation;
+	info.p_rotation = rotation;
+	info.p_expression = expression;
+	info.rotation_mode = rotation_mode;
+	info.pupil_pos = pupil_pos;
+	info.is_valid = is_valid;
+	
+//	[FURenderer run3DBodyTracker:human3dPtr humanHandle:0 pixelBuffer:pixelBuffer fuImageFormat:FU_FORMAT_BGRA_BUFFER rotationMode:0];
+	int h = (int)CVPixelBufferGetHeight(pixelBuffer);
+	int w = (int)CVPixelBufferGetWidth(pixelBuffer);
+	CVPixelBufferRef mirrored_pixel = NULL;
+	NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
+											  @(kCVPixelFormatType_32BGRA),
+										  (NSString*) kCVPixelBufferWidthKey : @(w),
+										  (NSString*) kCVPixelBufferHeightKey : @(h),
+										  (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
+										  (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
+	CVPixelBufferCreate(kCFAllocatorDefault,
+						w, h,
+						kCVPixelFormatType_32BGRA,
+						(__bridge CFDictionaryRef)pixelBufferOptions,
+						&mirrored_pixel);
+	
+	CVPixelBufferLockBaseAddress(mirrored_pixel, 0);
+	void* pod1 = (void *)CVPixelBufferGetBaseAddress(mirrored_pixel);
+
+	CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+	void* pod0 = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
+	int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer) ;
+	int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
+	void *bytes = CVPixelBufferGetBaseAddress(pixelBuffer) ;
+//    void *newbytes = NULL;
+	// int fu3DBodyTrackerRun(void* model_ptr, int human_handle, void* img, int w, int h, int fu_image_format, int rotation_mode);
+	int width = (int)CVPixelBufferGetWidth(pixelBuffer) ;
+	
+	//[[FURenderer shareRenderer] renderBundlesSplitView:&info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod1 outFormat:FU_FORMAT_BGRA_BUFFER width:width	 height:height frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int) flipx:NO imagePtr:bytes view0Ratio:0.5 marginInPixel:0 isVertical:1 isImageFirst:1 rotateAngleBeforeCrop:0 cropRatioTop:0.5];
+	//	fuRenderBundles(FU_FORMAT_BGRA_BUFFER,bytes,FU_FORMAT_BGRA_BUFFER,bytes,width,height,ARFilterID++,arItems,2);
+	TSplitViewInfo split_view_info;
+	split_view_info.in_ptr=bytes;
+	split_view_info.in_type=FU_FORMAT_BGRA_BUFFER;
+	split_view_info.out_w=width;
+	split_view_info.out_h=height;
+	split_view_info.view_0_ratio=0.0f;
+	split_view_info.margin_in_pixel=0;
+	split_view_info.is_vertical= 1;
+	split_view_info.is_image_first=1;
+	split_view_info.rotation_mode_before_crop=FU_ROTATION_MODE_0;
+	split_view_info.crop_ratio_top=0.5f;
+    [FURenderer run3DBodyTracker:human3dPtr humanHandle:0 inPtr:bytes inFormat:FU_FORMAT_BGRA_BUFFER w:stride/4 h:height rotationMode:0];
+	[[FURenderer shareRenderer] renderBundlesSplitView:&info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod1 outFormat:FU_FORMAT_BGRA_BUFFER width:width height:height frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int) splitViewInfoPtr:&split_view_info];
+	
+	// flip y because nama direct get data from opengl
+	
+	for (int i = 0; i < height; i++)
+	{
+	   memcpy((uint8_t*)pod0 + stride * (height-i-1),(uint8_t*)pod1 + stride * i, stride);
+	}
+//	fuRotateImage(pod1, 0, w, h, 0, 0, 1, pod0,NULL);
+	
+	CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+	CVPixelBufferUnlockBaseAddress(mirrored_pixel, 0);
+	CVPixelBufferRelease(mirrored_pixel);
+	
+	
+	dispatch_semaphore_signal(signal);
+	
+	return pixelBuffer;
+}
 /**
  Avatar 生成
  
@@ -844,45 +1558,30 @@ static int ARFilterID = 0 ;
 	avatar.gender = gender ;
 	BOOL isQ = self.avatarStyle == FUAvatarStyleQ ;
 	avatar.isQType = isQ ;
+
 	
-	// create head
-	NSData *finalBundleData = [[FUP2AClient shareInstance] createAvatarHeadWithData:data];
-	[finalBundleData writeToFile:[[avatar filePath] stringByAppendingPathComponent:FU_HEAD_BUNDLE] atomically:YES];
-	
+	[data writeToFile:[[avatar filePath] stringByAppendingPathComponent:FU_HEAD_BUNDLE] atomically:YES];
+	[[fuPTAClient shareInstance] setHeadData:data];
 	// 头发
-	int hairLabel = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"hair_label"];
+	int hairLabel = [[fuPTAClient shareInstance] getInt:@"hair_label"];
 	avatar.hairLabel = hairLabel ;
-	NSString *defaultHair = [self gethairNameWithNum:hairLabel andGender:gender isQ:isQ];
-	//    if ([defaultHair isEqualToString:@"hair-noitem"]) {
-	//        defaultHair = gender == FUGenderMale ? @"male_hair_2" : @"female_td2" ;
-	//    }
-	//    if (isQ) {
-	//        defaultHair = gender == FUGenderMale ? @"male_hair_q_3" : @"female_hair_q_21" ;
-	//    }
-	if (isQ) {
-		NSString *string = defaultHair;
-		NSError *error = nil;
-		NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"_hair_" options:NSRegularExpressionCaseInsensitive error:&error];
-		NSString *modifiedString = [regex stringByReplacingMatchesInString:string options:0 range:NSMakeRange(0, [string length]) withTemplate:@"_hair_q_"];
-		NSLog(@"%@", modifiedString);
-		defaultHair = modifiedString;
-	}
+	NSString *defaultHair = [self gethairNameWithNum:hairLabel andGender:gender];
 	avatar.hair = defaultHair ;
 	
-	NSString *baseHairPath = [[NSBundle mainBundle] pathForResource:avatar.hair ofType:@"bundle"] ;
+	NSString *baseHairPath = [[NSBundle mainBundle] pathForResource:avatar.hair ofType:nil] ;
 	NSData *baseHairData = [NSData dataWithContentsOfFile: baseHairPath];
-	NSData *defaultHairData = [[FUP2AClient shareInstance] createAvatarHairWithServerData:data defaultHairData:baseHairData];
-	NSString *defaultHairPath = [[[avatar filePath] stringByAppendingPathComponent:defaultHair] stringByAppendingString:@".bundle"];
+	NSData *defaultHairData = [[fuPTAClient shareInstance] createHairWithHeadData:data defaultHairData:baseHairData];
+	NSString *defaultHairPath = [[avatar filePath] stringByAppendingPathComponent:defaultHair];
 	[defaultHairData writeToFile:defaultHairPath atomically:YES];
-	
+	[[fuPTAClient shareInstance] setHeadData:data];
 	// 眼镜
-	int hasGlass = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"has_glasses"];
+	int hasGlass = [[fuPTAClient shareInstance] getInt:@"has_glasses"];
 	//    avatar.glasses = hasGlass == 0 ? @"glasses-noitem" : (gender == FUGenderMale ? @"male_glass_1" : @"female_glass_1");
 	if (hasGlass == 0) {
-		avatar.glasses = @"glasses-noitem" ;
+		avatar.glasses = @"glasses-noitem.bundle" ;
 	}else {
-		int shapeGlasses = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"shape_glasses"];
-		int rimGlasses = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"rim_glasses"];
+		int shapeGlasses = [[fuPTAClient shareInstance] getInt:@"shape_glasses"];
+		int rimGlasses = [[fuPTAClient shareInstance] getInt:@"rim_glasses"];
 		if (avatar.isQType) {
 			NSLog(@"---------Q-Style--- shape_glasses: %d - rim_glasses:%d", shapeGlasses, rimGlasses);
 			NSString *glassName = [self getQGlassesNameWithShape:shapeGlasses rim:rimGlasses male:gender == FUGenderMale];
@@ -900,19 +1599,20 @@ static int ARFilterID = 0 ;
 	// avatar info
 	NSMutableDictionary *avatarInfo = [NSMutableDictionary dictionaryWithCapacity:1];
 	
-	if (avatar.isQType) {
-		// 衣服
-		avatar.clothes = @"cloth_0" ;
-		//        // 鞋子
-		//        avatar.shoes = self.qShoes[1] ;
-		//        [avatarInfo setObject:avatar.shoes forKey:@"shoes"];
-	}else {
-		// 衣服
-		avatar.clothes = gender == FUGenderMale ? @"male_clothes_1" : @"female_clothes_1" ;
+	// 衣服
+	if (avatar.gender == FUGenderMale) {
+		avatar.upper = @"shangyi_chushi.bundle";
+		avatar.wearFemaleClothes = NO;
+	}else{
+		avatar.upper = @"shangyi_chenshan_6.bundle";
+		avatar.wearFemaleClothes = YES;
 	}
+	avatar.lower = @"kuzi_chushi.bundle";
+	avatar.shoes = @"xiezi_fanbu.bundle";
+	avatar.clothType = FUAvataClothTypeUpperAndLower;
 	
 	// 胡子
-	int beardLabel = [[FUP2AClient shareInstance] getIntParamWithData:data key:@"beard_label"];
+	int beardLabel = [[fuPTAClient shareInstance] getInt:@"beard_label"];
 	avatar.bearLabel = beardLabel ;
 	avatar.beard = [self getBeardNameWithNum:beardLabel Qtype:avatar.isQType male:avatar.gender == FUGenderMale];
 	
@@ -925,7 +1625,10 @@ static int ARFilterID = 0 ;
 	[avatarInfo setObject:@(gender) forKey:@"gender"];
 	[avatarInfo setObject:@(hairLabel) forKey:@"hair_label"];
 	[avatarInfo setObject:defaultHair forKey:@"hair"];
-	[avatarInfo setObject:avatar.clothes forKey:@"clothes"];
+	[avatarInfo setObject:@(avatar.clothType) forKey:@"clothType"];
+	[avatarInfo setObject:avatar.upper forKey:@"upper"];
+	[avatarInfo setObject:avatar.lower forKey:@"lower"];
+	[avatarInfo setObject:avatar.shoes forKey:@"shoes"];
 	[avatarInfo setObject:avatar.glasses forKey:@"glasses"];
 	[avatarInfo setObject:avatar.hat forKey:@"hat"];
 	
@@ -936,8 +1639,8 @@ static int ARFilterID = 0 ;
 	NSData *avatarInfoData = [NSJSONSerialization dataWithJSONObject:avatarInfo options:NSJSONWritingPrettyPrinted error:nil];
 	[avatarInfoData writeToFile:avatarInfoPath atomically:YES];
 	appManager.localizeHairBundlesSuccess = false;
-	// create other hairs
-	[self createHairBundles:avatar WithData:data IsQ:isQ];
+	
+	[[fuPTAClient shareInstance] releaseHeadData];
 	return avatar ;
 }
 -(void)createHairBundles:(FUAvatar *)avatar WithData:(NSData *)data{
@@ -956,7 +1659,7 @@ static int ARFilterID = 0 ;
 			NSData *d0 = [NSData dataWithContentsOfFile:hairPath];
 			
 			//            CFAbsoluteTime startProcessHair1 = CFAbsoluteTimeGetCurrent() ;
-			NSData *d1 = [[FUP2AClient shareInstance] createAvatarHairWithServerData:data defaultHairData:d0];
+			NSData *d1 = [[fuPTAClient shareInstance] createHairWithHeadData:data defaultHairData:d0];
 			//            NSLog(@"------------ process hair time: %f ms - hair name: %@", (CFAbsoluteTimeGetCurrent() - startProcessHair1) * 1000.0, hairName);
 			if (d1 == nil) {
 				NSLog(@"---- error path: %@", hairPath);
@@ -967,53 +1670,46 @@ static int ARFilterID = 0 ;
 		dispatch_sync(dispatch_get_main_queue(), ^{
 			appManager.localizeHairBundlesSuccess = true;
 		});
-		avatar.createdHairBundles = true;
 		[[NSNotificationCenter defaultCenter] postNotificationName:HairsWriteToLocalSuccessNot object:nil];
 		self->isCreatingAvatar = NO ;
 	});
 }
--(void)createHairBundles:(FUAvatar *)avatar WithData:(NSData *)data IsQ:(BOOL)isq{
+/// 根据单个发型名称去deform头发
+/// @param avatar 需要deform的avatar
+/// @param hairName 需要deform的发型名称
+-(void)createHairBundles:(FUAvatar *)avatar WithHairName:(NSString *)hairName{
+	NSString *headPath = [avatar.filePath stringByAppendingPathComponent:FU_HEAD_BUNDLE];
+	NSData * data = [NSData dataWithContentsOfFile:headPath];
 	if (data == nil) {
 		return;
 	}
-	NSString *defaultHair = avatar.hair;
+	
 	dispatch_async(dispatch_get_global_queue(0, 0), ^{
 		NSArray *hairs ;
-		if (isq) {
-			hairs = self.qHairs ;
-		}else{
-			NSMutableArray * maleHairs = [NSMutableArray arrayWithArray:self.maleHairs];
-			[maleHairs addObjectsFromArray:self.femaleHairs];
-			hairs = maleHairs;
+		hairs = self.qHairs ;
+		if ([hairName isEqualToString:@"hair-noitem"] || [hairName isEqualToString:@"hair_q_noitem"] ) {
+			return ;
 		}
-		for (NSString *hairName in hairs) {
-			if ([hairName isEqualToString:@"hair-noitem"] || [hairName isEqualToString:@"hair_q_noitem"] || [hairName isEqualToString:defaultHair]) {
-				continue ;
-			}
-			NSString *hairPath = [[NSBundle mainBundle] pathForResource:hairName ofType:@"bundle"];
-			NSData *d0 = [NSData dataWithContentsOfFile:hairPath];
-			
-			//            CFAbsoluteTime startProcessHair1 = CFAbsoluteTimeGetCurrent() ;
-			NSData *d1 = [[FUP2AClient shareInstance] createAvatarHairWithServerData:data defaultHairData:d0];
-			//            NSLog(@"------------ process hair time: %f ms - hair name: %@", (CFAbsoluteTimeGetCurrent() - startProcessHair1) * 1000.0, hairName);
-			if (d1 == nil) {
-				NSLog(@"---- error path: %@", hairPath);
-			}
-			NSString *hp = [[[avatar filePath] stringByAppendingPathComponent:hairName] stringByAppendingString:@".bundle"];
-			[d1 writeToFile:hp atomically:YES];
+		NSString *hairPath = [[NSBundle mainBundle] pathForResource:hairName ofType:@"bundle"];
+		NSData *d0 = [NSData dataWithContentsOfFile:hairPath];
+		
+		//            CFAbsoluteTime startProcessHair1 = CFAbsoluteTimeGetCurrent() ;
+		NSData *d1 = [[fuPTAClient shareInstance] createHairWithHeadData:data defaultHairData:d0];
+		//            NSLog(@"------------ process hair time: %f ms - hair name: %@", (CFAbsoluteTimeGetCurrent() - startProcessHair1) * 1000.0, hairName);
+		if (d1 == nil) {
+			NSLog(@"---- error path: %@", hairPath);
 		}
-		dispatch_sync(dispatch_get_main_queue(), ^{
-			appManager.localizeHairBundlesSuccess = true;
-		});
-		avatar.createdHairBundles = true;
+		NSString *hp = [[[avatar filePath] stringByAppendingPathComponent:hairName] stringByAppendingString:@".bundle"];
+		[d1 writeToFile:hp atomically:YES];
+		
 		[[NSNotificationCenter defaultCenter] postNotificationName:HairsWriteToLocalSuccessNot object:nil];
-		self->isCreatingAvatar = NO ;
 	});
 }
 // 如果用户在生成头发时强退，下次重新进入将会重新生成头发bundles
 -(void)reCreateHairBundles:(FUAvatar *)avatar{
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-		NSString * serverPath = [[avatar filePath] stringByAppendingPathComponent:FU_SERVER_BUNDLE];
+		//		NSString * serverPath = [[avatar filePath] stringByAppendingPathComponent:FU_SERVER_BUNDLE];
+		NSString * serverPath = [[avatar filePath] stringByAppendingPathComponent:FU_HEAD_BUNDLE];
 		NSData * serverBundleData = [NSData dataWithContentsOfFile: serverPath];
 		[self createHairBundles:avatar WithData:serverBundleData];
 	});
@@ -1043,7 +1739,7 @@ static int ARFilterID = 0 ;
 	NSData *headData = [NSData dataWithContentsOfFile:[[currentAvatar filePath] stringByAppendingPathComponent:FU_HEAD_BUNDLE]];
 	
 	if (deform) {
-		headData = [[FUP2AClient shareInstance] deformAvatarHeadWithHeadData:headData deformParams:coeffi paramsSize:69];
+		headData = [[fuPTAClient shareInstance] deformHeadWithHeadData:headData deformParams:coeffi paramsSize:90 withExprOnly:NO withLowp:NO].bundle;
 	}
 	
 	NSString *avatarName = currentAvatar.defaultModel ? [NSString stringWithFormat:@"%.0f", [[NSDate date] timeIntervalSince1970]] : currentAvatar.name ;
@@ -1106,10 +1802,10 @@ static int ARFilterID = 0 ;
 				[hairArr addObject:hair];
 			}
 		}
-		avatar.createdHairBundles = YES;
 	}
 	return avatar ;
 }
+
 
 
 static float DetectionAngle = 20.0 ;
@@ -1139,7 +1835,7 @@ static float CenterScale = 0.3 ;
 		|| yAngle < -DetectionAngle || yAngle > DetectionAngle
 		|| zAngle < -DetectionAngle || zAngle > DetectionAngle) {
 		
-		return @" 请保持正面  " ;
+		return @" 识别失败，需要人物正脸完整出镜哦~  " ;
 	}
 	
 	// 3、保证人脸在中心区域
@@ -1157,7 +1853,7 @@ static float CenterScale = 0.3 ;
 	
 	for (int i = 0 ; i < 46; i ++) {
 		
-		if (expression[i] > 0.50) {
+		if (expression[i] > 1) {
 			
 			return @" 请保持面部无夸张表情  " ;
 		}
@@ -1165,7 +1861,7 @@ static float CenterScale = 0.3 ;
 	
 	// 5、光照均匀
 	// 6、光照充足
-	if (lightingValue < 0.0) {
+	if (lightingValue < -1.0) {
 		return @" 光线不充足  " ;
 	}
 	
@@ -1280,7 +1976,7 @@ static float CenterScale = 0.3 ;
 	}else if (num >= 19 && num <= 37){
 		beardName = q ? @"beard03" : @"male_beard_3" ;
 	}
-	return beardName ;
+	return [beardName  stringByAppendingString:@".bundle"];
 }
 
 // 根据 hairLabel 获取 hair name
@@ -1316,201 +2012,96 @@ static float CenterScale = 0.3 ;
 		hairName = @"female_hair_t_1";
 	}
 	
-	return hairName ;
+	return [hairName  stringByAppendingString:@".bundle"];
 }
-- (NSString *)gethairNameWithNum:(int)num andGender:(FUGender)g isQ:(BOOL)isq{
-	
-	NSString *hairName = @"hair-noitem" ;
-	
-	switch (num) {
-		case -1:
-			if (g == FUGenderMale) {
-				NSArray * hairArr;
-				if (isq){
-					hairArr = @[@"male_hair_1",@"male_hair_1_t1",@"male_hair_1_t2",@"male_hair_1_t3",@"male_hair_1_t4"];
-				}else{
-					hairArr = @[@"male_hair_1",@"male_hair_t_1",@"male_hair_t_2",@"male_hair_t_3",@"male_hair_1_t4"];
-				}
-				int value = arc4random() % hairArr.count;
-				hairName = hairArr[value];
-			}else if (g == FUGenderFemale) {
-				hairName = @"female_hair_11";
-			}
-			
-		case 0:
-			hairName = @"male_hair_0";
-			break;
-			
-		case 1:{
-			NSArray * hairArr;
-			if (isq){
-				hairArr = @[@"male_hair_1",@"male_hair_1_t1",@"male_hair_1_t2",@"male_hair_1_t3",@"male_hair_1_t4"];
-			}else{
-				hairArr = @[@"male_hair_1",@"male_hair_t_1",@"male_hair_t_2",@"male_hair_t_3",@"male_hair_1_t4"];
-			}
-			int value = arc4random() % hairArr.count;
-			hairName = hairArr[value];
-		}
-			break;
-		case 2:
-		case 3:
-			hairName = [NSString stringWithFormat:@"male_hair_%d", num];
-			break;
-		case 4:{
-			NSArray * hairArr;
-			if (isq){
-				hairArr = @[@"male_hair_4",@"male_hair_4_t1",@"male_hair_4_t2"];
-			}else{
-				hairArr = @[@"male_hair_4"];
-			}
-			int value = arc4random() % hairArr.count;
-			hairName = hairArr[value];
-		}
-			break;
-		case 5:
-		case 6:
-			hairName = [NSString stringWithFormat:@"male_hair_%d", num];
-			break;
-		case 7:
-		case 8:
-		case 9:
-		case 10:
-			hairName = [NSString stringWithFormat:@"female_hair_%d", num];
-			break;
-		case 11:
-		case 12:
-			hairName = [NSString stringWithFormat:@"female_hair_%d", num];
-			break;
-		case 13:
-		case 14:
-			hairName = @"female_hair_13";
-			break;
-		case 15:
-		case 16:
-			hairName = [NSString stringWithFormat:@"female_hair_%d", num];
-			break;
-		case 17:
-		case 18:
-			hairName = @"female_hair_17";
-			break;
-		case 19:
-		case 20:
-			hairName = [NSString stringWithFormat:@"female_hair_%d", num];
-			break;
-		case 21:
-		{
-			NSArray * hairArr;
-			if (isq){
-				hairArr = @[@"female_hair_21",@"female_hair_21_t1",@"female_hair_21_t2",@"female_hair_21_t3",@"female_hair_21_t4"];
-			}else{
-				hairArr = @[@"female_hair_21"];
-			}
-			int value = arc4random() % hairArr.count;
-			hairName = hairArr[value];
-		}
-			break;
-			
-		case 22:
-			hairName = @"female_hair_22";
-			
-		case 23:
-		case 24:
-			hairName = @"female_hair_23";
-			break;
-			
-			
-		default:
-			break;
-	}
-	
-	return hairName ;
-}
+
 - (NSString *)gethairNameWithNum:(int)num andGender:(FUGender)g{
 	
-	NSString *hairName = @"hair-noitem" ;
+	    
+    NSString *hairName = @"hair-noitem" ;
+    
+    switch (num) {
+        case -1:
+            if (g == FUGenderMale) {
+                NSArray * hairArr = @[@"male_hair_1",@"male_hair_1_t1",@"male_hair_1_t2",@"male_hair_1_t3",@"male_hair_1_t4"];
+                int value = arc4random() % hairArr.count;
+                hairName = hairArr[value];
+            }else if (g == FUGenderFemale) {
+                hairName = @"female_hair_11";
+            }
+            
+        case 0:
+            hairName = @"male_hair_0";
+            break;
+            
+        case 1:{
+            NSArray * hairArr = @[@"male_hair_1",@"male_hair_1_t1",@"male_hair_1_t2",@"male_hair_1_t3",@"male_hair_1_t4"];
+            int value = arc4random() % hairArr.count;
+            hairName = hairArr[value];
+        }
+            break;
+        case 2:
+        case 3:
+            hairName = [NSString stringWithFormat:@"male_hair_%d", num];
+            break;
+        case 4:{
+            NSArray * hairArr = @[@"male_hair_4",@"male_hair_4_t1",@"male_hair_4_t2"];
+            int value = arc4random() % hairArr.count;
+            hairName = hairArr[value];
+        }
+            break;
+        case 5:
+        case 6:
+            hairName = [NSString stringWithFormat:@"male_hair_%d", num];
+            break;
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+            hairName = [NSString stringWithFormat:@"female_hair_%d", num];
+            break;
+        case 11:
+        case 12:
+            hairName = [NSString stringWithFormat:@"female_hair_%d", num];
+            break;
+        case 13:
+        case 14:
+            hairName = @"female_hair_13";
+            break;
+        case 15:
+        case 16:
+            hairName = [NSString stringWithFormat:@"female_hair_%d", num];
+            break;
+        case 17:
+        case 18:
+            hairName = @"female_hair_17";
+            break;
+        case 19:
+        case 20:
+            hairName = [NSString stringWithFormat:@"female_hair_%d", num];
+            break;
+        case 21:
+        {
+            NSArray * hairArr = @[@"female_hair_21",@"female_hair_21_t1",@"female_hair_21_t2",@"female_hair_21_t3",@"female_hair_21_t4"];
+            int value = arc4random() % hairArr.count;
+            hairName = hairArr[value];
+        }
+            break;
+            
+        case 22:
+            hairName = @"female_hair_22";
+            
+        case 23:
+        case 24:
+            hairName = @"female_hair_23";
+            break;
+            
+            
+        default:
+            break;
+    }
 	
-	switch (num) {
-		case -1:
-			if (g == FUGenderMale) {
-				NSArray * hairArr = @[@"male_hair_1",@"male_hair_1_t1",@"male_hair_1_t2",@"male_hair_1_t3",@"male_hair_1_t4"];
-				int value = arc4random() % hairArr.count;
-				hairName = hairArr[value];
-			}else if (g == FUGenderFemale) {
-				hairName = @"female_hair_11";
-			}
-			
-		case 0:
-			hairName = @"male_hair_0";
-			break;
-			
-		case 1:{
-			NSArray * hairArr = @[@"male_hair_1",@"male_hair_1_t1",@"male_hair_1_t2",@"male_hair_1_t3",@"male_hair_1_t4"];
-			int value = arc4random() % hairArr.count;
-			hairName = hairArr[value];
-		}
-			break;
-		case 2:
-		case 3:
-			hairName = [NSString stringWithFormat:@"male_hair_%d", num];
-			break;
-		case 4:{
-			NSArray * hairArr = @[@"male_hair_4",@"male_hair_4_t1",@"male_hair_4_t2"];
-			int value = arc4random() % hairArr.count;
-			hairName = hairArr[value];
-		}
-			break;
-		case 5:
-		case 6:
-			hairName = [NSString stringWithFormat:@"male_hair_%d", num];
-			break;
-		case 7:
-		case 8:
-		case 9:
-		case 10:
-			hairName = [NSString stringWithFormat:@"female_hair_%d", num];
-			break;
-		case 11:
-		case 12:
-			hairName = [NSString stringWithFormat:@"female_hair_%d", num];
-			break;
-		case 13:
-		case 14:
-			hairName = @"female_hair_13";
-			break;
-		case 15:
-		case 16:
-			hairName = [NSString stringWithFormat:@"female_hair_%d", num];
-			break;
-		case 17:
-		case 18:
-			hairName = @"female_hair_17";
-			break;
-		case 19:
-		case 20:
-			hairName = [NSString stringWithFormat:@"female_hair_%d", num];
-			break;
-		case 21:
-		{
-			NSArray * hairArr = @[@"female_hair_21",@"female_hair_21_t1",@"female_hair_21_t2",@"female_hair_21_t3",@"female_hair_21_t4"];
-			int value = arc4random() % hairArr.count;
-			hairName = hairArr[value];
-		}
-			break;
-			
-		case 22:
-			hairName = @"female_hair_22";
-			
-		case 23:
-		case 24:
-			hairName = @"female_hair_23";
-			break;
-			
-			
-		default:
-			break;
-	}
-	
-	return hairName ;
+	return [hairName stringByAppendingString:@".bundle"] ;
 }
 
 // 从色卡列表获取最相近的颜色
@@ -1553,134 +2144,19 @@ static float CenterScale = 0.3 ;
 
 // 获取Q风格默认眼镜
 - (NSString *)getQGlassesNameWithShape:(int)shape rim:(int)rim male:(BOOL)male{
-	
+	NSString * glassesName = @"glass_13";
 	if (shape == 1 && rim == 0) {
-		return @"glass_14" ;
+		glassesName = @"glass_14" ;
 	}else if (shape == 0 && rim == 0){
-		return @"glass_2";
+		glassesName = @"glass_2";
 	}else if (shape == 1 && rim == 1){
-		return @"glass_8";
+		glassesName = @"glass_8";
 	}else if (shape == 1 && rim == 2){
-		return @"glass_15";
+		glassesName = @"glass_15";
 	}
-	return @"glasses-noitem" ;
+	return [glassesName stringByAppendingString:@".bundle"];
 }
 
-// batch creat avatars
-static dispatch_semaphore_t batchProcessSignal ;
-- (void)batchCreatingAvatarsWithImageInfos:(NSArray *)imageInfos Completion:(void (^)(void))handle {
-	
-	if (!batchProcessSignal) {
-		batchProcessSignal = dispatch_semaphore_create(1) ;
-	}
-	
-	for (NSDictionary *infoDict in imageInfos) {
-		dispatch_async(dispatch_get_global_queue(0, 0), ^{
-			
-			NSString *imagePath = infoDict[@"imagePath"] ;
-			BOOL male = [infoDict[@"male"] boolValue] ;
-			
-			UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
-			if (image != nil) {
-				
-				dispatch_semaphore_wait(batchProcessSignal, DISPATCH_TIME_FOREVER) ;
-				
-				NSDictionary *params = @{ @"gender":male ? @(0) : @(1), @"is_q": @(1) };
-				
-				[[FURequestManager sharedInstance] createQAvatarWithImage:image Params:params CompletionWithData:^(NSData *data, NSError *error) {
-					if (!error) {
-						NSTimeInterval time = [[NSDate date] timeIntervalSince1970];
-						NSString *fileName = [NSString stringWithFormat:@"%.0f", time];
-						NSString *filePath = [documentPath stringByAppendingPathComponent:fileName];
-						[[NSFileManager defaultManager] createDirectoryAtPath:filePath withIntermediateDirectories:YES attributes:nil error:nil];
-						
-						NSData *imageData = UIImagePNGRepresentation(image) ;
-						NSString *imageDataPath = [filePath stringByAppendingPathComponent:@"image.png"] ;
-						[imageData writeToFile:imageDataPath atomically:YES];
-						
-						[data writeToFile:[filePath stringByAppendingPathComponent:FU_SERVER_BUNDLE] atomically:YES];
-						
-						FUAvatar *avatar = [[FUManager shareInstance] createAvatarWithData:data avatarName:fileName gender:male ? FUGenderMale : FUGenderFemale];
-						
-						[[FUManager shareInstance].avatarList insertObject:avatar atIndex:DefaultAvatarNum];
-						
-						[[NSFileManager defaultManager] removeItemAtPath:imagePath error:nil];
-						NSLog(@"----------------------------------------------------------------------------------------------- process one completed~ ");
-						dispatch_semaphore_signal(batchProcessSignal);
-						
-						if ([imageInfos indexOfObject:infoDict] == imageInfos.count - 1) {
-							handle() ;
-						}
-					}else {
-						
-						NSDictionary *userInfo = error.userInfo;
-						NSHTTPURLResponse *response = userInfo[@"com.alamofire.serialization.response.error.response"];
-						NSInteger code = response.statusCode;
-						
-						NSString *message = @"网络访问错误" ;
-						if (code == 500) {
-							NSData *data = userInfo[@"com.alamofire.serialization.response.error.data"];
-							
-							NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-							
-							if ([str isEqualToString:@"server busy"]) {
-								message = @"服务器被占用" ;
-							}else if ([str isEqualToString:@"输入参数错误"]){
-								message = @"bad input" ;
-							}else {
-								int errIndex = [str intValue] ;
-								message = [self getErrorMessageWithIndex:errIndex];
-							}
-						}
-						NSLog(@"------ batch process error: %@", message);
-						
-						dispatch_semaphore_signal(batchProcessSignal);
-					}
-				}];
-			}
-		});
-	}
-}
 
-- (NSString *)getErrorMessageWithIndex:(int)errorIndex {
-	NSString *message ;
-	switch (errorIndex) {
-		case 1:
-			message = @"无法加载输入图片" ;
-			break;
-		case 2:
-			message = @"未检测到人脸" ;
-			break;
-		case 3:
-			message = @"检测到多个人脸" ;
-			break;
-		case 4:
-			message = @"检测不到头发" ;
-			break;
-		case 5:
-			message = @"输入图片不符合要求" ;
-			break;
-		case 6:
-			message = @"非正脸图片" ;
-			break;
-		case 7:
-			message = @"非清晰人脸" ;
-			break;
-		case 8:
-			message = @"未找到匹配发型" ;
-			break;
-		case 9:
-			message = @"未知错误" ;
-			break;
-		case 10:
-			message = @"FOV错误" ;
-			break;
-			
-		default:
-			message = @"未知错误" ;
-			break;
-	}
-	return message ;
-}
 
 @end

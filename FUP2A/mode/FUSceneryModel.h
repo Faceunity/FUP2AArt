@@ -13,8 +13,10 @@
 @interface FUSingleModel : NSObject
 
 @property (nonatomic, assign) FUGender gender ;
+@property (nonatomic, copy) NSString *camera ;    // 相机 bundle 文件
 @property (nonatomic, copy) NSString *imageName ;
-@property (nonatomic, copy) NSString *animationName ;
+@property (nonatomic, copy) NSString * animationName ;
+@property (nonatomic,strong)NSArray<NSString *> * otherAnimations;
 
 + (instancetype)modelWithDict:(NSDictionary *)dict ;
 @end
@@ -24,6 +26,6 @@
 
 @property (nonatomic, copy) NSString *imageName ;
 @property (nonatomic, strong) NSArray <FUSingleModel *>*modelArray ;
-
+@property (nonatomic, copy) NSString *camera ;    // 相机 bundle 文件
 + (instancetype)modelWithDict:(NSDictionary *)dict ;
 @end

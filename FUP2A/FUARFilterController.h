@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
-
+#import "FUARFilterView.h"
 @interface FUARFilterController : UIViewController
-
+@property (nonatomic, strong) FUARFilterView *filterView ;
+@property (nonatomic, assign) BOOL isShow;
 @end

@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "FUP2ADefine.h"
-
+typedef void(^FURequestResultDicBlock)(BOOL createAvatarSuccess ,NSDictionary *resultDic, NSError *error);   /*createAvatarSuccess 当前avatar有没有生成成功 */
 @interface FURequestManager : NSObject
 
 + (FURequestManager *)sharedInstance;
@@ -18,5 +18,5 @@
 
 @property (nonatomic, copy) NSString *serverShortString ;
 
-- (void)createQAvatarWithImage:(UIImage *)image Params:(NSDictionary *)params CompletionWithData:(void (^)(NSData *data, NSError *error))handle ;
+- (void)createQAvatarWithImage:(UIImage *)image Params:(NSDictionary *)params CompletionWithData:(FURequestResultDicBlock)handle ;
 @end

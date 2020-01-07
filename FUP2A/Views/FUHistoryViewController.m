@@ -77,7 +77,8 @@
 
 // 关闭
 - (IBAction)closeAction:(UIButton *)sender {
-    [self dismissViewControllerAnimated:YES completion:nil];
+	[self.navigationController popViewControllerAnimated:YES];
+	
 }
 
 // 删除

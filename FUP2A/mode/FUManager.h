@@ -12,7 +12,7 @@
 
 @class FUAvatar, FUP2AColor;
 @interface FUManager : NSObject
-
+@property (nonatomic, assign) int defalutQController;
 // version info
 @property (nonatomic, copy, readonly) NSString *appVersion ;
 @property (nonatomic, copy, readonly) NSString *sdkVersion ;
@@ -39,9 +39,19 @@
 // Q数据模型
 @property (nonatomic, strong) NSArray *qHairs ;
 @property (nonatomic, strong) NSArray *qGlasses ;
-@property (nonatomic, strong) NSArray *qClothes ; ;
+@property (nonatomic, strong) NSArray *qClothes ;
+@property (nonatomic, strong) NSArray *qMaleSuit ;  // 男套装
+@property (nonatomic, strong) NSArray *qFemaleSuit ;  // 女套装
 @property (nonatomic, strong) NSArray *qHats ;
-@property (nonatomic, strong) NSArray *qShoes ;
+
+@property (nonatomic, strong) NSArray *qUpper ;  // 上衣数组
+@property (nonatomic, strong) NSArray *qMaleUpper ;  // 男上衣数组
+@property (nonatomic, strong) NSArray *qFemaleUpper ;  // 女上衣数组
+@property (nonatomic, strong) NSArray *qLower ;  // 裤子数组
+@property (nonatomic, strong) NSArray *qShoes ;   // 鞋子数组
+@property (nonatomic, strong) NSArray *qDecorations ; // 配饰数组
+
+
 @property (nonatomic, strong) NSArray *qEyeBrow ;
 @property (nonatomic, strong) NSArray *qEyeLash ;
 @property (nonatomic, strong) NSArray *qBeard ;
@@ -65,11 +75,24 @@
 @property (nonatomic, strong) NSDictionary *femaleMeshPoints ;
 @property (nonatomic, strong) NSDictionary *qMeshPoints ;
 
+@property(nonatomic,strong) NSDictionary * orginalFaceup;    // 原始的脸部点位，从defalut_facepup.json文件获取
 // 当前 avatar
 @property (nonatomic, strong) NSMutableArray <FUAvatar *>*currentAvatars ;
 
 + (instancetype)shareInstance ;
-
+/// 绑定背景道具到controller
+/// @param filePath 新背景道具路径
+-(void)reloadBackGroundAndBindToController:(NSString *)filePath;
+/// 获取当前q_controller 里面捏脸参数的值
+-(float*)getCurrenShapeValue;
+/**
+ 全身追踪绑定脚下阴影
+ */
+- (void)bindPlaneShadow;
+/**
+ 解绑全身追踪绑定脚下阴影
+ */
+- (void)unBindPlaneShadow;
 /**
  加载 client data
  
@@ -78,19 +101,17 @@
 - (void)loadClientDataWithFirstSetup:(BOOL)firstSetup ;
 
 /**
- 加载背景道具
-
- @param filePath 背景道具所在路径
- */
-- (void)reloadBackGroundWithFilePath:(NSString *)filePath ;
-
-/**
  背景道具是否存在
 
  @return 是否存在
  */
 - (BOOL)isBackgroundItemExist ;
-
+/**
+ 更新Cam道具
+ 
+ @param camPath 辅助道具路径
+ */
+- (void)reloadCamItemWithPath:(NSString *)camPath ;
 /**
  普通模式下切换 Avatar
 
@@ -98,6 +119,13 @@
  */
 - (void)reloadRenderAvatar:(FUAvatar *)avatar ;
 
+/**
+ 普通模式下切换 Avatar,不销毁controller.bundle
+ 
+ @param avatar Avatar
+ */
+- (void)reloadRenderAvatarInSameController:(FUAvatar *)avatar;
+- (void)reloadRenderAvatarInARModeInSameController:(FUAvatar *)avatar;
 /**
  普通模式下 新增 Avatar render
 
@@ -112,6 +140,20 @@
  */
 - (void)removeRenderAvatar:(FUAvatar *)avatar ;
 
+/**
+ 绑定hair_mask.bundle
+ */
+- (void)bindHairMask ;
+
+/**
+ 销毁hair_mask.bundle
+ */
+- (void)destoryHairMask ;
+/**
+ 设置手势动画
+ -- 会切换 controller 所在句柄
+ */
+- (void)loadPoseTrackAnim;
 /**
  进入 AR滤镜 模式
  -- 会切换 controller 所在句柄
@@ -131,7 +173,17 @@
  @param filePath AR滤镜 路径
  */
 - (void)reloadARFilterWithPath:(NSString *)filePath ;
+/**
+ 在正常渲染avatar的模式下，切换AR滤镜
+ 
+ @param filePath  滤镜 路径
+ */
+- (void)reloadFilterWithPath:(NSString *)filePath ;
 
+/// 根据单个发型名称去deform头发
+/// @param avatar 需要deform的avatar
+/// @param hairName 需要deform的发型名称
+-(void)createHairBundles:(FUAvatar *)avatar WithHairName:(NSString *)hairName;
 /**
  检测人脸接口
 
@@ -139,8 +191,15 @@
  @return              图像数据
  */
 - (CVPixelBufferRef)trackFaceWithBuffer:(CMSampleBufferRef)sampleBuffer ;
-
-
+/**
+ 检测人脸接口
+ 
+ @param sampleBuffer  图像数据
+ @return              图像数据
+ */
+- (CVPixelBufferRef)trackFaceWithBuffer:(CMSampleBufferRef)sampleBuffer CurrentlLightingValue:(float *)currntLightingValue;
+// 处理前置摄像头的图像
+-(CVPixelBufferRef)dealTheFrontCameraPixelBuffer:(CVPixelBufferRef) pixelBuffer;
 /**
  Avatar 处理接口
 
@@ -150,7 +209,22 @@
  @return            处理之后的图像
  */
 - (CVPixelBufferRef)renderP2AItemWithPixelBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks;
-
+/**
+ Avatar 语音驱动模式下的处理接口
+ 
+ @param pixelBuffer 图像数据
+ @param renderMode  render 模式
+ @param landmarks   landmarks 数组
+ @return            处理之后的图像
+ */
+- (CVPixelBufferRef)renderP2AItemInFUStaWithPixelBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks;
+/**
+ Avatar 截图
+ 
+ @param pixelBuffer 图像数据
+ @return            处理之后的图像
+ */
+- (CVPixelBufferRef)screenshotP2AItemWithPixelBuffer:(CVPixelBufferRef)pixelBuffer;
 /**
  AR 滤镜处理接口
 
@@ -158,7 +232,22 @@
  @return            处理之后的图像数据
  */
 - (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer ;
+/**
+ AR 滤镜处理接口
 
+ @param pixelBuffer 图像数据
+ @return            处理之后的图像数据
+ */
+- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr;
+/**
+ AR 滤镜处理接口
+ 
+ @param pixelBuffer 图像数据
+ @param human3dPtr  human3d.bundle 的句柄
+ @param renderMode  FURenderCommonMode 为预览模式，FURenderPreviewMode为人脸追踪模式
+ @return            处理之后的图像数据
+ */
+- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode;
 /**
  Avatar 生成
  
@@ -208,6 +297,4 @@
  */
 - (CGRect)getFaceRect ;
 
-// 批量生成
-- (void)batchCreatingAvatarsWithImageInfos:(NSArray *)imageInfos Completion:(void (^)(void))handle ;
 @end

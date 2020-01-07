@@ -52,9 +52,9 @@ typedef enum : NSInteger {
 
     [self reloadData];
 
-    modelIndex = 1 ;
+    modelIndex = 0 ;
     if ([[FUManager shareInstance].avatarList containsObject:avatar]) {
-        modelIndex = [[FUManager shareInstance].avatarList indexOfObject:avatar] + 1 ;
+        modelIndex = [[FUManager shareInstance].avatarList indexOfObject:avatar];
     }
     
     [self.collection reloadData];
@@ -75,11 +75,19 @@ typedef enum : NSInteger {
     [self.collection reloadData];
 }
 
+- (void)selectNoFilter
+{
+    if (filterIndex != 0)
+    {
+        filterIndex = 0 ;
+        [self.collection reloadData];
+    }
+}
+
 - (IBAction)topBtnAction:(UIButton *)sender {
     sender.selected = !sender.selected ;
     
     if (!sender.selected) {
-        [self showCollection:NO];
         if ([self.delegate respondsToSelector:@selector(ARFilterViewDidShowTopView:)]) {
             [self.delegate ARFilterViewDidShowTopView:NO];
         }
@@ -101,9 +109,7 @@ typedef enum : NSInteger {
         CGPoint center = self.line.center ;
         center.x = centerX ;
         self.line.center = center ;
-        
-        [self showCollection:YES];
-        if ([self.delegate respondsToSelector:@selector(ARFilterViewDidShowTopView:)]) {
+		if ([self.delegate respondsToSelector:@selector(ARFilterViewDidShowTopView:)]) {
             [self.delegate ARFilterViewDidShowTopView:YES];
         }
     }else {
@@ -114,31 +120,15 @@ typedef enum : NSInteger {
             self.line.center = center ;
         }];
     }
+    [self.collection reloadData];
 }
 
-- (void)showCollection:(BOOL)show {
-    if (show) {
-        self.collection.hidden = NO ;
-        [UIView animateWithDuration:0.35 animations:^{
-            self.collection.transform = CGAffineTransformIdentity ;
-        }];
-    }else {
-        [UIView animateWithDuration:0.35 animations:^{
-            self.collection.transform = CGAffineTransformMakeTranslation(0, self.collection.frame.size.height) ;
-        }completion:^(BOOL finished) {
-            self.collection.hidden = YES ;
-            self.line.hidden = YES ;
-            self.modelBtn.selected = NO ;
-            self.filterBtn.selected = NO ;
-        }];
-    }
-}
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
 
     switch (_collectionType) {
         case FUARCollectionTypeModel:
-            return self.modelsArray.count + 1 ;
+            return self.modelsArray.count ;
             break;
         case FUARCollectionTypeFilter:
             return self.filtersArray.count + 1;
@@ -152,18 +142,12 @@ typedef enum : NSInteger {
 
     switch (_collectionType) {
         case FUARCollectionTypeModel:{
-
-            if (indexPath.row == 0) {
-                cell.imageView.image = modelIndex == 0 ? [UIImage imageNamed:@"noitem-pressed"] : [UIImage imageNamed:@"noitem"] ;
-                cell.layer.borderColor =  [UIColor clearColor].CGColor;
-                cell.layer.borderWidth =  0.0 ;
-            }else {
-                FUAvatar *avatar = self.modelsArray[indexPath.row - 1] ;
+                FUAvatar *avatar = self.modelsArray[indexPath.row] ;
                 cell.imageView.image = [UIImage imageWithContentsOfFile:avatar.imagePath];
 
                 cell.layer.borderColor = modelIndex == indexPath.row ? [UIColor colorWithRed:54/255.0 green:178/255.0 blue:1.0 alpha:1.0].CGColor : [UIColor clearColor].CGColor;
-                cell.layer.borderWidth = modelIndex == indexPath.row ? 2.0 : 0.0 ;
-            }
+			    cell.layer.borderWidth = modelIndex == indexPath.row ? 2.0 : 0.0 ;
+		
         }
             break;
         case FUARCollectionTypeFilter:{
@@ -197,18 +181,17 @@ typedef enum : NSInteger {
             }
             
             modelIndex = indexPath.row ;
-
-            FUAvatar *avatar = nil ;
-            if (indexPath.row != 0) {
-                avatar = self.modelsArray[indexPath.row - 1] ;
-            }
             [self.collection reloadData];
+            FUAvatar *avatar = self.modelsArray[indexPath.row] ;
+			
+
 
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 if (self.delegate && [self.delegate respondsToSelector:@selector(ARFilterViewDidSelectedAvatar:)]) {
                     [self.delegate ARFilterViewDidSelectedAvatar:avatar];
                 }
             });
+            
         }
             break;
         case FUARCollectionTypeFilter:{

@@ -26,9 +26,13 @@ typedef NS_ENUM(NSInteger, FUAvatarEditedDoModelType){
 	Hat,
     EyeBrow,
     EyeLash,
-
+    
     Clothes,
-    Shoes
+    Upper,
+    Lower,
+    Shoes,
+    Decorations,
+    UpperAndlower,
 } ;
 @interface FUAvatarEditedDoModel : NSObject
 @property (nonatomic,strong)NSObject * obj;
