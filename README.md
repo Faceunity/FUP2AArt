@@ -14,7 +14,7 @@
 
 &emsp;&emsp;客户可以先根据《PTA Server API》来申请相关的PTA服务权限。通过连接我们的Demo 服务器，或在我们技术团队辅助下架设自己服务器，来调用PTA Server API。PTA Server、测试服务器、PTA Demo，您正式服务器和正式APP之间的架构关系如下图所示。
 
-<img src="\docs\res\PTA_structure.png"  />
+<img src="docs/res/PTA_structure.png">
 
 ​	
 
