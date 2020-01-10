@@ -2,14 +2,13 @@
 
 本文主要介绍了如何快速跑通我们的FUP2A工程 、如何创建和编辑风格化形象、如何绘制风格化形象、SDK的分类及相关资源说明等。工程中会使用到两个库文件:FUP2AClient SDK、Nama SDK，其中 FUP2AClient SDK 用来做风格化形象的生成，Nama SDK 用来做风格化形象的绘制。
 
-如果您之前已经接入过我们的V1.6.0版本，这边建议您看我们的升级文档，这样能够快速的进行版本升级，[点此跳转升级文档](update_README.md)
 ## 快速开始
 
 下载工程后需要先获取两个证书：
 
 * authpack.h：Nama SDK鉴权证书，用于在客户端，使用Nama SDK 绘制的鉴权。
 
-* p2a_demo.p12：https 网络请求的鉴权证书，工程中提供的域名为测试域名，该证书仅用于连接测试服务器的鉴权。真实对接中，需要客户自己搭建服务端，并设计自己的鉴权机制，关于服务端的搭建请参考[P2A Server API 说明文档](P2A%20Server%20API.pdf)。
+* p2a_demo.p12：https 网络请求的鉴权证书，工程中提供的域名为测试域名，该证书仅用于连接测试服务器的鉴权。真实对接中，需要客户自己搭建服务端，并设计自己的鉴权机制，关于服务端的搭建请参考[PTA Server API 说明文档](PTA%20Server%20API.pdf)。
 
 下载证书后，将证书拷贝到[Faceunity](FUP2A/Faceunity)文件夹下，直接运行工程即可。
 
@@ -62,7 +61,7 @@
 
 ### 上传照片
 
-用户上传照片到服务端，服务端对该图片做人脸检测，并返回检测后的人脸数据： server.bundle。server.bundle 包含用户的发型、肤色、眼镜、唇色、脸型等详细信息。
+用户上传照片到服务端，服务端对该图片做人脸检测，并返回检测后的人脸数据： head.bundle。head.bundle 包含用户的发型、肤色、眼镜、唇色、脸型等详细信息。
 
 ### 初始化 FUP2AClient SDK 
 
@@ -128,19 +127,9 @@
 
 ### 生成头道具
 
-使用 server.bundle 调用 FUP2AClient SDK 相关接口便可以生成头道具，相关API接口说明如下：
+向我司服务器上传一张人像图片，服务器会返回一个NSData对象，将NSData写入本地，并保存名为head.bundle的文件，head.bundle即为新生成的头道具：
 
-```objective-c
-/**
-*  从server.bundle 或 head.bundle 中获取参数
 
-*  @param  data            服务端返回的数据流
-*  @param key            参数名
-
-*  @return                返回的参数
-*/
--(BOOL)setHeadData:(NSData *)data;
-```
 
 示例代码
 ```objective-c
@@ -162,20 +151,26 @@
   //其他代码
 }
 ```
+若要获取head.bundle相关的属性，先要调用[fuPTAClient shareInstance] setHeadData:data]方法，例如，如果需要获取当前上传图片中人像匹配的眼镜，使用以下方法：
+```objective-c
+	[[fuPTAClient shareInstance] setHeadData:data];
+	// 眼镜
+	int hasGlass = [[fuPTAClient shareInstance] getInt:@"has_glasses"];
+```
 
 
 注：该接口支持异步并行调用。
 
 ### 生成头发道具
 
-使用 server.bundle 与预置的 hair.bundle，调用 FUP2AClient SDK 相关接口，生成与头道具大小相匹配的头发道具，相关API接口说明如下：
+使用 head.bundle 与预置的 hair.bundle，调用 FUP2AClient SDK 相关接口，生成与头道具大小相匹配的头发道具，相关API接口说明如下：
 
 ```objective-c
 /**
 *  生成 hair.Bundle
 - 根据服务端传回的数据流和预置的头发模型 生成和此头部模型匹配的头发模型
 
-*  @param headData        server.bundle 或 head.bundle
+*  @param headData         head.bundle
 *  @param hairData        预置头发模型数据
 
 *  @return                生成的头发模型数据
