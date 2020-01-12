@@ -13,7 +13,7 @@
 @interface FUShapeParamsMode ()
 @property (nonatomic, strong) NSArray *propertyNames ;
 @property (nonatomic, strong) FUAvatar *avatar ;
-@property (nonatomic, strong) NSDictionary *defaultValues ;
+@property (nonatomic, strong) NSMutableDictionary *defaultValues ;
 @end
 
 @implementation FUShapeParamsMode
@@ -41,13 +41,15 @@ static FUShapeParamsMode *model = nil ;
 				[mutableNameArray addObject:proName];
 			}
 		}
+		
 		free(properties) ;
 		
 		self.propertyNames = [mutableNameArray copy];
 	}
 	return self ;
 }
-
+/// 编辑成功的小阶段，进行脸部点位保存
+/// @param avatar 记录需要保存点位的avatar
 - (void)resetDefaultParamsWithAvatar:(FUAvatar *)avatar {
 	_avatar = avatar ;
 	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
@@ -56,8 +58,36 @@ static FUShapeParamsMode *model = nil ;
 		[[FUShapeParamsMode shareInstance] setValue:@(value) forKey:proName];
 		[dict setObject:@(value) forKey:proName];
 	}
-	[FUShapeParamsMode shareInstance].defaultValues = [dict copy];
+	[FUShapeParamsMode shareInstance].defaultValues = dict;
 }
+/// 每次进入编辑界面，进行脸部点位保存
+/// @param avatar 记录需要保存点位的avatar
+- (void)resetOrignalParamsWithAvatar:(FUAvatar *)avatar {
+	_avatar = avatar ;
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+	for (NSString *proName in self.propertyNames) {
+		double value = [avatar getFacepupModeParamWith:proName];
+		[[FUShapeParamsMode shareInstance] setValue:@(value) forKey:proName];
+		[dict setObject:@(value) forKey:proName];
+	}
+	[FUManager shareInstance].orginalFaceup = dict;
+}
+// 使用字典记录当前初始脸型等点位
+- (void)resetDefaultParamsWithDic:(NSDictionary *)dict {
+	[FUShapeParamsMode shareInstance].defaultValues = dict;
+}
+// 使用当前属性来设置默认值
+- (void)resetDefaultParamsWithCurrentValue {
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+	
+	for (NSString *proName in self.propertyNames) {
+		id value = [self valueForKey:proName];
+		[dict setObject:value forKey:proName];
+	}
+	[FUShapeParamsMode shareInstance].defaultValues = dict;
+}
+
+
 
 - (void)recordParam:(NSString *)key value:(double)value {
 	if ([[FUShapeParamsMode shareInstance].propertyNames containsObject:key]) {
@@ -75,7 +105,7 @@ static FUShapeParamsMode *model = nil ;
 - (BOOL)propertiesIsChanged {
 	for (NSString *propertyName in self.propertyNames) {
 		double value0 = [[[FUShapeParamsMode shareInstance] valueForKey:propertyName] doubleValue];
-		double value1 = [[[FUShapeParamsMode shareInstance].defaultValues valueForKey:propertyName] doubleValue];
+		double value1 = [[[FUManager shareInstance].orginalFaceup valueForKey:propertyName] doubleValue];
 		if (value0 != value1) {
 			return YES ;
 		}

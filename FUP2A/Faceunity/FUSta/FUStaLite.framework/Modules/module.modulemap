@@ -1,0 +1,6 @@
+framework module FUStaLite {
+  umbrella header "FUStaLite.h"
+
+  export *
+  module * { export * }
+}

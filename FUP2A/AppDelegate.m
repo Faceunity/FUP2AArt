@@ -11,8 +11,8 @@
 #import "FUManager.h"
 
 @interface AppDelegate ()
-
-@property (nonatomic, strong) NSTimer *timer ;
+@property (nonatomic,strong) NSTimer *timer;
+@property (nonatomic,assign) int number;
 @end
 
 @implementation AppDelegate
@@ -22,48 +22,30 @@
     return YES; 
 }
 
-static UIBackgroundTaskIdentifier _backId ;
--(void)applicationDidEnterBackground:(UIApplication *)application {
-    
-    // 正在生成，开辟后台保证生成完成
-    if ([[FUManager shareInstance] isCreatingAvatar]) {
-        
-        _backId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-            
-            [[UIApplication sharedApplication] endBackgroundTask:_backId];
-            _backId = UIBackgroundTaskInvalid;
-        }];
-        
-        if (self.timer) {
-            [self.timer invalidate];
-            self.timer = nil ;
-        }
-        self.timer = [NSTimer scheduledTimerWithTimeInterval:3 target:self selector:@selector(checkTask) userInfo:nil repeats:YES];
-        [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
-    }
+static UIBackgroundTaskIdentifier _backIden ;
+//app进入后台后保持运行
+- (void)beginTask
+{
+    _backIden = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+        //如果在系统规定时间3分钟内任务还没有完成，在时间到之前会调用到这个方法
+        [self endBack];
+    }];
 }
 
--(void)applicationDidBecomeActive:(UIApplication *)application {
-    [self endCheckTask];
+//结束后台运行，让app挂起
+- (void)endBack
+{
+    //切记endBackgroundTask要和beginBackgroundTaskWithExpirationHandler成对出现
+    [[UIApplication sharedApplication] endBackgroundTask:_backIden];
+    _backIden = UIBackgroundTaskInvalid;
 }
 
-static int checkTimers = 0 ;
-- (void)checkTask {
-    
-    checkTimers ++ ;
-    // 生成完成 || 180s 内 结束
-    if (![[FUManager shareInstance] isCreatingAvatar] || checkTimers > 55) {
-        [self endCheckTask] ;
-    }
+//示例
+- (void)applicationDidEnterBackground:(UIApplication *)application
+{
+    [self beginTask];
 }
-
-- (void)endCheckTask {
-    [self.timer invalidate];
-    self.timer = nil ;
-    [[UIApplication sharedApplication] endBackgroundTask:_backId];
-    _backId = UIBackgroundTaskInvalid;
-    
-    checkTimers = 0 ;
+-(void)applicationWillEnterForeground:(UIApplication *)application{
+   [self endBack];
 }
-
 @end

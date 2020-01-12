@@ -70,7 +70,8 @@
 
 - (void)loadDefaultAvatar {
     FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
-    [[FUManager shareInstance] reloadRenderAvatar:avatar];
+    [avatar setCurrentAvatarIndex:0];
+    [[FUManager shareInstance] reloadRenderAvatarInSameController:avatar];
     [avatar loadStandbyAnimation];
 }
 

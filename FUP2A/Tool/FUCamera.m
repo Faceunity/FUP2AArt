@@ -9,7 +9,7 @@
 #import "FUCamera.h"
 #import <UIKit/UIKit.h>
 #import <SVProgressHUD/SVProgressHUD.h>
-#import <FUP2AHelper/FUP2AHelper.h>
+
 
 typedef enum : NSUInteger {
     CommonMode,
@@ -91,7 +91,7 @@ typedef enum : NSUInteger {
         
         [self.videoConnection setVideoOrientation:AVCaptureVideoOrientationPortrait];
         if (self.videoConnection.supportsVideoMirroring) {
-            self.videoConnection.videoMirrored = NO;
+    //        self.videoConnection.videoMirrored = NO;
         }
         
         [_captureSession beginConfiguration]; // the session to which the receiver's AVCaptureDeviceInput is added.
@@ -170,7 +170,7 @@ typedef enum : NSUInteger {
     self.videoConnection.videoOrientation = AVCaptureVideoOrientationPortrait;
     if (self.videoConnection.supportsVideoMirroring) {
 //        self.videoConnection.videoMirrored = isFront && self.shouldMirror;
-        self.videoConnection.videoMirrored = self.shouldMirror;
+  //      self.videoConnection.videoMirrored = self.shouldMirror;
     }
     [self.captureSession startRunning];
 }

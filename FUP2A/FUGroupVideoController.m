@@ -20,11 +20,19 @@
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	[self loadAssetFromFile];
+    [self addObserver];
 }
 
 -(void)viewWillDisappear:(BOOL)animated{
 	[super viewWillDisappear:animated];
-	
+    [[NSNotificationCenter defaultCenter] removeObserver:UIApplicationWillResignActiveNotification];
+    [[NSNotificationCenter defaultCenter] removeObserver:UIApplicationWillEnterForegroundNotification];
+    [[NSNotificationCenter defaultCenter] removeObserver:UIApplicationDidBecomeActiveNotification];
+}
+- (void)addObserver{
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willResignActive) name:UIApplicationWillResignActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willEnterForeground) name:UIApplicationWillEnterForegroundNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didBecomeActive) name:UIApplicationDidBecomeActiveNotification object:nil];
 }
 
 
@@ -45,8 +53,8 @@
 	[self.currentAvatar loadStandbyAnimation];
 	
 	if (![[FUManager shareInstance] isBackgroundItemExist]) {
-		NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"background.bundle" ofType:nil];
-		[[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
+		NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"default_bg.bundle" ofType:nil];
+		[[FUManager shareInstance] reloadBackGroundAndBindToController:bgPath];
 	}
 	
 	[[FUManager shareInstance].currentAvatars.firstObject resetScaleToSmallBody];
@@ -171,4 +179,39 @@ static const NSString *ItemStatusContext;
 	[self.playerItem removeObserver:self forKeyPath:@"status" context:&ItemStatusContext];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
+
+- (void)willResignActive    {
+    
+    if (self.navigationController.visibleViewController == self) {
+         [self replay];
+    }
+}
+
+- (void)willEnterForeground {
+    
+    if (self.navigationController.visibleViewController == self) {
+         [self replay];
+    }
+}
+
+- (void)didBecomeActive {
+    
+    if (self.navigationController.visibleViewController == self) {
+        [self replay];
+    }
+}
+
+
+- (void)replay
+{
+    if (@available(iOS 10.0, *)) {
+        if (self.player.timeControlStatus != AVPlayerTimeControlStatusPlaying)
+        {
+            [self.player play];
+        }
+    } else {
+        // Fallback on earlier versions
+    }
+}
+
 @end

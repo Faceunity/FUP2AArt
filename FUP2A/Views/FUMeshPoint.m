@@ -11,31 +11,31 @@
 @implementation FUMeshPoint
 
 + (instancetype)meshPointWithDicInfo:(NSDictionary *)dict {
+    
+    UIImage *image = [UIImage imageNamed:@"mesh_point"];
 	
-	UIImage *image = [UIImage imageNamed:@"mesh_point"];
-	
-	FUMeshPoint *point = [[FUMeshPoint alloc] initWithImage:image];
-	point.bounds = CGRectMake(0, 0, 23, 23);
-	point.contentMode = UIViewContentModeCenter;
-	point.index = [dict[@"index"] integerValue];
-	point.direction = (FUMeshPiontDirection)[dict[@"direction"] integerValue];
-	
-	point.leftKey = dict[@"left"] ;
-	point.rightKey = dict[@"right"] ;
-	point.upKey = dict[@"up"] ;
-	point.downKey = dict[@"down"] ;
-	
-	point.selected = NO ;
-	
-	return point ;
+    FUMeshPoint *point = [[FUMeshPoint alloc] initWithImage:image];
+    point.bounds = CGRectMake(0, 0, 23, 23);
+    point.contentMode = UIViewContentModeCenter;
+    point.index = [dict[@"index"] integerValue];
+    point.direction = (FUMeshPiontDirection)[dict[@"direction"] integerValue];
+    
+    point.leftKey = dict[@"left"] ;
+    point.rightKey = dict[@"right"] ;
+    point.upKey = dict[@"up"] ;
+    point.downKey = dict[@"down"] ;
+    
+    point.selected = NO ;
+    
+    return point ;
 }
 
 
 
 -(void)setSelected:(BOOL)selected {
-	_selected = selected ;
-	
-	UIImage *image = selected ? [UIImage imageNamed:@"mesh_point_selected"] : [UIImage imageNamed:@"mesh_point"] ;
+    _selected = selected ;
+    
+    UIImage *image = selected ? [UIImage imageNamed:@"mesh_point_selected"] : [UIImage imageNamed:@"mesh_point"] ;
 	
 	self.image = image ;
 }

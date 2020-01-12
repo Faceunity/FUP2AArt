@@ -16,9 +16,14 @@
     FUSingleModel *model = [[FUSingleModel alloc] init];
     model.gender = [dict[@"gender"] integerValue];
     model.imageName = dict[@"image"] ;
+	model.camera = dict[@"camera"] ;
     model.animationName = dict[@"animation"] ;
+    model.otherAnimations = dict[@"otherAnimations"];
     
     return model ;
+}
+-(NSString *)description{
+	return [NSString stringWithFormat:@"FUSingleModel:%p;\ngender:%ld;\nimageName:%@;\ncamera:%@;\nanimationName:%@;\notherAnimations:%@;\n",self,(long)self.gender,self.imageName,self.camera,self.animationName,self.otherAnimations];
 }
 @end
 
@@ -30,6 +35,7 @@
     
     FUMultipleModel *model = [[FUMultipleModel alloc] init];
     model.imageName = dict[@"image"] ;
+    model.camera = dict[@"camera"];
     
     NSMutableArray *array = [NSMutableArray arrayWithCapacity:1];
     NSArray *dataArray = dict[@"items"];

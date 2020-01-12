@@ -35,7 +35,6 @@ UINavigationControllerDelegate
 	__block NSString *videoPath ;
 }
 @property (weak, nonatomic) IBOutlet UIButton *nextBtn;
-
 @property (nonatomic, strong) FUCamera *camera ;
 @property (nonatomic, strong) UIImage *bgImage ;
 @property (nonatomic, assign) BOOL isbgImageChanged ;
@@ -64,6 +63,7 @@ UINavigationControllerDelegate
 	animationFrameCount = 0 ;
 	
 	FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+	[avatar setCurrentAvatarIndex:0];
 	[[FUManager shareInstance] removeRenderAvatar:avatar];
 	
 	[self showDefaultTips];
@@ -73,23 +73,7 @@ UINavigationControllerDelegate
 	[self.camera startCapture ];
 	
 	
-	if (self.sceneryModel == FUSceneryModeAnimation)
-	{
-		
-		if ([self.animationModel.animationName isEqualToString:@"ani_dance"]) {
-			
-			NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"ani_dace_bg" ofType:@"bundle"];
-			[[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
-		}else if ([self.animationModel.animationName isEqualToString:@"ani_LRPP"]){
-			NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"ani_LRPP_bg" ofType:@"bundle"];
-			[[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
-		}else if ([self.animationModel.animationName isEqualToString:@"ani_SJG"]){
-			NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"ani_SJG_bg" ofType:@"bundle"];
-			[[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
-		}else if ([self.animationModel.animationName isEqualToString:@"ani_SZW"]){
-		}
-		
-	}
+
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -97,11 +81,11 @@ UINavigationControllerDelegate
 	
 	[self.camera startCapture];
 	if (self.bgImage) {
-//		if (self.isbgImageChanged) {
-			[self exchangeRenderBackgroundWithImage:self.bgImage];
-//		}else{
-//			[self exchangeRenderBackgroundWithImage:self.bgImage WithRenderMode:GroupSelectedRunModeCommon];
-//		}
+		//		if (self.isbgImageChanged) {
+		[self exchangeRenderBackgroundWithImage:self.bgImage];
+		//		}else{
+		//			[self exchangeRenderBackgroundWithImage:self.bgImage WithRenderMode:GroupSelectedRunModeCommon];
+		//		}
 		self.isbgImageChanged = false;
 		
 	}
@@ -175,8 +159,8 @@ UINavigationControllerDelegate
 	
 	if (![[FUManager shareInstance] isBackgroundItemExist]) {
 		
-		NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"background.bundle" ofType:nil];
-		[[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
+		NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"default_bg.bundle" ofType:nil];
+		[[FUManager shareInstance] reloadBackGroundAndBindToController:bgPath];
 	}
 	
 	[self.navigationController popViewControllerAnimated:YES];
@@ -254,24 +238,23 @@ UINavigationControllerDelegate
 
 -(void)didOutputVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer {
 	dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER) ;
-	
 	CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
-	
+	CGFloat width = CVPixelBufferGetWidth(pixelBuffer);
+	CGFloat height = CVPixelBufferGetHeight(pixelBuffer);
 	CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemWithPixelBuffer:pixelBuffer RenderMode:FURenderCommonMode Landmarks:nil];
-	
 	if (customRenderBackground) {
 		buffer = [[CRender shareRenderer] mergeBgImageToBuffer:buffer];
 	}
 	
-	[self.glView displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:YES];
-	
-	//    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+	[self.glView displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:NO];
 	switch (renderMode) {
 		case GroupSelectedRunModeCommon:
 			break;
 		case GroupSelectedRunModePhotoTake:{
 			renderMode = GroupSelectedRunModeCommon ;
-			UIImage *image = [[FUP2AHelper shareInstance] createImageWithBuffer:buffer mirr:YES];
+			CVPixelBufferRef mirrorBuffer = [[CRender shareRenderer] mirrorPixelBufferInXUseC:buffer];
+			UIImage *image = [[FUP2AHelper shareInstance] createImageWithBuffer:mirrorBuffer mirr:YES];
+			CVPixelBufferRelease(mirrorBuffer);
 			dispatch_async(dispatch_get_main_queue(), ^{
 				[self.camera stopCapture];
 				[self performSegueWithIdentifier:@"FUGroupImageController" sender:image];
@@ -297,22 +280,18 @@ UINavigationControllerDelegate
 			}
 #else
 			CVPixelBufferRef mirrorBuffer;
-		//	[self.glView convertMirrorPixelBuffer2:buffer dstPixelBuffer:&mirrorBuffer];
+			//	[self.glView convertMirrorPixelBuffer2:buffer dstPixelBuffer:&mirrorBuffer];
 			int h = (int)CVPixelBufferGetHeight(buffer);
 			int w = (int)CVPixelBufferGetWidth(buffer);
-	//		NSLog(@"h----------%d---------w---------%d",h,w);
-	  CVPixelBufferRef imageBuffer ;
-			if (!customRenderBackground) {
-             imageBuffer = [[CRender shareRenderer] cutoutPixelBufferInMirror:buffer WithRect:CGRectMake(0, 0, w, h)];
-            }else{
-            imageBuffer = buffer;
-			}
+			//		NSLog(@"h----------%d---------w---------%d",h,w);
+			CVPixelBufferRef imageBuffer ;
+			imageBuffer = buffer;
 			[[FUP2AHelper shareInstance] recordBufferWithType:FUP2AHelperRecordTypeVideo buffer:imageBuffer sampleBuffer:sampleBuffer];
 			FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
-			int index = [avatar getCurrentAnimationFrameIndex];
-			if (index == animationFrameCount - 1) {
+				[avatar setCurrentAvatarIndex:avatar.currentInstanceId];
+			float progress = [avatar getAnimateProgress];   // 获取动画的播放进度
+			if (progress > 1) {   // 如果动画的播放进度 大于 1，表示动画一个循环录制完成，获取录制的视频文件路径
 				renderMode = GroupSelectedRunModeCommon ;
-				
 				__weak typeof(self)weakSelf = self ;
 				[[FUP2AHelper shareInstance] stopRecordWithType:FUP2AHelperRecordTypeVideo Completion:^(NSString *retPath) {
 					dispatch_async(dispatch_get_main_queue(), ^{
@@ -333,13 +312,12 @@ UINavigationControllerDelegate
 - (int)shouldAddCurrentAvatar:(FUAvatar *)avatar {
 	
 	
-	
 	switch (_sceneryModel) {
 		case FUSceneryModeSingle:
 		case FUSceneryModeAnimation:    {
-		if (avatar.isQType) {
-		return 0 ;
-	}
+			if (avatar.isQType) {
+				return 0 ;
+			}
 			
 			FUSingleModel *model = self.sceneryModel == FUSceneryModeSingle ? self.singleModel : self.animationModel ;
 			if (model.gender != avatar.gender) {
@@ -446,6 +424,8 @@ UINavigationControllerDelegate
 	collectionView.userInteractionEnabled = NO ;
 	
 	FUAvatar *avatar = [FUManager shareInstance].avatarList[indexPath.row];
+
+	self.currentAvatar = avatar;
 	
 	if ([selectedIndex containsObject:@(indexPath.row)]) {  // 取消
 		[selectedIndex removeObject:@(indexPath.row)];
@@ -465,14 +445,13 @@ UINavigationControllerDelegate
 			case FUSceneryModeAnimation:{
 				
 				[self showDefaultTips];
-				
 				[[FUP2AHelper shareInstance] cancleRecord];
 			}
 				break;
 			case FUSceneryModeMultiple:{
 				
 				FUAvatar *curAva = [FUManager shareInstance].currentAvatars.firstObject ;
-				
+				self.currentAvatar = curAva;
 				if (curAva.isQType) {
 					self.tipLabel.text = @"选择一个模型" ;
 					break ;
@@ -512,13 +491,29 @@ UINavigationControllerDelegate
 		// 增加
 		[self->selectedIndex addObject:@(indexPath.row)];
 		
-		
+		int selectedAvatarNum = [FUManager shareInstance].currentAvatars.count;
+		switch (selectedAvatarNum) {
+			case 0:
+				[avatar setCurrentAvatarIndex:0];
+				break;
+			case 1:{
+				FUAvatar * selectedAvatar = [FUManager shareInstance].currentAvatars.firstObject;
+				if (selectedAvatar.currentInstanceId == 0) {
+					[avatar setCurrentAvatarIndex:1];
+				}else{
+					[avatar setCurrentAvatarIndex:0];
+				}
+			}
+				break;
+				
+			default:
+				break;
+		}
+
 		[[FUManager shareInstance] addRenderAvatar:avatar];
+	//	[avatar resetScaleToSmallBody];
 		
-		[avatar avatarSetParamWithKey:@"target_scale" value:350];
-		[avatar avatarSetParamWithKey:@"target_trans" value:65];
-		[avatar avatarSetParamWithKey:@"target_angle" value:0];
-		[avatar avatarSetParamWithKey:@"reset_all" value:1];
+			[avatar resetScaleToOriginal];
 		
 		
 		dispatch_async(dispatch_get_main_queue(), ^{
@@ -527,7 +522,15 @@ UINavigationControllerDelegate
 		
 		switch (self.sceneryModel) {
 			case FUSceneryModeSingle:{
+				// 获取当前相机动画bundle路径
+				NSString *camPath = [[NSBundle mainBundle] pathForResource:self.singleModel.camera ofType:@"bundle"];
+				// 将相机动画绑定到controller上
+				[[FUManager shareInstance] reloadCamItemWithPath:camPath];
+				// 循环播放相机动画（这里可以自定义）
+				[avatar loopCameraAnimation];
+				// 获取当前形象动画bundle路径
 				NSString *animationPath = [[NSBundle mainBundle] pathForResource:self.singleModel.animationName ofType:@"bundle"];
+				// 将形象动画绑定到controller上
 				[avatar reloadAnimationWithPath:animationPath];
 				
 				if (self->selectedIndex.count == self->modelCount) {
@@ -541,6 +544,9 @@ UINavigationControllerDelegate
 			}
 				break;
 			case FUSceneryModeMultiple:{
+				NSString *camPath = [[NSBundle mainBundle] pathForResource:self.multipleModel.camera ofType:@"bundle"];
+				[[FUManager shareInstance] reloadCamItemWithPath:camPath];
+				[avatar loopCameraAnimation];
 				NSString *animation ;
 				for (FUSingleModel *model in self.multipleModel.modelArray) {
 					if (model.gender == avatar.gender) {
@@ -567,36 +573,24 @@ UINavigationControllerDelegate
 			}
 				break ;
 			case FUSceneryModeAnimation: {
+				
 				NSString *animationPath = [[NSBundle mainBundle] pathForResource:self.animationModel.animationName ofType:@"bundle"];
 				[avatar reloadAnimationWithPath:animationPath];
 				
-				if ([self.animationModel.animationName isEqualToString:@"ani_dance"]) {
-					
-					NSString *tmpPath = [[NSBundle mainBundle] pathForResource:@"ani_dace_cam" ofType:@"bundle"];
-					[avatar reloadCamItemWithPath:tmpPath];
-					//					NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"ani_dace_bg" ofType:@"bundle"];
-					//					[[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
-				}else if ([self.animationModel.animationName isEqualToString:@"ani_LRPP"]){
-					
-					NSString *tmpPath = [[NSBundle mainBundle] pathForResource:@"ani_LRPP_shanzi" ofType:@"bundle"];
-					[avatar reloadTmpItemWithPath:tmpPath];
-					NSString *camPath = [[NSBundle mainBundle] pathForResource:@"ani_LRPP_cam" ofType:@"bundle"];
-					[avatar reloadCamItemWithPath:camPath];
-					//					NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"ani_LRPP_bg" ofType:@"bundle"];
-					//					[[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
-				}else if ([self.animationModel.animationName isEqualToString:@"ani_SJG"]){
-					
-					NSString *tmpPath = [[NSBundle mainBundle] pathForResource:@"ani_SJG_sjg" ofType:@"bundle"];
-					[avatar reloadTmpItemWithPath:tmpPath];
-					NSString *camPath = [[NSBundle mainBundle] pathForResource:@"ani_SJG_cam" ofType:@"bundle"];
-					[avatar reloadCamItemWithPath:camPath];
-					NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"ani_SJG_bg" ofType:@"bundle"];
-					[[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
-				}else if ([self.animationModel.animationName isEqualToString:@"ani_SZW"]){
-					
-					NSString *camPath = [[NSBundle mainBundle] pathForResource:@"ani_SZW_cam" ofType:@"bundle"];
-					[avatar reloadCamItemWithPath:camPath];
+				NSArray * otherAnimations = self.animationModel.otherAnimations;
+				for (NSString * animation in otherAnimations) {
+					NSString *animationPath = [[NSBundle mainBundle] pathForResource:animation ofType:@"bundle"];
+					[avatar addTmpItemFilePath:animationPath];;
 				}
+				NSString *camPath = nil;
+				if (self.animationModel.camera) {
+				camPath = [[NSBundle mainBundle] pathForResource:self.animationModel.camera ofType:@"bundle"];
+				}else{
+				camPath = [[NSBundle mainBundle] pathForResource:@"ani_cam" ofType:@"bundle"];
+				}
+				[[FUManager shareInstance] reloadCamItemWithPath:camPath];
+				[avatar loopCameraAnimation];
+				
 				
 				self->animationFrameCount = [avatar getAnimationFrameCount];
 				dispatch_async(dispatch_get_main_queue(), ^{
@@ -668,19 +662,27 @@ UINavigationControllerDelegate
 	}
 }
 
-
 #pragma mark ---- select images
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info {
 	// 关闭相册
 	[picker dismissViewControllerAnimated:YES completion:nil];
 	
 	UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
-	
+//	UIImage* flippedImage = [UIImage imageWithCGImage:image.CGImage
+//		  scale:image.scale
+//	orientation:UIImageOrientationUpMirrored];
+	size_t width;
+	size_t height;
+//	UIImage* flippedImage = AGLKDataWithResizedCGImageBytes(image.CGImage);
+	FUCutoutOption op = malloc(sizeof(*op));
+	op->orientation = FUOrientationHorizontallyMirror;
+	UIImage* flippedImage = [[CRender shareRenderer] fixImageOrientationWithImage:image option:op];
+
 	[self.camera startCapture];
 	
 	if (image) {
 		self.isbgImageChanged = true;
-		[self exchangeRenderBackgroundWithImage:image];
+		[self exchangeRenderBackgroundWithImage:flippedImage];
 		//		renderMode = GroupSelectedRunModeCommon ;
 		
 	}
@@ -691,22 +693,22 @@ UINavigationControllerDelegate
 	[picker dismissViewControllerAnimated:YES completion:nil];
 	[self.camera startCapture];
 	switch (self.sceneryModel) {
-			case FUSceneryModeSingle:
-				break;
-			case FUSceneryModeMultiple:
-				break ;
-			case FUSceneryModeAnimation: {
-			    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject ;
-			    [avatar restartAnimation];
-				self->renderMode = GroupSelectedRunModeVideoRecord ;
-			}
-				break;
+		case FUSceneryModeSingle:
+			break;
+		case FUSceneryModeMultiple:
+			break ;
+		case FUSceneryModeAnimation: {
+			FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject ;
+			[avatar restartAnimation];
+			self->renderMode = GroupSelectedRunModeVideoRecord ;
 		}
+			break;
+	}
 }
 
 - (void)exchangeRenderBackgroundWithImage:(UIImage *)image WithRenderMode:(GroupSelectedRunMode) newRenderMode{
 	
-	[[FUManager shareInstance] reloadBackGroundWithFilePath:nil];
+	[[FUManager shareInstance] reloadBackGroundAndBindToController:nil];
 	self.bgImage = image;
 	[CRender shareRenderer].bgImage = self.bgImage;
 	
@@ -720,20 +722,23 @@ UINavigationControllerDelegate
 		[avatar restartAnimation];
 		
 		renderMode = newRenderMode ;
+		[self setNextBtnEnable:NO];
 		[[FUP2AHelper shareInstance] cancleRecord];
 		[[FUP2AHelper shareInstance] startRecordWithType:FUP2AHelperRecordTypeVideo];
+	    renderMode = GroupSelectedRunModeVideoRecord;
 	}
 }
 
 - (void)exchangeRenderBackgroundWithImage:(UIImage *)image {
-
+	
 	[self exchangeRenderBackgroundWithImage:image WithRenderMode:GroupSelectedRunModeVideoRecord];
 	
 }
 
 -(void)dealloc{
-	NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"background" ofType:@"bundle"];
-	[[FUManager shareInstance] reloadBackGroundWithFilePath:bgPath];
+	NSLog(@"FUGroupSelectedController--------销毁了");
+	NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"default_bg" ofType:@"bundle"];
+	[[FUManager shareInstance] reloadBackGroundAndBindToController:bgPath];
 }
 @end
 

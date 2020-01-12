@@ -7,6 +7,8 @@
 #import "Tool/FUOpenGLView.h"
 #import "mode/FUManager.h"
 #import "FUStack.h"
+#import "funama.h"
+#import "FURenderer.h"
 #import "FUAvatarEditedDoModel.h"
 #import "FUNielianEditManager.h"
 #import "FUAvatarEditManager.h"
@@ -19,13 +21,22 @@
 #import <SVProgressHUD.h>
 #import "FUTool.h"
 #import "FUAVUtilities.h"
+#import "Chat/FUKeyBoardInputView.h"
+#import "FUTrackController.h"
+#import "FUPoseTrackView.h"
+#import "FUTextTrackView.h"
+#import "FUARFilterView.h"
+#import "FUTextTrackController.h"
+
+#import "FUARFilterController.h"
+
 
 #import "FUP2AColor.h"
 #import "FUFigureView.h"
 #import "FUMeshPoint.h"
 #import "FUShapeParamsMode.h"
 #import "UIColor+FU.h"
-#import <FUP2AClient/FUP2AClient.h>
+#import "Faceunity/P2A/fuPTAClient.h"
 
 #import <SVProgressHUD.h>
 #import "FUManager.h"

@@ -1,6 +1,0 @@
-framework module FUP2AClient {
-  umbrella header "FUP2AClient.h"
-
-  export *
-  module * { export * }
-}

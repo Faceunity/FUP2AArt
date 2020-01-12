@@ -26,6 +26,7 @@
 @property (nonatomic, assign) id<FUARFilterViewDelegate>delegate ;
 - (void)selectedModeWith:(FUAvatar *)avatar ;
 - (void)showCollection:(BOOL)show ;
+- (void)selectNoFilter;
 @end
 
 @interface FUARFilterCell: UICollectionViewCell

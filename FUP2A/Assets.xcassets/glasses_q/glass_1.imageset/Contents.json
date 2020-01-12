@@ -2,7 +2,7 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "glass_1.png",
+      "filename" : "glass_1@1x.png",
       "scale" : "1x"
     },
     {
