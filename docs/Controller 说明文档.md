@@ -1,4 +1,4 @@
-# Contorller 参数文档
+# Controller 参数文档
 
 ## 特别说明
 ```C
