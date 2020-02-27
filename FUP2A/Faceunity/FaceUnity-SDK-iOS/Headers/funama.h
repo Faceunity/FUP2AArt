@@ -15,7 +15,8 @@ typedef enum FUAITYPE{
 	FUAITYPE_FACELANDMARKS209=1<<6,
 	FUAITYPE_FACELANDMARKS239=1<<7,
 	FUAITYPE_HUMANPOSE2D=1<<8,
-	FUAITYPE_BACKGROUNDSEGMENTATION_GREEN=1<<9
+	FUAITYPE_BACKGROUNDSEGMENTATION_GREEN=1<<9,
+	FUAITYPE_FACEPROCESSOR=1<<10
 }FUAITYPE;
 
 /*\brief An I/O format where `ptr` points to a BGRA buffer. It matches the camera format on iOS. */
@@ -571,10 +572,28 @@ FUNAMA_API int fuUnbindItems(int item_src, int* p_items,int n_items);
 FUNAMA_API int fuUnbindAllItems(int item_src);
 
 /**
-\brief Get SDK version string
+\brief Get SDK version string, Major.Minor.Fix_ID
 \return SDK version string in const char*
 */
 FUNAMA_API const char* fuGetVersion();
+
+/**
+\brief Get SDK version Major bit, Major.Minor.Fix
+\return SDK version Major bit in int
+*/
+FUNAMA_API int fuGetVersionMajor();
+
+/**
+\brief Get SDK version Minor bit, Major.Minor.Fix
+\return SDK version Minor bit in int
+*/
+FUNAMA_API int fuGetVersionMinor();
+
+/**
+\brief Get SDK version Fix bit, Major.Minor.Fix
+\return SDK version Fix bit in int
+*/
+FUNAMA_API int fuGetVersionFix();
 
 /**
 \brief Get system error, which causes system shutting down
@@ -805,6 +824,9 @@ FUNAMA_API void fuSetQualityTradeoff(float quality);
 \brief Turn off the camera
 */
 FUNAMA_API void fuTurnOffCamera();
+
+
+FUNAMA_API void fuGetTickData(float* buf,int n);
 /**
 \brief Generalized interface for rendering a list of items.
 	This function needs a GLES 2.0+ context.
@@ -833,6 +855,12 @@ FUNAMA_API int fuRenderItemsMasked(
 FUNAMA_API void fuGetCameraImageSize(int* pret);
 
 FUNAMA_API int fuHasFace();
+
+/**
+\brief Count API calls.
+\param name is the API name
+*/
+FUNAMA_API int fuAuthCountWithAPIName(char* name);
 
 
 /**
@@ -958,6 +986,16 @@ float* fuFaceCaptureGetResultExpression(void*  manager_ptr_addr,
 \param size_n  the size of result
 */
 float* fuFaceCaptureGetResultRotation(void*  manager_ptr_addr,
+									int face_n,
+									int*  size_n);
+
+/**
+\brief get face bbox result
+\param manager_ptr_addr the pointer of the capture manager
+\param face_n  the index of captured face
+\param size_n  the size of result
+*/
+float* fuFaceCaptureGetResultFaceBbox(void*  manager_ptr_addr,
 									int face_n,
 									int*  size_n);
 

@@ -31,40 +31,37 @@
     self.line.layer.cornerRadius = 1.0 ;
     self.line.frame = CGRectMake(34.0, self.frame.size.height - 2.0, 34, 2.0) ;
     [self addSubview:self.line];
-   [self registerNib:[UINib nibWithNibName:@"FUFigureBottomCell" bundle:nil] forCellWithReuseIdentifier:@"FUFigureBottomCell"];
-}
-
--(void)setDataArray:(NSArray *)dataArray {
-    _dataArray = dataArray ;
-    [self reloadData];
+    [self registerNib:[UINib nibWithNibName:@"FUFigureBottomCell" bundle:nil] forCellWithReuseIdentifier:@"FUFigureBottomCell"];
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return self.dataArray.count ;
+    return [FUManager shareInstance].itemTypeArray.count ;
 }
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     
     FUFigureBottomCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"FUFigureBottomCell" forIndexPath:indexPath];
-    cell.label.text = self.dataArray[indexPath.row] ;
-    cell.label.textColor = selectedIndex == indexPath.row ? [UIColor colorWithHexColorString:@"4C96FF"] : [UIColor colorWithHexColorString:@"000000"] ;
+    NSString *type = [FUManager shareInstance].itemNameArray[indexPath.row];
+    cell.label.text = type;
+    cell.label.textColor = [FUManager shareInstance].itemTypeSelectIndex == indexPath.row ? [UIColor colorWithHexColorString:@"4C96FF"] : [UIColor colorWithHexColorString:@"000000"] ;
     return cell ;
 }
 
--(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    
-    if (indexPath.row == selectedIndex) {
-        if ([self.mDelegate respondsToSelector:@selector(bottomCollectionDidSelectedIndex:show:animation:)]) {
-            [self.mDelegate bottomCollectionDidSelectedIndex:selectedIndex show:NO animation:YES];
+-(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (indexPath.row == [FUManager shareInstance].itemTypeSelectIndex)
+    {
+        if ([self.mDelegate respondsToSelector:@selector(bottomCollectionDidSelectedIndex:show:animation:)])
+        {
+            [self.mDelegate bottomCollectionDidSelectedIndex:indexPath.row show:NO animation:YES];
             
-            [self hiddenSelectedItem];
+            [self hiddenSelectedLine];
         }
-        
         return ;
     }
-    BOOL animation = selectedIndex == -1 ;
     
-    selectedIndex = indexPath.row ;
+    BOOL animation = [FUManager shareInstance].itemTypeSelectIndex  == -1;
+    [FUManager shareInstance].itemTypeSelectIndex = indexPath.row;
     
     FUFigureBottomCell *cell = (FUFigureBottomCell *)[collectionView cellForItemAtIndexPath:indexPath];
     
@@ -72,25 +69,26 @@
     CGFloat centerX = cell.center.x ;
     CGPoint center = self.line.center ;
     center.x = centerX ;
-    if (!animation) {
-        [UIView animateWithDuration:0.35 animations:^{
-            self.line.center = center ;
-        }];
-    }else {
+    
+    [UIView animateWithDuration:0.35 animations:^{
         self.line.center = center ;
-    }
+    }];
+    
     [collectionView reloadData];
     [collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
     
-    if ([self.mDelegate respondsToSelector:@selector(bottomCollectionDidSelectedIndex:show:animation:)]) {
-        [self.mDelegate bottomCollectionDidSelectedIndex:selectedIndex show:YES animation:animation];
+    if ([self.mDelegate respondsToSelector:@selector(bottomCollectionDidSelectedIndex:show:animation:)])
+    {
+        [self.mDelegate bottomCollectionDidSelectedIndex:indexPath.row show:YES animation:animation];
     }
 }
 
-- (void)hiddenSelectedItem {
-    if (selectedIndex != -1) {
-        selectedIndex = -1 ;
+- (void)hiddenSelectedLine
+{
+    if (!self.line.hidden)
+    {
         self.line.hidden = YES ;
+        [FUManager shareInstance].itemTypeSelectIndex = -1;
         [self reloadData];
     }
 }

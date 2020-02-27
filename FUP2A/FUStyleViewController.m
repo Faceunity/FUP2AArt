@@ -16,20 +16,27 @@
 @property (weak, nonatomic) IBOutlet UIButton *QStyleButton;
 @property (weak, nonatomic) IBOutlet UIButton *NormalStyleButton;
 @property (weak, nonatomic) IBOutlet UIView *loadingContainer;
-@property (nonatomic, strong) FULoadingView *loadingView ;
+@property (nonatomic, strong) FULoadingView *loadingView;
 
 @end
 
 @implementation FUStyleViewController
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
     [super viewDidLoad];
 }
 
-- (IBAction)qstyleSelected:(UIButton *)sender {
-    
-        self.loadingContainer.hidden = NO;
-        [self.loadingView startLoading];
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    self.loadingContainer.hidden = YES;
+}
+
+- (IBAction)qstyleSelected:(UIButton *)sender
+{
+    self.loadingContainer.hidden = NO;
+    [self.loadingView startLoading];
     self.QStyleButton.enabled = false;
     self.NormalStyleButton.enabled = false;
     __weak typeof(self)weakSelf = self ;
@@ -38,8 +45,8 @@
     });
 }
 
-- (IBAction)basicStyleSelected:(UIButton *)sender {
-    
+- (IBAction)basicStyleSelected:(UIButton *)sender
+{
     [SVProgressHUD show];
 	self.QStyleButton.enabled = false;
     self.NormalStyleButton.enabled = false;
@@ -49,8 +56,8 @@
     });
 }
 
-- (void)loadDefaultDataWithStyle:(FUAvatarStyle)style {
-    
+- (void)loadDefaultDataWithStyle:(FUAvatarStyle)style
+{
     [[FUManager shareInstance] setAvatarStyle:style];
     
     [[FUManager shareInstance] loadClientDataWithFirstSetup:YES];
@@ -62,34 +69,38 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [SVProgressHUD dismiss];
 			weakSelf.QStyleButton.enabled = true;
-            weakSelf.NormalStyleButton.enabled = true;
             [self performSegueWithIdentifier:@"showMainViewController" sender:nil];
+            [self.loadingView stopLoading];
         });
     });
 }
 
-- (void)loadDefaultAvatar {
+- (void)loadDefaultAvatar
+{
     FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
     [avatar setCurrentAvatarIndex:0];
-    [[FUManager shareInstance] reloadRenderAvatarInSameController:avatar];
+    [[FUManager shareInstance] reloadAvatarToControllerWithAvatar:avatar];
     [avatar loadStandbyAnimation];
 }
 
-- (void)getAuthorityOfPhotoLibrary {
+- (void)getAuthorityOfPhotoLibrary
+{
     [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
     }];
 }
 
--(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    if ([segue.identifier isEqualToString:@"FUStyleLoadingView"]) {
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    if ([segue.identifier isEqualToString:@"FUStyleLoadingView"])
+    {
         UIViewController *vc = segue.destinationViewController ;
         self.loadingView = (FUPhotoLoadingView *)vc.view ;
         self.loadingView.mDelegate = self ;
     }
 }
 
-
-- (void)didReceiveMemoryWarning {
+- (void)didReceiveMemoryWarning
+{
     [super didReceiveMemoryWarning];
 }
 

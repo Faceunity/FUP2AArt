@@ -18,6 +18,7 @@
 #import "FURequestManager.h"
 #import "CRender.h"
 
+
 typedef enum : NSInteger {
 	FUCurrentViewTypeNone,
 	FUCurrentViewTypePreparingCreat,
@@ -255,8 +256,8 @@ static int frameID = 0;
 		takePhoto = NO ;
 		
 		CGRect faceRect = [[FUManager shareInstance] getFaceRect];
-		
-		if (CGSizeEqualToSize(faceRect.size, CGSizeZero)) {
+        int faceNum = [[FUManager shareInstance] faceCaptureGetResultIsFace];
+        if (CGSizeEqualToSize(faceRect.size, CGSizeZero)|| faceNum != 1) {
 			self.currentType = FUCurrentViewTypeNone ;
 			[self downloadErrorWithMessage:@"面部识别失败，请重新尝试。"];
 			self.iconImage = nil ;
@@ -347,16 +348,22 @@ static int frameID = 0;
 	[[NSFileManager defaultManager] createDirectoryAtPath:filePath withIntermediateDirectories:YES attributes:nil error:nil];
 	CFAbsoluteTime startUpdateTime = CFAbsoluteTimeGetCurrent() ;
 	__weak typeof(self)weakSelf = self;
-	[[FURequestManager sharedInstance] createQAvatarWithImage:self.selectedImage Params:params CompletionWithData:^(BOOL createAvatarSuccess, NSDictionary *resultDic, NSError *error) {
+    
+    NSData *imageData = UIImageJPEGRepresentation(self.selectedImage, 0.1) ;
+    UIImage *updateImage = [UIImage imageWithData:imageData];
+
+	[[FURequestManager sharedInstance] createQAvatarWithImage:updateImage Params:params CompletionWithData:^(BOOL createAvatarSuccess, NSDictionary *resultDic, NSError *error) {
 		if (createAvatarSuccess) {   // YES代表生成成功
 			
 			if (weakSelf.currentType == FUCurrentViewTypeNone) {
 				return ;
 			}
-			NSLog(@"------------ server time: %f ms", (CFAbsoluteTimeGetCurrent() - startUpdateTime) * 1000.0);
+            
 			NSString * headUrlPath  = resultDic[@"data"];
-			
+			CFAbsoluteTime endTime = CFAbsoluteTimeGetCurrent();
 			NSData * headData = [NSData dataWithContentsOfURL:[NSURL URLWithString:headUrlPath]];
+            NSLog(@"------------ avatar download time: %f ms", (CFAbsoluteTimeGetCurrent() - endTime) * 1000.0);
+            endTime = CFAbsoluteTimeGetCurrent();
 			UIImage *image = weakSelf.iconImage ? weakSelf.iconImage : weakSelf.selectedImage;
 			NSData *imageData = UIImagePNGRepresentation(image) ;
 			NSString *imagePath = [filePath stringByAppendingPathComponent:@"image.png"] ;
@@ -364,25 +371,29 @@ static int frameID = 0;
 			
 			//      [data writeToFile:[filePath stringByAppendingPathComponent:FU_SERVER_BUNDLE] atomically:YES];
 			
-			if (weakSelf.currentType == FUCurrentViewTypeNone) {
+			if (weakSelf.currentType == FUCurrentViewTypeNone)
+            {
 				[[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
 				return ;
 			}
 			
 			FUAvatar *avatar = [[FUManager shareInstance] createAvatarWithData:headData avatarName:fileName gender:gender];
 			//     [avatar resetScaleToBody];
-			if (avatar) {
-				
-				if (weakSelf.currentType == FUCurrentViewTypeNone) {
+            NSLog(@"------------ avatar create time: %f ms", (CFAbsoluteTimeGetCurrent() - endTime) * 1000.0);
+            NSLog(@"------------ avatar total time: %f ms", (CFAbsoluteTimeGetCurrent() - startUpdateTime) * 1000.0);
+			if (avatar)
+            {
+				if (weakSelf.currentType == FUCurrentViewTypeNone)
+                {
 					[[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
 					return ;
 				}
 				
-				[[FUManager shareInstance] reloadRenderAvatarInSameController:avatar];
+				[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:avatar];
 				[avatar loadStandbyAnimation];
 				
 				[[FUManager shareInstance].avatarList insertObject:avatar atIndex:DefaultAvatarNum];
-				[avatar setTheDefaultColors];
+//				[avatar setTheDefaultColors];
 				// 避免 body 还没有加载完成。闪现上一个模型的画面。
 				dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 					

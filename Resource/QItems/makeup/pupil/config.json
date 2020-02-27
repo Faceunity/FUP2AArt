@@ -1,0 +1,25 @@
+{
+    "list": [
+        {
+            "bundle": "",
+            "icon": "none",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/pupil_1.bundle",
+            "icon": "mid/pupil_1",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/pupil_2.bundle",
+            "icon": "mid/pupil_2",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        }
+    ]
+}

@@ -5,10 +5,6 @@
 //  Created by LEE on 9/25/19.
 //  Copyright © 2019 L. All rights reserved.
 //
-
-
-
-
 /**
  FUTrackController  是追踪的VC，由 FUPoseTrackController 和 FUARFilterController 两个VC组成
  */
@@ -31,19 +27,22 @@
 
 @implementation FUTrackController
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
 	[super viewDidLoad];
 	self.textTrackView.delegate = self;
 	[self trackBtnAction:self.ARFilterBtn];
 
 }
--(void)viewDidAppear:(BOOL)animated{
+-(void)viewDidAppear:(BOOL)animated
+{
 	[super viewDidAppear:animated];
 	[self.view addSubview: self.textTrackView.mInputView];
 	self.textTrackView.mInputView.hidden = YES;
 	
 }
--(void)hideAllSubViews{
+-(void)hideAllSubViews
+{
 	self.textTrackView.mInputView.hidden = YES;
 	self.textTrackView.hidden = YES;
 	self.arFilterView.hidden = YES;
@@ -61,9 +60,12 @@
 	
 	self.arFilterContainerView.hidden = YES;
 	
-    if (self.currenTrackVC == self.textTrackVC){
+    if (self.currenTrackVC == self.textTrackVC)
+    {
 		self.textTrackVC.isShow = NO;
-	}else if (self.currenTrackVC == self.arFilterVC){
+	}
+    else if (self.currenTrackVC == self.arFilterVC)
+    {
 		self.arFilterVC.isShow = NO;
 	}
 }
@@ -72,12 +74,14 @@
  
  @param sender
  */
-- (IBAction)trackBtnAction:(UIButton *)sender {
+- (IBAction)trackBtnAction:(UIButton *)sender
+{
 	[self hideAllSubViews];
 	sender.selected = YES ;
 	sender.backgroundColor = UIColorFromRGB(0x4C96FF);
 	
-	 if (sender == self.textTrackBtn) {
+	 if (sender == self.textTrackBtn)
+     {
 		self.textTrackView.mInputView.hidden = NO;
 		self.textTrackContainerView.hidden = NO;
 		self.textTrackView.hidden = NO;
@@ -85,7 +89,9 @@
 		self.currenTrackVC = self.textTrackVC;
         [self.arFilterVC.filterView selectNoFilter];
 		
-	}else if (sender == self.ARFilterBtn) {//AR驱动
+	}
+    else if (sender == self.ARFilterBtn)
+    {//AR驱动
 		self.arFilterContainerView.hidden = NO;
 		self.arFilterView.hidden = NO;
 		self.arFilterVC.isShow = YES;

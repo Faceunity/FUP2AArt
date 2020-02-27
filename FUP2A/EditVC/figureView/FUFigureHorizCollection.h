@@ -12,7 +12,7 @@
 @protocol FUFigureHorizCollectionDelegate <NSObject>
 
 @optional
-- (void)didChangeGlasses:(NSString *)glasses ;
+- (void)didChangeGlassesWithHiddenColorViews:(BOOL)hidden;
 @end
 
 @interface FUFigureHorizCollection : UICollectionView

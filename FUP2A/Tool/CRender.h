@@ -47,4 +47,12 @@ struct FUCutoutOption_{
 
 - (CVPixelBufferRef)mergeBgImageToBuffer:(CVPixelBufferRef)pixelBuffer ;
 - (UIImage *)fixImageOrientationWithImage:(UIImage *)image option:(FUCutoutOption)op;
+
+- (UIImage *)fixNilOrientionImage:(UIImage *)image;
+-(UIImage *)fixImageOrientationWithImageWithOutDetect:(UIImage *)image option:(FUCutoutOption)op;
+
+/// 合并背景，并且是否需要外部返回的CVPixelBufferRef
+/// @param pixelBuffer 输入的CVPixelBufferRef
+/// @param isReleaseBuffer 是否需要外部释放
+-(CVPixelBufferRef)mergeBgImageToBuffer:(CVPixelBufferRef)pixelBuffer ReleaseBuffer:(BOOL*)isReleaseBuffer;
 @end

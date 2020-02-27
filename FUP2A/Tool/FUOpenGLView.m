@@ -10,6 +10,7 @@
 #import <CoreVideo/CoreVideo.h>
 #import <OpenGLES/ES2/gl.h>
 #import <OpenGLES/ES2/glext.h>
+
 #define STRINGIZE(x)    #x
 #define STRINGIZE2(x)    STRINGIZE(x)
 #define SHADER_STRING(text) @ STRINGIZE2(text)
@@ -279,19 +280,7 @@ CompleteBlock _completeBlock;
 	
 }
 
--(void)displayLinkMethod{
-	dispatch_queue_t globalQueue = dispatch_get_global_queue(0, 0);
-	dispatch_async(globalQueue, ^{
-		
-		CVPixelBufferRef pixelBuffer = [self createPixelBufferWithSize:openGLBufferSize] ;
-		float landmarks[150] ;
-		CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemWithPixelBuffer:pixelBuffer RenderMode:FURenderCommonMode Landmarks:landmarks];
-		[self displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:YES];
-		CVPixelBufferRelease(pixelBuffer);
-		_completeBlock();
-	});
-	
-}
+-(void)displayLinkMethod{ }
 typedef struct{
 	GLKVector3 positionCoords;
 }SceneVertex;

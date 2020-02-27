@@ -1,0 +1,58 @@
+{
+    "list":[
+        {
+            "bundle":"mid/qunzi_chang_1.bundle",
+            "icon":"mid/qunzi_chang_1",
+            "gender": 1,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/qunzi_chang_2.bundle",
+            "icon":"mid/qunzi_chang_2",
+            "gender": 1,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/qunzi_chang_3.bundle",
+            "icon":"mid/qunzi_chang_3",
+            "gender": 1,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/qunzi_chang_4.bundle",
+            "icon":"mid/qunzi_chang_4",
+            "gender": 1,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/qunzi_duan_1.bundle",
+            "icon":"mid/qunzi_duan_1",
+            "gender": 1,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/qunzi_duan_2.bundle",
+            "icon":"mid/qunzi_duan_2",
+            "gender": 1,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/qunzi_duan_4.bundle",
+            "icon":"mid/qunzi_duan_4",
+            "gender": 1,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/qunzi_zhong_1.bundle",
+            "icon":"mid/qunzi_zhong_1",
+            "gender": 1,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/qunzi_zhong_2.bundle",
+            "icon":"mid/qunzi_zhong_2",
+            "gender": 1,
+            "body_match_level": 4
+        }
+    ]
+}

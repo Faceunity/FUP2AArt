@@ -23,26 +23,39 @@ static FUNielianEditManager *sharedInstance;
 	});
 	return sharedInstance;
 }
--(void)undoStackPop:(PopCompleteBlock)completion{
-	self.undo = YES;
-	if (self.redoStack.isEmpty) {
-		[self.redoStack push:[self.undoStack pop]];
-		[[NSNotificationCenter defaultCenter]postNotificationName:FUNielianEditManagerStackNotEmptyNot object:nil];
-	}else{
-		[self.redoStack push:[self.undoStack pop]];
-	}
-	NSDictionary * currentConfig = self.undoStack.top;
-	if (self.undoStack.isEmpty) {
-		completion(self.orignalStateDic,YES);
-	}else{
-		completion(currentConfig,NO);
-	}
+-(void)undoStackPop:(PopCompleteBlock)completion
+{
+    self.undo = YES;
+    NSObject *obj = self.undoStack.top;
+    [self.redoStack push:[self.undoStack pop]];
+    [[NSNotificationCenter defaultCenter]postNotificationName:FUNielianEditManagerStackNotEmptyNot object:nil];
+    completion(obj,self.undoStack.isEmpty);
+    
+//	self.undo = YES;
+//    NSDictionary * currentConfig = self.undoStack.top;
+//	if (self.redoStack.isEmpty) {
+//		[self.redoStack push:[self.undoStack pop]];
+//		[[NSNotificationCenter defaultCenter]postNotificationName:FUNielianEditManagerStackNotEmptyNot object:nil];
+//	}else{
+//		[self.redoStack push:[self.undoStack pop]];
+//	}
+//
+//	if (self.undoStack.isEmpty) {
+//		completion(self.orignalStateDic,YES);
+//	}else{
+//		completion(currentConfig,NO);
+//	}
 }
--(void)redoStackPop:(PopCompleteBlock)completion{
-	self.redo = YES;
-	[self.undoStack push:[self.redoStack pop]];
-	NSDictionary * currentConfig = self.undoStack.top;
-	completion(currentConfig,self.redoStack.isEmpty);
+-(void)redoStackPop:(PopCompleteBlock)completion
+{
+    self.redo = YES;
+    [self.undoStack push:[self.redoStack pop]];
+    if (self.redoStack.isEmpty)
+    {
+        [[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditManagerStackNotEmptyNot object:nil];
+    }
+    NSObject *obj = self.undoStack.top;
+    completion(obj,self.redoStack.isEmpty);
 	
 }
 -(void)push:(NSObject *)object{

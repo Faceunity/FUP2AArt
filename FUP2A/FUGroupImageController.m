@@ -51,7 +51,7 @@
 	
 	FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
 	[avatar setCurrentAvatarIndex:0];
-	[[FUManager shareInstance]reloadRenderAvatarInSameController:avatar];
+	[[FUManager shareInstance]reloadAvatarToControllerWithAvatar:avatar];
 	
 	if (![[FUManager shareInstance] isBackgroundItemExist]) {
 		NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"default_bg.bundle" ofType:nil];
@@ -74,7 +74,7 @@
 		}
 		UIImageWriteToSavedPhotosAlbum(orientationImage, self, @selector(image:didFinishSavingWithError:contextInfo:), NULL);
 	}
-#if 0
+#if 1
 	if (self.gifPath && [[NSFileManager defaultManager] fileExistsAtPath:self.gifPath]) {
 		NSData *data = [NSData dataWithContentsOfFile:self.gifPath];
 		

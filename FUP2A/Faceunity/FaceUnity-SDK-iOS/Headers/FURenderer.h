@@ -299,6 +299,10 @@ typedef enum {
 
 - (int)renderBundlesSplitView:(void *)inPtr inFormat:(FUFormat)inFormat outPtr:(void *)outPtr outFormat:(FUFormat)outFormat width:(int)width height:(int)height frameId:(int)frameid items:(int *)items itemCount:(int)itemCount splitViewInfoPtr:(TSplitViewInfo*)splitViewInfoPtr;
 
+- (CVPixelBufferRef)renderBundlesWithPixelBuffer:(CVPixelBufferRef)pixelBuffer withFrameId:(int)frameid items:(int*)items itemCount:(int)itemCount;
+
+- (CVPixelBufferRef)renderBundlesSplitViewWithPixelBuffer:(CVPixelBufferRef)pixelBuffer withFrameId:(int)frameid items:(int*)items itemCount:(int)itemCount splitViewInfoPtr:(TSplitViewInfo*)splitViewInfoPtr;
+
 - (void)setInputCameraMatrix:(int)flip_x flip_y:(int)flip_y rotate_mode:(int)rotate_mode;
 
 - (void)setOutputResolution:(int)w h:(int)h;
@@ -627,6 +631,13 @@ typedef enum {
  
 + (int)loadTongueModel:(void*)model size:(int)size;
 
+/**
+ 统计接口调用次数
+ @param 接口名称
+ @return 返回 1 代表调用成功，返回 0 代表代表失败
+**/
++ (int)authCountWithAPIName:(NSString *)name;
+
 + (void*)create3DBodyTracker:(void*)model size:(int)size;
 
 + (void)destroy3DBodyTracker:(void*)modelPtr;
@@ -666,6 +677,8 @@ new tracker
 + (int)faceCaptureGetResultExpression:(void*)model faceN:(int)faceN buffer:(float *)buffer length:(int)length;
 
 + (int)faceCaptureGetResultRotation:(void*)model faceN:(int)faceN buffer:(float *)buffer length:(int)length;
+
++ (int)faceCaptureGetResultFaceBbox:(void*)model faceN:(int)faceN buffer:(float *)buffer length:(int)length;
 
 + (int)faceCaptureGetResultTranslation:(void*)model faceN:(int)faceN buffer:(float *)buffer length:(int)length;
 

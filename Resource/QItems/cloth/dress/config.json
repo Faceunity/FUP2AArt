@@ -1,0 +1,44 @@
+{
+    "list":[
+        {
+            "bundle": "",
+            "icon": "none",
+            "gender": 1,
+            "body_match_level":4
+        },
+        {
+            "bundle":"mid/yiqun_2.bundle",
+            "icon":"mid/yiqun_2",
+            "gender": 1,
+            "body_match_level":2
+        },
+        {
+            "bundle":"mid/yiqun_3.bundle",
+            "icon":"mid/yiqun_3",
+            "gender": 1,
+            "body_match_level":4
+        },
+        {
+            "bundle":"mid/yiqun_8.bundle",
+            "icon":"mid/yiqun_8",
+            "gender": 1,
+            "body_match_level":4
+        },
+        {
+            "bundle":"mid/yiqun_9.bundle",
+            "icon":"mid/yiqun_9",
+            "gender": 1,
+            "body_match_level":4
+        },
+        {
+
+            "bundle":"mid/yiqun_10.bundle",
+            "icon":"mid/yiqun_10",
+            "gender": 1,
+            "body_match_level":4
+        }
+
+
+
+    ]
+}

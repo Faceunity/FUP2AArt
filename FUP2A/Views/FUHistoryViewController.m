@@ -13,6 +13,7 @@
 #import "FUTool.h"
 #import "UIColor+FU.h"
 
+
 @interface FUHistoryViewController ()<UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout>
 
 @property (nonatomic, strong) NSMutableArray<FUAvatar *> *dataSource ;
@@ -49,7 +50,7 @@
         NSData *jsonData = [[NSString stringWithContentsOfFile:jsonPath encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
         NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:nil];
         
-        FUAvatar *avatar = [FUAvatar avatarWithInfoDic:dic];
+        FUAvatar *avatar = [[FUManager shareInstance]getAvatarWithInfoDic:dic];
         [self.dataSource addObject:avatar];
     }
     

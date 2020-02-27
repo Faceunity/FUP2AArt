@@ -6,156 +6,135 @@
 //  Copyright © 2018年 L. All rights reserved.
 //
 
-#define fu_skin_color_index @"skin_color_index"
-#define fu_iris_color_index @"iris_color_index"
-#define fu_lip_color_index @"lip_color_index"
-
 #define fu_skin_color_progress @"skin_color_progress"
-
-#define fu_glass_color_index @"glass_color_index"
-#define fu_glass_frame_color_index @"glass_frame_color_index"
 
 
 typedef enum : NSInteger {
     FUAvataClothTypeSuit,    // 套装
     FUAvataClothTypeUpperAndLower,  // 上衣+裤子
-//    FUAvataClothTypeLower,  // 裤子
 } FUAvataClothType;
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "FUP2ADefine.h"
+#import "FUItemModel.h"
+
+typedef enum : NSInteger {
+    FUItemTypeController        = 0,
+    FUItemTypeHead,
+    FUItemTypeBody,
+    
+    FUItemTypeHair,
+    FUItemTypeClothes,
+    FUItemTypeUpper,   // 上衣
+    FUItemTypeLower,   // 裤子
+    FUItemTypeShoes,   // 鞋子
+    FUItemTypeHat,
+    FUItemTypeEyeLash,
+    FUItemTypeEyeBrow,
+    FUItemTypeBeard,
+    FUItemTypeGlasses,
+    FUItemTypeEyeShadow,
+    FUItemTypeEyeLiner,
+    FUItemTypePupil,
+    FUItemTypeMakeFaceup,
+    FUItemTypeLipGloss,
+    FUItemTypeDecorations,  // 配饰
+    
+    FUItemTypeAnimation,
+    FUItemTypeCamera,
+    FUItemTypeTmp,
+    FUItemTypeARFilter,    // 用于编辑AR滤镜的句柄
+    FUItemTypeEnd,   //用于定位枚举类型长度
+} FUItemType;
+
 
 @class FUP2AColor, FUAvatarChangeModel;
+static const int tmpItemsCount  = 100;
 @interface FUAvatar : NSObject<NSCopying>
-
-@property (nonatomic, copy) NSString *name ;
-@property (nonatomic, copy) NSString *uuid ;
-@property (nonatomic, assign) FUGender gender ;
-@property (nonatomic, copy) NSString *imagePath ;
+{
+    // 句柄数组
+    int items[FUItemTypeEnd];
+    // 临时记录的句柄数组
+    int tmpItems[tmpItemsCount];
+    // 同步信号量
+    dispatch_semaphore_t signal;
+}
+@property (nonatomic, copy) NSString *name;
+@property (nonatomic, copy) NSString *uuid;
+@property (nonatomic, assign) FUGender gender;
+@property (nonatomic, copy) NSString *imagePath;
 
 // 是否是新版本
-@property (nonatomic, assign) BOOL isQType ;
+@property (nonatomic, assign) BOOL isQType;
 
 
 // 是否是预置模型
-@property (nonatomic, assign) BOOL defaultModel ;
+@property (nonatomic, assign) BOOL defaultModel;
 // 当前是否穿的是女性衣服
-@property (nonatomic, assign) BOOL wearFemaleClothes ;
+@property (nonatomic, assign) BOOL wearFemaleClothes;
 // 当前是穿的衣服类型
 @property (nonatomic, assign) FUAvataClothType clothType;
 
-@property (nonatomic, copy) NSString *hair ;
-@property (nonatomic, copy) NSString *clothes ;   // 套装
-@property (nonatomic, copy) NSString *upper ;   // 上衣
-@property (nonatomic, copy) NSString *lower ;   // 裤子
-@property (nonatomic, copy) NSString *glasses ;
-@property (nonatomic, copy) NSString *beard ;
-@property (nonatomic, copy) NSString *hat ;
-@property (nonatomic, copy) NSString *shoes ;    // 鞋子
-@property (nonatomic, copy) NSString *decorations;  // 配饰
+@property (nonatomic, strong) FUItemModel *hair;
+@property (nonatomic, strong) FUItemModel *clothes;   // 套装
+@property (nonatomic, strong) FUItemModel *upper;   // 上衣
+@property (nonatomic, strong) FUItemModel *lower;   // 裤子
+@property (nonatomic, strong) FUItemModel *glasses;
+@property (nonatomic, strong) FUItemModel *beard;
+@property (nonatomic, strong) FUItemModel *hat;
+@property (nonatomic, strong) FUItemModel *shoes;    // 鞋子
+@property (nonatomic, strong) FUItemModel *decorations;  // 配饰
 
-@property (nonatomic, copy) NSString *face ;
-@property (nonatomic, copy) NSString *eyes ;
-@property (nonatomic, copy) NSString *mouth ;
-@property (nonatomic, copy) NSString *nose ;
+@property (nonatomic, strong) FUItemModel *face;
+@property (nonatomic, strong) FUItemModel *eyes;
+@property (nonatomic, strong) FUItemModel *mouth;
+@property (nonatomic, strong) FUItemModel *nose;
 // make up
-@property (nonatomic, copy) NSString *eyeLash ;
-@property (nonatomic, copy) NSString *eyeBrow ;
+@property (nonatomic, strong) FUItemModel *eyeLash;  //睫毛
+@property (nonatomic, strong) FUItemModel *eyeBrow;  //眉毛
+@property (nonatomic, strong) FUItemModel *eyeShadow;  //眼影
+@property (nonatomic, strong) FUItemModel *eyeLiner;  //眼线
+@property (nonatomic, strong) FUItemModel *pupil;     //美瞳
+@property (nonatomic, strong) FUItemModel *faceMakeup;  //脸妆
+@property (nonatomic, strong) FUItemModel *lipGloss;   //唇妆
 
-
-@property (nonatomic, assign) double hairLabel ;
-@property (nonatomic, assign) double bearLabel ;
+@property (nonatomic, assign) double hairLabel;
+@property (nonatomic, assign) double bearLabel;
 
 // colors
-@property (nonatomic, assign) double skinLevel ;
-// colors
-@property (nonatomic, assign) double irisLevel ;
-@property (nonatomic, assign) double lipsLevel ;
-
-
+@property (nonatomic, assign) NSInteger skinColorIndex;
 @property (nonatomic, assign) double skinColorProgress;
-@property (nonatomic, assign) double irisColorProgress;
-@property (nonatomic, assign) double lipColorProgress;
-@property (nonatomic, strong) FUP2AColor *skinColor ;
-@property (nonatomic, strong) FUP2AColor *lipColor ;
-@property (nonatomic, strong) FUP2AColor *irisColor ;
-@property (nonatomic, strong) FUP2AColor *hairColor ;
-@property (nonatomic, assign) int hairColorIndex ;
-@property (nonatomic, strong) FUP2AColor *glassColor ;
-@property (nonatomic, strong) FUP2AColor *glassFrameColor ;
-@property (nonatomic, assign) int glassColorIndex;
-@property (nonatomic, assign) int glassFrameColorIndex ;
-@property (nonatomic, strong) FUP2AColor *beardColor ;
-@property (nonatomic, strong) FUP2AColor *hatColor;
-@property (nonatomic, strong) NSMutableDictionary *orignalColorDic;   // 记录初始状态颜色值，在编辑失败时重新赋值
-@property (nonatomic, assign) int currentInstanceId;    // 当前avatar在nama底层的序号;
-/**
- 用 JSON 文件初始化 avatar
+@property (nonatomic, assign) NSInteger lipColorIndex;
+@property (nonatomic, assign) NSInteger irisColorIndex;
+@property (nonatomic, assign) NSInteger hairColorIndex;
+@property (nonatomic, assign) NSInteger beardColorIndex;
+@property (nonatomic, assign) NSInteger glassFrameColorIndex;
+@property (nonatomic, assign) NSInteger glassColorIndex;
+@property (nonatomic, assign) NSInteger hatColorIndex;
 
- @param dict    从 JSON 文件中读取到的 info
- @return        avatar
- */
-+(FUAvatar *)avatarWithInfoDic:(NSDictionary *)dict ;
+
+@property (nonatomic, assign) int currentInstanceId;    // 当前avatar在nama底层的序号;
 
 /**
  avatar 模型保存的根目录
 
  @return  avatar 模型保存的根目录
  */
-- (NSString *)filePath ;
-
-/**
- 加载 avatar 模型
-    --  会加载 头、头发、身体、衣服 四个道具。
-    --  如果有 胡子、帽子、眼镜、睫毛、眉毛也会加载，没有则不加载。
-    --  会设置 肤色、唇色、瞳色、发色(光头不设)。
-    --  如果有 胡子、帽子、眼镜也会设置其对应颜色。
- 
- @return 返回 controller 所在句柄
- */
- /**
-  加载 avatar 半身模型
-  --  会加载 头、头发、身体、衣服、默认动作 四个道具。
-  --  如果有 胡子、帽子、眼镜也会加载，没有则不加载。
-  --  会设置 肤色、唇色、瞳色、发色(光头不设)。
-  --  如果有 胡子、帽子、眼镜也会设置其对应颜色。
-  
-  @return 返回 controller 所在句柄
-  */
- - (int)loadHalfAvatar;
-- (int)loadAvatar ;
-/**
- 加载 明星avatar 模型
- --  会加载 头、头发、身体、衣服、默认动作 四个道具。
- --  如果有 胡子、帽子、眼镜也会加载，没有则不加载。
- --  会设置 肤色、唇色、瞳色、发色(光头不设)。
- --  如果有 胡子、帽子、眼镜也会设置其对应颜色。
- 
- @return 返回 controller 所在句柄
- */
-- (int)loadStarAvatar;
-/**
- avatar只加载头
- -- 默认加载头部装饰，包括：头、头发、胡子、眼镜、帽子
- -- 加载完毕之后会设置其相应颜色
- 
- @return 返回 controller 句柄
- */
-- (int)loadAvatarWithHeadOnly;
+- (NSString *)filePath;
 
 /**
  获取 controller 所在句柄
 
  @return 返回 controller 所在句柄
  */
-- (int)getControllerHandle ;
+- (int)getControllerHandle;
 
 /**
  销毁此模型
  -- 包括 controller, head, body, hair, clothes, glasses, beard, hat, animatiom, arfilter.
  */
-- (void)destroyAvatar ;
+- (void)destroyAvatar;
 /**
  销毁此模型,只包括avatar资源
  -- 包括 , head, body, hair, clothes, glasses, beard, hat, animatiom, arfilter.
@@ -163,250 +142,52 @@ typedef enum : NSInteger {
 - (void)destroyAvatarResouce;
 
 #pragma mark ----- 以下切换身体配饰
-/**
- 更换头发
- 
- @param hairPath 新头发所在路径
- */
-- (void)reloadHairWithPath:(NSString *)hairPath ;
-
-/**
- 更换衣服
-
- @param clothesPath 新衣服所在路径
- */
-- (void)reloadClothesWithPath:(NSString *)clothesPath ;
-/**
- 更换身体
- 
- @param bodyPath 新衣服所在路径
- */
-- (void)reloadBodyWithPath:(NSString *)bodyPath;
-/**
- 更换眼镜
-
- @param glassesPath 新眼镜所在路径
- */
-- (void)reloadGlassesWithPath:(NSString *)glassesPath ;
-
-/**
- 更换胡子
-
- @param beardPath 新胡子所在路径
- */
-- (void)reloadBeardWithPath:(NSString *)beardPath ;
-/**
- 更换上衣
- 
- @param upperPath 新上衣所在路径
- */
-- (void)reloadUpperWithPath:(NSString *)upperPath ;
-
-/**
- 更换裤子
- 
- @param lowerPath 新裤子所在路径
- */
-- (void)reloadLowerWithPath:(NSString *)lowerPath ;
-
-/// 更换衣服和裤子
-/// @param upperPath 新上衣的路径
-/// @param lowerPath 新裤子的路径
-- (void)reloadUpperWithPath:(NSString *)upperPath andLowerWithPath:(NSString *)lowerPath;
-
-/**
- 更换配饰
- 
- @param decorationsPath 新配饰所在路径
- */
-- (void)reloadDecorationsWithPath:(NSString *)decorationsPath ;
-
-/**
- 更换帽子
-
- @param hatPath 新帽子所在路径
- */
-- (void)reloadHatWithPath:(NSString *)hatPath ;
-/**
-更换AR滤镜
- 
- @param arFilterPath 新滤镜所在路径
- */
-- (void)reloadARFilterWithPath:(NSString *)arFilterPath;
-/**
- 加载ani_mg动画
- */
-- (void)load_ani_mg_Animation;
-
-/**
- 去除动画
- */
-- (void)removeAnimation;
-/**
- 加载待机动画
- */
-- (void)loadStandbyAnimation ;
-- (void)loadPoseTrackAnim;
-/**
- 人脸追踪时加载 Pose
- */
-- (void)loadTrackFaceModePose ;
-/**
- 呼吸动画
- */
-- (void)loadIdleModePose;
-/**
- 身体追踪时加载 Pose
- */
-- (void)loadTrackBodyModePose;
-/**
- 将Avatar的位置设置为初始状态
- */
-- (void)resetScaleToOriginal;
-
+- (void)loadItemWithtype:(FUItemType)itemType filePath:(NSString *)path;
 /**
  更换动画
 
  @param animationPath 新动画所在路径
  */
-- (void)reloadAnimationWithPath:(NSString *)animationPath ;
+- (void)reloadAnimationWithPath:(NSString *)animationPath;
 // 添加临时道具，
 - (void)addTmpItemFilePath:(NSString *)path;
 /// 获取当前动画句柄
--(int)getCurrentAnimationHandle;
+- (int)getCurrentAnimationHandle;
 /// 获取当前动画播放进度
 /// 获取某个动画的播放进度
 // 进度0-0.9999为第一次循环，1-1.9999为第二次循环，以此类推
 // 即使play_animation_once,进度也会突破1.0，照常运行
 //
 // @param anim_id 当前动画的句柄
--(float)getAnimateProgress;
-/**
- 更换睫毛
- 
- @param eyelashPath 新睫毛所在路径
- */
-- (void)reloadEyeLashWithPath:(NSString *)eyelashPath ;
-
-/**
- 更换眉毛
- 
- @param eyebrowPath 新眉毛所在路径
- */
-- (void)reloadEyeBrowWithPath:(NSString *)eyebrowPath ;
-
-/**
- 更换鞋子
-    -- Q版专有
- 
- @param shoesPath 新眉毛所在路径
- */
-- (void)reloadShoesWithPath:(NSString *)shoesPath ;
+- (float)getAnimateProgress;
 
 /**
  更新辅助道具
 
  @param tmpPath 辅助道具路径
  */
-- (void)reloadTmpItemWithPath:(NSString *)tmpPath ;
+- (void)reloadTmpItemWithPath:(NSString *)tmpPath;
 
 
-#pragma mark ----- 以下缩放位移
 
-/**
- 设置缩放参数
-
- @param delta 缩放增量
- */
-- (void)resetScaleDelta:(float)delta ;
-
-/**
- 设置旋转参数
-
- @param delta 旋转增量
- */
-- (void)resetRotDelta:(float)delta ;
-
-/**
- 设置垂直位移
-
- @param delta 垂直位移增量
- */
-- (void)resetTranslateDelta:(float)delta ;
-
-
-/**
- 缩放至面部
- */
-- (void)resetScaleToFace ;
-/**
- 缩放至截图
- */
-- (void)resetScaleToScreenShot;
-/**
- 捏脸模式缩放至面部正面
- */
-- (void)resetScaleToShapeFaceFront ;
-
-/**
- 捏脸模式缩放至面部侧面
- */
-- (void)resetScaleToShapeFaceSide ;
-
-/**
- 缩放至全身
- */
-- (void)resetScaleToBody ;
-
-/**
- 缩放至半身
- */
-- (void)resetScaleToHalfBody;
-
-/**
- 缩放至小比例的全身
- */
-- (void)resetScaleToSmallBody ;
-/// 缩小至全身并在屏幕左边显示
-- (void)resetScaleSmallBodyToLeft;
-/// 缩小至全身并在屏幕左边显示
-- (void)resetScaleSmallBodyToRight;
-/// 缩小至全身并在屏幕上边显示
-- (void)resetScaleSmallBodyToUp;
-/// 缩小至全身并在屏幕下面显示
-- (void)resetScaleSmallBodyToDown;
-
-/**
- 缩放至显示 Q 版的鞋子
- */
-- (void)resetScaleToShowShoes ;
-/**
- 缩放至小比例的身体跟随
- */
-- (void)resetScaleToFollowBody;
-
-/**
- 缩放至小比例的身体追踪
- */
-- (void)resetScaleToTrackBody;
 #pragma mark ----- 以下面部追踪模式
 
 /**
  进入面部追踪模式
  */
-- (void)enterTrackFaceMode ;
+- (void)enterTrackFaceMode;
 /**
  退出面部追踪模式
  */
-- (void)quitTrackFaceMode ;
+- (void)quitTrackFaceMode;
 /**
  进入身体追踪模式
  */
-- (void)enterTrackBodyMode ;
+- (void)enterTrackBodyMode;
 /**
  退出身体追踪模式
  */
-- (void)quitTrackBodyMode ;
+- (void)quitTrackBodyMode;
 /**
  进入身体跟随模式
  */
@@ -448,21 +229,21 @@ typedef enum : NSInteger {
  
  @return 返回 controller 句柄
  */
-- (int)loadAvatarWithARMode ;
+- (int)loadAvatarWithARMode;
 
 /**
  进入 AR滤镜 模式
     -- 会重置旋转缩放等参数
     -- 去除 身体、衣服、动画，但是不会销毁这些道具
  */
-- (void)enterARMode ;
+- (void)enterARMode;
 
 /**
  退出 AR滤镜 模式
     -- 会加上 身体、衣服、动画等。
     -- 销毁 ARFilter 道具
  */
-- (void)quitARMode ;
+- (void)quitARMode;
 
 
 /**
@@ -497,20 +278,12 @@ typedef enum : NSInteger {
 /**
  进入捏脸模式
  */
-- (void)enterFacepupMode ;
+- (void)enterFacepupMode;
 
 /**
  退出捏脸模式
  */
-- (void)quitFacepupMode ;
-
-/**
- 获取 mesh 顶点的坐标
-
- @param index   顶点序号
- @return        顶点坐标
- */
-- (CGPoint)getMeshPointOfIndex:(NSInteger)index ;
+- (void)quitFacepupMode;
 /**
  获取 mesh 顶点的坐标
  
@@ -524,7 +297,7 @@ typedef enum : NSInteger {
  @param key     参数名
  @param level   参数
  */
-- (void)facepupModeSetParam:(NSString *)key level:(double)level ;
+- (void)facepupModeSetParam:(NSString *)key level:(double)level;
 
 /**
  获取捏脸参数
@@ -532,7 +305,7 @@ typedef enum : NSInteger {
  @param key    参数名
  @return       参数
  */
-- (double)getFacepupModeParamWith:(NSString *)key ;
+- (double)getFacepupModeParamWith:(NSString *)key;
 
 /**
  捏脸模型下设置颜色
@@ -549,34 +322,7 @@ typedef enum : NSInteger {
  @param color   颜色
  @param key     参数名
  */
-- (void)facepupModeSetColor:(FUP2AColor *)color key:(NSString *)key ;
-
-/**
- 获取色值 index
-    -- key 具体参数如下：
-        肤色： skin_color_index
-        唇色： lip_color_index
- 
- 
- @param key  参数名
- @return     色值 index
- */
-- (int)facePupGetColorIndexWithKey:(NSString *)key ;
-
-/**
- 设置颜色
-    -- 默认设置 肤色、唇色、瞳色。
-    -- 如果有 头发、眼镜、胡子、帽子等，会设置其相应的颜色，没有则不设
- */
-- (void)setAvatarColors ;
-
-/**
- 设置参数
-
- @param key     参数名
- @param value   参数值
- */
-- (void)avatarSetParamWithKey:(NSString *)key value:(double)value ;
+- (void)facepupModeSetColor:(FUP2AColor *)color key:(NSString *)key;
 
 
 #pragma mark ----- 以下动画相关
@@ -586,19 +332,19 @@ typedef enum : NSInteger {
 
  @return 动画总帧数
  */
-- (int)getAnimationFrameCount ;
+- (int)getAnimationFrameCount;
 
 /**
  获取当前帧动画播放的位置
 
  @return    当前动画播放的位置
  */
-- (int)getCurrentAnimationFrameIndex ;
+- (int)getCurrentAnimationFrameIndex;
 
 /**
  重新开始播放动画
  */
-- (void)restartAnimation ;
+- (void)restartAnimation;
 /**
  播放动画
  */
@@ -610,40 +356,240 @@ typedef enum : NSInteger {
 /**
  暂停动画
  */
-- (void)pauseAnimation ;
+- (void)pauseAnimation;
 /**
  结束动画
  */
-- (void)stopAnimation ;
+- (void)stopAnimation;
 /**
  启用相机动画
  */
-- (void)enableCameraAnimation ;
+- (void)enableCameraAnimation;
 /**
  停止相机动画
  */
-- (void)stopCameraAnimation ;
+- (void)stopCameraAnimation;
 /**
  循环相机动画
  */
-- (void)loopCameraAnimation ;
--(void)setTheDefaultColors;
-/// 设置预制模型的颜色
--(void)setThePrefabricateColors;
-/**
- 记录默认的颜色状态；
- */
--(void)recordOriginalColors;
-/**
- 在编辑失败时，返回默认的颜色状态；
- */
-- (void)backToOriginalColors;
+- (void)loopCameraAnimation;
 
+- (void)setThePrefabricateColors;
+
+
+- (void)openHairAnimation;
+
+- (void)closeHairAnimation;
 
 #pragma mark ----- 获取配置
--(NSDictionary*)getColorDicFromFUP2AColor:(FUP2AColor*)color;
--(NSDictionary*)getColorsDictionary;
--(NSDictionary*)getInfoDictionary;
+
+
+
+#pragma mark  ------ 捏脸 ------
+- (NSArray *)getFacepupModeParamsWithLength:(int)length;
+
+
+/// 设置捏脸参数
+/// @param dict 捏脸参数字典
+- (void)configFacepupParamWithDict:(NSDictionary *)dict;
+
+/**
+ 加载ani_mg动画
+ */
+- (void)load_ani_mg_Animation;
+
+/**
+ 去除动画
+ */
+- (void)removeAnimation;
+//
+/**
+ 加载待机动画
+ */
+- (void)loadStandbyAnimation;
+
+/**
+ 人脸追踪时加载 Pose
+ */
+- (void)loadTrackFaceModePose;
+
+/**
+ 呼吸动画
+ */
+- (void)loadIdleModePose;
+
+/**
+ 身体追踪时加载 Pose
+ */
+- (void)loadTrackBodyModePose;
+
+/**
+ 将Avatar的位置设置为初始状态
+ */
+- (void)resetScaleToOriginal;
+
+#pragma mark ----- 以下缩放位移
+
+- (void)resetScaleDelta:(float)delta;
+
+/**
+ 设置旋转参数
+
+ @param delta 旋转增量
+ */
+- (void)resetRotDelta:(float)delta;
+
+/**
+ 设置垂直位移
+
+ @param delta 垂直位移增量
+ */
+- (void)resetTranslateDelta:(float)delta;
+
+/**
+ 缩放至面部
+ */
+- (void)resetScaleToFace;
+/**
+ 缩放至截图
+ */
+- (void)resetScaleToScreenShot;
+/**
+ 捏脸模式缩放至面部正面
+ */
+- (void)resetScaleToShapeFaceFront;
+
+/**
+ 捏脸模式缩放至面部侧面
+ */
+- (void)resetScaleToShapeFaceSide;
+
+/**
+ 缩放至全身
+ */
+- (void)resetScaleToBody;
+
+/**
+ 缩放至半身
+ */
+- (void)resetScaleToHalfBody;
+
+/**
+ 缩放至小比例的全身
+ */
+- (void)resetScaleToSmallBody;
+/// 缩小至全身并在屏幕左边显示
+- (void)resetScaleSmallBodyToLeft;
+/// 缩小至全身并在屏幕左边显示
+- (void)resetScaleSmallBodyToRight;
+/// 缩小至全身并在屏幕上边显示
+- (void)resetScaleSmallBodyToUp;
+/// 缩小至全身并在屏幕下面显示
+- (void)resetScaleSmallBodyToDown;
+
+/**
+ 缩放至显示 Q 版的鞋子
+ */
+- (void)resetScaleToShowShoes;
+/**
+ 缩放至小比例的身体跟随
+ */
+- (void)resetScaleToFollowBody;
+
+/**
+ 缩放至小比例的身体追踪
+ */
+- (void)resetScaleToTrackBody;
+
+
+
+#pragma mark ------ 形象加载 ------
+/// 根据传入的形象模型重设形象的信息
+/// @param avatar 形象模型
+- (void)resetValueFromBeforeEditAvatar:(FUAvatar *)avatar;
+
+/**
+ 加载 avatar 模型
+ --  会加载 头、头发、身体、衣服、默认动作 四个道具。
+ --  如果有 胡子、帽子、眼镜也会加载，没有则不加载。
+ --  会设置 肤色、唇色、瞳色、发色(光头不设)。
+ --  如果有 胡子、帽子、眼镜也会设置其对应颜色。
+ 
+ @return 返回 controller 所在句柄
+ */
+- (int)loadAvatarToController;
+/// 加载形象颜色
+- (void)loadAvatarColor;
+
+#pragma mark ------ 绑定道具 ------
+/// 加载发型
+/// @param model 发型数据
+- (void)bindHairWithItemModel:(FUItemModel *)model;
+
+/// 加载套装
+/// @param model 套装数据
+- (void)bindClothWithItemModel:(FUItemModel *)model;
+
+/// 加载上衣
+/// @param model 上衣数据
+- (void)bindUpperWithItemModel:(FUItemModel *)model;
+
+/// 加载下衣
+/// @param model 下衣数据
+- (void)bindLowerWithItemModel:(FUItemModel *)model;
+
+/// 加载鞋子
+/// @param model 鞋子数据
+- (void)bindShoesWithItemModel:(FUItemModel *)model;
+
+/// 加载帽子
+/// @param model 帽子数据
+- (void)bindHatWithItemModel:(FUItemModel *)model;
+
+/// 加载睫毛
+/// @param model 睫毛数据
+- (void)bindEyeLashWithItemModel:(FUItemModel *)model;
+
+/// 加载眉毛
+/// @param model 眉毛数据
+- (void)bindEyebrowWithItemModel:(FUItemModel *)model;
+
+/// 加载胡子
+/// @param model 胡子数据
+- (void)bindBeardWithItemModel:(FUItemModel *)model;
+
+/// 加载眼镜
+/// @param model 眼镜数据
+- (void)bindGlassesWithItemModel:(FUItemModel *)model;
+
+/// 加载眼影
+/// @param model 眼影数据
+- (void)bindEyeShadowWithItemModel:(FUItemModel *)model;
+
+/// 加载眼线
+/// @param model 眼线数据
+- (void)bindEyeLinerWithItemModel:(FUItemModel *)model;
+
+/// 加载美瞳
+/// @param model 美瞳数据
+- (void)bindPupilWithItemModel:(FUItemModel *)model;
+
+/// 加载脸妆
+/// @param model 脸妆数据
+- (void)bindFaceMakeupWithItemModel:(FUItemModel *)model;
+
+/// 加载唇妆
+/// @param model 唇妆数据
+- (void)bindLipGlossWithItemModel:(FUItemModel *)model;
+
+/// 加载饰品
+/// @param model 饰品数据
+- (void)bindDecorationWithItemModel:(FUItemModel *)model;
+
+
+
+- (void)bindItemWithType:(FUItemType)itemType filePath:(NSString *)path;
+
 @end
 
 
