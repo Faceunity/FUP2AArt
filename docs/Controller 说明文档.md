@@ -6,6 +6,15 @@
 ```
 ------
 
+## 多人模式
+```C
+//使用fuBindItems绑定道具, fuUnbindItems解绑道具，以及对controller设置的参数，作用的都是当前角色，默认情况下，当前角色的ID是0号。
+//使用多人模式，需要通过设置参数current_instance_id，切换当前角色，例如切换到1号角色：
+fuItemSetParamd(1, "current_instance_id", 1.0);
+```
+
+------
+
 ## 设置角色位置
 ```C
 //NAMA中使用右手坐标系，X轴水平向右，Y轴竖直向上，Z轴垂直屏幕向外
@@ -18,17 +27,17 @@ fuItemSetParamd(1, "target_angle", 0.5);
 ```
 ##### 设置角色的大小
 ```C
-//第三个参数是角色在三维空间中Z方向的坐标，范围[-1000, 200]，数值越大，显示的角色越大
+//第三个参数是角色在三维空间中Z方向的坐标，范围[-3000, 600]，数值越大，显示的角色越大
 fuItemSetParamd(1, "target_scale", -300.0);
 ```
 ##### 设置角色在竖直方向上的位置
 ```C
-//第三个参数是角色在三维空间中Y方向的位置，范围[-300, 400]
+//第三个参数是角色在三维空间中Y方向的位置，范围[-600, 800]
 fuItemSetParamd(1, "target_trans", 30.0);
 ```
 ##### 设置角色在三维空间的位置
 ```C
-//第三个参数是角色在三维空间中的坐标[x, y, z]，x范围[-100, 100]，y范围[-300, 400]，z范围[-1000, 200]
+//第三个参数是角色在三维空间中的坐标[x, y, z]，x范围[-200, 200]，y范围[-600, 800]，z范围[-3000, 600]
 fuItemSetParamdv(1, "target_position", [30.0, 0.0, -300]);
 ```
 ##### 调用重置命令，使上述对位置的设置命令生效
@@ -52,11 +61,17 @@ fuItemSetParamd(1, "scale_delta", 1.0);
 //第三个参数是上下增量，取值范围[-1.0, 1.0]
 fuItemSetParamd(1, "translate_delta", 1.0);
 ```
+
+##### 获取角色在三维空间的位置
+```C
+fuItemGetParamdv(1, "current_position");
+```
 ------
 
 ## 动画控制
 ```C
 //假设：通过fuCreateItemFromPackage创建的动画道具anim.bundle的句柄为2
+//以下控制接口只对当前角色有效
 ```
 ------
 ```C
@@ -66,13 +81,13 @@ fuItemSetParamd(1, "play_animation", 2);
 //从头播放句柄为2的动画（单次）
 fuItemSetParamd(1, "play_animation_once", 2);
 
-//继续播放当前动画
+//继续播放当前动画，参数无意义
 fuItemSetParamd(1, "start_animation", 1);
 
-//暂停播放当前动画
+//暂停播放当前动画，参数无意义
 fuItemSetParamd(1, "pause_animation", 1);
 
-//结束播放动画
+//结束播放动画，参数无意义
 fuItemSetParamd(1, "stop_animation", 1);
 
 //设置动画的过渡时间，单位为秒
@@ -80,46 +95,99 @@ fuItemSetParamd(1, "animation_transition_time", 4.0);
 
 //获取句柄为2的动画的当前进度
 //进度0~0.9999为第一次循环，1.0~1.9999为第二次循环，以此类推
-//即时play_animation_once，进度也会突破1.0，照常运行
+//即使play_animation_once，进度也会突破1.0，照常运行
 fuItemGetParamd(1, "{\"name\":\"get_animation_progress\", \"anim_id\":2}"); 
+
+//获取句柄为2的动画的当前过渡进度
+//进度小于0时，这个动画没有在过渡状态，不论作为source还是target
+//进度大于等于0时，这个动画在过渡中，范围为0~1.0，0为开始，1.0为结束
+fuItemGetParamd(1, "{\"name\":\"get_animation_transition_progress\", \"anim_id\":2}"); 
 
 //获取句柄为2的动画的总帧数
 fuItemGetParamd(1, "{\"name\":\"get_animation_frame_num\", \"anim_id\":2}"); 
 
 //1为开启，0为关闭，开启的时候移动角色的值会被设进骨骼系统，这时候带DynamicBone的模型会有相关效果
 //如果添加了没有骨骼的模型，请关闭这个值，否则无法移动模型
-//默认开启
+//默认关闭
 //每个角色的这个值都是独立的
 fuItemSetParamd(1, "modelmat_to_bone", 1.0); 
 
 //1为开启，0为关闭，开启的时候已加载的物理会生效，同时加载新的带物理的bundle也会生效，关闭的时候已加载的物理会停止生效，但不会清除缓存（这时候再次开启物理会在此生效），这时加载带物理的bundle不会生效，且不会产生缓存，即关闭后加载的带物理的bundle，即时再次开启，物理也不会生效，需要重新加载
 fuItemSetParamd(1, "enable_dynamicbone", 1.0); 
 ```
+
 ------
+
+## 相机控制
+//通过以下接口控制相机的镜头参数
+
+```C
+//默认值为0
+//0为透视投影，这时候fov起效，有近大远小的效果
+//1为平行投影，这时候render_orth_size起效，没有近大远小，物体远近不影响在屏幕上的大小，使用render_orth_size控制物体在屏幕上的大小
+fuItemSetParamd(1,"project_mode",0);
+
+//控制相机镜头的fov，默认值为8.6，取值范围0~90，单位为度（角度）
+fuItemSetParamd(1,"render_fov",8.6);
+
+//控制相机镜头的渲染大小，默认值为100，单位为厘米，和模型在一个坐标系下
+fuItemSetParamd(1,"render_orth_size",100);
+
+//相机近平面，默认值为30，单位为厘米，和模型在一个坐标系下
+//离相机距离小于这个值的模型不会被显示
+fuItemSetParamd(1,"znear",30);
+
+//相机远平面，默认值为6000，单位为厘米，和模型在一个坐标系下
+//离相机距离大于这个值的模型不会被显示
+fuItemSetParamd(1,"zfar",6000);
+```
+
 ## 相机动画控制
-//启用/暂停当前动画
-//1为开启，0为关闭，
-fuItemSetParamd(1,"enable_camera_animation",1);
+
+```C
+//开始当前动画, 
+// @param1 : controller id
+fuItemSetParamd(1,"start_camera_animation",1);
+
+//暂停当前动画
+// @param1 : controller id
+fuItemSetParamd(1,"pause_camera_animation",1);
 
 //停止当前动画，并回到第1帧
+// @param1 : controller id
 fuItemSetParamd(1,"stop_camera_animation",1);
 
 //循环动画
 //1为循环，0为不循环，
+// @param1 : controller id
 fuItemSetParamd(1,"camera_animation_loop",1);
 
+//获取动画进度
+// @param1 : controller id
+fuItemGetParamd(1,"get_camera_progress");
+```
 ------
-##### 使用自定义的动画系统时间轴，必须按以下步骤
+## 使用自定义的动画系统时间轴，必须按以下步骤
 ```C
 //1.重置一下当前的动画系统，准备切换时间轴
+//每个角色调用
 fuItemSetParamd(1, "stop_animation", 1); 
 fuItemSetParamd(1, "start_animation", 1); 
+//调用一次
+fuItemSetParamd(1,"stop_camera_animation",1);
+fuItemSetParamd(1,"start_camera_animation",1);
 fuItemSetParamd(1, "enable_set_time", 1); 
+
 //2.之后，每次渲染前设置动画系统的当前时间，单位为秒
 fuItemSetParamd(1, "animation_time_current", 0.1); 
+
 //3.如果要切换回系统时间
+//每个角色调用
 fuItemSetParamd(1, "stop_animation", 1); 
 fuItemSetParamd(1, "start_animation", 1); 
+//调用一次
+fuItemSetParamd(1,"stop_camera_animation",1);
+fuItemSetParamd(1,"start_camera_animation",1);
 fuItemSetParamd(1, "enable_set_time", 0); 
 ```
 
@@ -172,9 +240,34 @@ fuItemSetParamd(1, "hair_color_intensity", 1.0);
 fuItemSetParamdv(1, "beard_color", [255,0,0]);
 ```
 ------
+##### 美妆颜色
+```C
+//设置美妆的颜色
+//美妆参数名为json结构，
+{
+    "name":"global",      //固定
+    "type":"face_detail", //固定
+    "param":"blend_color",//固定
+    "UUID":5              //目标的美妆道具bundle handle id
+}
+//美妆参数值为0-1之间的RGB设置，美妆颜色原始为RGB色值(sRGB空间)，RGB/255得到传给controller的值
+//例如要替换的美妆颜色为[255,0,0], 传给controller的值为[1,0,0]
+fuItemSetParamdv(1, "{\"name\":\"global\",\"type\":\"face_detail\",\"param\":\"blend_color\",\"UUID\":5}", [1,0,0]);
+
+//获取美妆的颜色
+//如果返回buf的是[1.0, 0.0, 0.0]，表示 RGB = [255, 0, 0]
+//PC/IOS，如果size = -1，表示获取失败
+double* buf;
+int size = fuItemGetParamdv(1, "{\"name\":\"global\",\"type\":\"face_detail\",\"param\":\"blend_color\",\"UUID\":5}", buf, 0);
+buf = new double[size];
+fuItemGetParamdv(1, "{\"name\":\"global\",\"type\":\"face_detail\",\"param\":\"blend_color\",\"UUID\":5}", buf, size);
+// Android，如果buf = null，表示获取失败
+double[] buf = fuItemGetParamdv(1, "{\"name\":\"global\",\"type\":\"face_detail\",\"param\":\"blend_color\",\"UUID\":5}");
+```
+------
 ##### 帽子颜色
 ```C
-//设置胡子颜色
+//设置帽子颜色
 fuItemSetParamdv(1, "hat_color", [255,0,0]);
 ```
 ------
@@ -189,12 +282,59 @@ fuItemSetParamd(1, "enable_background_color", 0.0);
 ------
 ## 特殊模式
 
+### 动画混合的头部跟踪模式
+
+```C
+//这个模式开启的时候会取代原有的头旋转跟踪模式，原有的头跟踪时只旋转1根骨骼，在大幅度转头时脖子很不自然，开启这个模式后，将由6个动画混合出头部跟踪骨骼数据，使得脖子部分更自然
+
+//开启这个模式并加载6个头部旋转动画bundle后，才会真正起效
+//(new_pta/bundle_db/head_rotate/0_ditou.bundle)
+//(new_pta/bundle_db/head_rotate/1_yangtou.bundle)
+//(new_pta/bundle_db/head_rotate/2_zuokan.bundle)
+//(new_pta/bundle_db/head_rotate/3_youkan.bundle)
+//(new_pta/bundle_db/head_rotate/4_zuowaitou.bundle)
+//(new_pta/bundle_db/head_rotate/5_youwaitou.bundle)
+
+//开启动画混合的头部跟踪模式
+fuItemSetParamd(1, "enable_animation_track", 1.0);
+//关闭动画混合的头部跟踪模式
+fuItemSetParamd(1, "enable_animation_track", 0.0);
+```
+
 ### AR模式
+
 ```C
 //开启AR模式
 fuItemSetParamd(1, "enter_ar_mode", 1.0);
 //关闭AR模式
 fuItemSetParamd(1, "quit_ar_mode", 1.0);
+//AR模式下，为了支持旋转屏幕时，同时旋转头发遮罩，需要由移动端设置当前屏幕旋转方向
+//0表示设备未旋转，1表示逆时针旋转90度，2表示逆时针旋转180度，3表示逆时针旋转270度
+fuItemSetParamd(1, "screen_orientation", 0);
+```
+------
+### 身体追踪
+##### 开启或关闭身体追踪
+```C
+//开启身体追踪，需要设置target_angle，target_scale，target_trans，reset_all参数决定角色在追踪失败时的默认位置
+fuItemSetParamd(1, "enter_human_pose_track_mode", 1.0);
+//设置是否开启跟随模式：value = 1.0表示跟随，value = 0.0表示不跟随
+fuItemSetParamd(1, "human_3d_track_is_follow", 1.0);
+//如果使用跟随模式，可以通过参数human_3d_track_render_fov设置渲染的fov大小，单位是度
+fuItemSetParamd(1, "human_3d_track_render_fov", 30.0);
+//设置是全身驱动，还是半身驱动， 1为全身驱动，0为半身驱动
+fuItemSetParamd(1, "human_3d_track_set_scene", 0);
+//设置半身驱动跟随模式下，Y轴方向上的偏移
+fuItemSetParamd(1, "human_3d_detector_set_y_offset", 0.0);
+```
+##### 获取身体追踪的状态
+```C
+//FUAI_HUMAN_NO_BODY = 0,
+//FUAI_HUMAN_HALF_LESS_BODY = 1,
+//FUAI_HUMAN_HALF_BODY = 2,
+//FUAI_HUMAN_HALF_MORE_BODY = 3,
+//FUAI_HUMAN_FULL_BODY = 4,
+fuItemGetParam(1, "human_status");
 ```
 ------
 ### Blendshape混合
@@ -205,13 +345,13 @@ fuItemSetParamd(1, "enable_expression_blend", value);
 //blend_expression是用户输入的bs系数数组，取值为0~1，序号0-45代表基表情bs，46-56代表口腔bs，57-66代表舌头bs
 var d = [];
 for(var i = 0; i<57; i++){
-	d[i] = 0;
+    d[i] = 0;
 }
 fuItemSetParamdv(1, "blend_expression", d);
 //expression_weight0是blend_expression的权重，expression_weight1是算法检测返回的表情或者加载的动画表情系数数组的权重，取值为0~1
 var d = [];
 for(var i = 0; i<57; i++){
-	d[i] = 0;
+    d[i] = 0;
 }
 fuItemSetParamdv(1, "expression_weight0", d);
 ```
@@ -225,13 +365,7 @@ fuItemSetParamd(1, "fouce_eye_to_camera_height_adjust", 30.0); //调整虚拟相
 fuItemSetParamd(1, "fouce_eye_to_camera_distance_adjust", 30.0); //调整虚拟相机相对距离
 fuItemSetParamd(1, "fouce_eye_to_camera_weight", 1.0); //调整注视的影响权重，1.0表示完全启用，0.0表示无影响
 ```
-------
-### 多人模式
-```C
-//使用fuBindItems绑定道具, fuUnbindItems解绑道具，以及对controller设置的参数，作用的都是当前角色，默认情况下，当前角色的ID是0号。
-//使用多人模式，需要通过设置参数current_instance_id，切换当前角色，例如切换到1号角色：
-fuItemSetParamd(1, "current_instance_id", 1.0);
-```
+
 ------
 ### CNN 面部追踪
 ```C
@@ -435,5 +569,23 @@ fuItemGetParamd(1, "query_vert_y");
 ##### 获取头发分类类别
 ```C  
 var ret = fuItemGetParamd(1, "{\"name\":\"serverinfo\", \"param\":\"hair_label\"}");
+```
+##### 设置道具是否可见(对美妆道具和背景道具不可用)
+```C 
+//参数名为json结构，
+{
+    "name":"is_visible",  //固定
+    "UUID":5              //目标的道具bundle handle id
+}
+// value = 0.0 表示不可见，value = 1.0 表示可见
+fuItemSetParamdv(1, "{\"name\":\"is_visible\",\"UUID\":5}", 1.0);
+```
+##### 设置美妆道具的合成顺序（只对使用正常混合模式的美妆道具起效）
+```C
+// 是否使用自定义的美妆合成顺序，value = 1.0表示使用自定义的美妆合成顺序，value = 0.0表示使用绑定顺序作为合成顺序。
+fuItemSetParamd(2, "use_facebeauty_order", 1.0);
+// 设置合成顺序的数组，数组中的元素为美妆道具的bundle handle id，数组中越靠后的美妆渲染层级越高，视觉上看起来越在上方。
+// 例如，有两个handle_id分别为6和7美妆道具，使用下面的合成顺序，视觉上看起来7在6的上方。
+fuItemSetParamdv(2, "facebeauty_order", [6, 7]);
 ```
 
