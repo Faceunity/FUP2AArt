@@ -329,6 +329,25 @@ API接口说明如下：
 + (int)bindItems:(int)item items:(int*)items itemsCount:(int)itemsCount;
 ```
 
+### 身体道具选择
+
+部分道具(目前仅上衣和套组)的配置文件里有`body_match_level`字段，用来确定需要的身体级别。
+
+每个身体的配置参数如下
+
+```
+{
+		"bundle":"male/midBody_male0.bundle",
+    "icon":"",
+    "gender": 0,
+    "body_level": 0
+}
+```
+
+根据`body_match_level`和性别选择对应`body_level`的道具，身体道具的绑定方式和其他道具一致。
+
+
+
 ### 道具绘制
 
 在绘制风格化形象道具时，首先将 controller 道具及背景道具句柄存储到的一个 int 数组中，然后把该 int 数组作为参数传入 renderBundles 进行绘制即可。相关接口相关API如下：
@@ -355,36 +374,51 @@ API接口说明如下：
 在绘制风格化形象的模式下，该接口输入的数据格式为 FU_FORMAT_AVATAR_INFO ，输出的数据为渲染好的图像数据，支持多种主流图像格式，也支持输出纹理ID。在输入格式为FU_FORMAT_AVATAR_INFO，输出的图像宽高可以自定义。接口示例如下：
 
 ```objective-c
-static int frameid = 0 ;
-- (CVPixelBufferRef) renderP2AItemWithPixelBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks{
-   
-    float expression[46] = {0};
-    float translation[3] = {0};
-    float rotation[4] = {0,0,0,1};
-    float rotation_mode[1] = {0};
-    float pupil_pos[2] = {0};
-    int is_valid = 0 ;
+static int frameId = 0;
+- (CVPixelBufferRef)renderP2AItemWithPixelBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength
+{
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     
-    TAvatarInfo info;
-    info.p_translation = translation;
-    info.p_rotation = rotation;
-    info.p_expression = expression;
-    info.rotation_mode = rotation_mode;
-    info.pupil_pos = pupil_pos;
-    info.is_valid = is_valid ;
+    FUAvatarInfo* info;
+    if(self.useFaceCapure)
+    {
+        info = [[FUAvatarInfo alloc] init];
+        [self enableFaceCapture:(FURenderPreviewMode==renderMode?YES:NO)];
+        if(FURenderPreviewMode == renderMode)
+        {
+            [self trackFace:pixelBuffer];
+            if(landmarks)
+            {
+                [self GetLandmarks:landmarks length:landmarksLength faceIdx:0];
+            }
+        }
+    }
+    else
+    {
+        info = [self GetAvatarInfo:pixelBuffer renderMode:renderMode];
+        if(FURenderPreviewMode == renderMode)
+        {
+            if(landmarks)
+            {
+                memcpy(landmarks, info->landmarks, sizeof(info->landmarks));
+            }
+        }
+    }
     
-   CVPixelBufferLockBaseAddress(renderTarget, 0);
-
-    void *bytes = (void *)CVPixelBufferGetBaseAddress(renderTarget);
-    int stride1 = (int)CVPixelBufferGetBytesPerRow(renderTarget);
-	int h1 = (int)CVPixelBufferGetHeight(renderTarget);
-
-	[[FURenderer shareRenderer] renderBundles:&info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod1 outFormat:FU_FORMAT_BGRA_BUFFER width:stride1/4 height:h1 frameId:frameId ++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
-
+    int h = (int)CVPixelBufferGetHeight(renderTarget);
+    int stride = (int)CVPixelBufferGetBytesPerRow(renderTarget);
+    int w = stride/4;
+    CVPixelBufferLockBaseAddress(renderTarget, 0);
+    void* pod = (void *)CVPixelBufferGetBaseAddress(renderTarget);
+    [[FURenderer shareRenderer] renderBundles:&info->info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
     
+    [self rotateImage:pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
+    
+    memcpy(pod, self.rotatedImageManager.mData, w*h*4);
     CVPixelBufferUnlockBaseAddress(renderTarget, 0);
-
-    frameid++;
+    
+    dispatch_semaphore_signal(signal);
+    
     return renderTarget ;
 }
 ```
@@ -392,31 +426,21 @@ static int frameid = 0 ;
 其中renderTarget是用来当作输出的pixelBuffer，创建方式如下：
 
 ```objective-c
-- (void)createPixelBuffer
+- (CVPixelBufferRef)createEmptyPixelBuffer:(CGSize)size
 {
-    CGSize size = [UIScreen mainScreen].currentMode.size;
-    if (size.width > 850) {
-        
-        CGFloat a = 0.7;
-        CGFloat w = (((int)(size.width*a) + 3)>>2) * 4;
-        CGFloat h = (((int)(size.height*a) + 3)>>2) * 4;
-        size = CGSizeMake(w, h);
-    }
-    
-    if (!renderTarget) {
-        NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
-                                                  @(kCVPixelFormatType_32BGRA),
-                                              (NSString*) kCVPixelBufferWidthKey : @(size.width),
-                                              (NSString*) kCVPixelBufferHeightKey : @(size.height),
-                                              (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
-                                              (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
-        
-        CVPixelBufferCreate(kCFAllocatorDefault,
-                            size.width, size.height,
-                            kCVPixelFormatType_32BGRA,
-                            (__bridge CFDictionaryRef)pixelBufferOptions,
-                            &renderTarget);
-    }
+    CVPixelBufferRef ret;
+    NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
+                                              @(kCVPixelFormatType_32BGRA),
+                                          (NSString*) kCVPixelBufferWidthKey : @(size.width),
+                                          (NSString*) kCVPixelBufferHeightKey : @(size.height),
+                                          (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
+                                          (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
+    CVPixelBufferCreate(kCFAllocatorDefault,
+                        size.width, size.height,
+                        kCVPixelFormatType_32BGRA,
+                        (__bridge CFDictionaryRef)pixelBufferOptions,
+                        &ret);
+    return ret;
 }
 ```
 
@@ -519,104 +543,126 @@ static int frameid = 0 ;
 
 ## 形象驱动
 
-形象驱动是指使用 Nama SDK 进行人脸检测，再使用检测到人脸信息驱动风格化形象的功能。流程为：先对人脸进行检测，将获取到人脸信息保存到TAvatarInfo结构体中，再将 TAvatarInfo 作为参数传入 renderItems 接口即可，相关API说明如下：
+形象驱动是指使用 Nama SDK 进行人脸检测，再使用检测到人脸信息驱动风格化形象的功能。流程为：先绑定`face_capture.bundle` 并进行参数配置。
 
-```objective-c
-/**
- 人脸信息跟踪：
-     - 该接口只对人脸进行检测，如果程序中没有运行过视频处理接口( 视频处理接口8 除外)，则需要先执行完该接口才能使用 获取人脸信息接口 来获取人脸信息
- 
- @param inputFormat 输入图像格式：FU_FORMAT_BGRA_BUFFER 或 FU_FORMAT_NV12_BUFFER
- @param inputData 输入的图像 bytes 地址
- @param width 图像宽度
- @param height 图像高度
- @return 检测到的人脸个数，返回 0 代表没有检测到人脸
- */
-+ (int)trackFace:(int)inputFormat inputData:(void*)inputData width:(int)width height:(int)height;
+示例代码如下
 
-/**
- 获取人脸信息：
-     - 在程序中需要先运行过视频处理接口( 视频处理接口8 除外)或 人脸信息跟踪接口 后才能使用该接口来获取人脸信息；
-     - 该接口能获取到的人脸信息与我司颁发的证书有关，普通证书无法通过该接口获取到人脸信息；
-     - 具体参数及证书要求如下：
- 
-         landmarks: 2D人脸特征点，返回值为75个二维坐标，长度75*2
-         证书要求: LANDMARK证书、AVATAR证书
- 
-         landmarks_ar: 3D人脸特征点，返回值为75个三维坐标，长度75*3
-         证书要求: AVATAR证书
- 
-         rotation: 人脸三维旋转，返回值为旋转四元数，长度4
-         证书要求: LANDMARK证书、AVATAR证书
- 
-         translation: 人脸三维位移，返回值一个三维向量，长度3
-         证书要求: LANDMARK证书、AVATAR证书
- 
-         eye_rotation: 眼球旋转，返回值为旋转四元数,长度4
-         证书要求: LANDMARK证书、AVATAR证书
- 
-         rotation_raw: 人脸三维旋转（不考虑屏幕方向），返回值为旋转四元数，长度4
-         证书要求: LANDMARK证书、AVATAR证书
- 
-         expression: 表情系数，长度46
-         证书要求: AVATAR证书
- 
-         projection_matrix: 投影矩阵，长度16
-         证书要求: AVATAR证书
- 
-         face_rect: 人脸矩形框，返回值为(xmin,ymin,xmax,ymax)，长度4
-         证书要求: LANDMARK证书、AVATAR证书
- 
-         rotation_mode: 人脸朝向，0-3分别对应手机四种朝向，长度1
-         证书要求: LANDMARK证书、AVATAR证书
- 
- @param faceId 被检测的人脸 ID ，未开启多人检测时传 0 ，表示检测第一个人的人脸信息；当开启多人检测时，其取值范围为 [0 ~ maxFaces-1] ，取其中第几个值就代表检测第几个人的人脸信息
- @param name 人脸信息参数名： "landmarks" , "eye_rotation" , "translation" , "rotation" ....
- @param pret 作为容器使用的 float 数组指针，获取到的人脸信息会被直接写入该 float 数组。
- @param number float 数组的长度
- @return 返回 1 代表获取成功，返回 0 代表获取失败
- */
-+ (int)getFaceInfo:(int)faceId name:(NSString *)name pret:(float *)pret number:(int)number;
 ```
+/// 初始化脸部识别
+- (void)initFaceCapture
+{
+    NSData *data = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"face_capture.bundle" ofType:nil]];
+    self.faceCapture = [FURenderer faceCaptureCreate:data.bytes size:(int)data.length];
+}
 
-示例代码如下：
+/// 绑定脸部识别到Controller
+- (void)bindFaceCaptureToController
+{
+    [FURenderer itemSetParamu64:self.defalutQController  withName:@"register_face_capture_manager"  value:(unsigned long long)self.faceCapture];
+    [FURenderer itemSetParam:self.defalutQController  withName:@"register_face_capture_face_id"  value:@(0.0)];
+}
 
-```objective-c
-	float expression[46] = {0};
-    float translation[3] = {0};
-    float rotation[4] = {0,0,0,1};
-    float rotation_mode[1] = {0};
-    float pupil_pos[2] = {0};
-    int is_valid = 0 ;
-    
-    if (renderMode == FURenderPreviewMode) {
-        CVPixelBufferLockBaseAddress(pixelBuffer, 0) ;
-        
-        void *baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) ;
-        int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
-        int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer) ;
-        
-        [FURenderer trackFace:FU_FORMAT_BGRA_BUFFER inputData:baseAddress width:stride/4 height:height];
-        [FURenderer getFaceInfo:0 name:@"expression" pret:expression number:46];
-        [FURenderer getFaceInfo:0 name:@"translation" pret:translation number:3];
-        [FURenderer getFaceInfo:0 name:@"rotation" pret:rotation number:4];
-        [FURenderer getFaceInfo:0 name:@"rotation_mode" pret:rotation_mode number:1];
-        [FURenderer getFaceInfo:0 name:@"pupil_pos" pret:pupil_pos number:2];
-        
-        [FURenderer getFaceInfo:0 name:@"landmarks" pret:landmarks number:150];
-        CVPixelBufferUnlockBaseAddress(pixelBuffer, 0) ;
-        
-        is_valid = [FURenderer isTracking];
+/// 是否使用新的人脸驱动模式
+/// @param isUse YES为使用，NO为不使用
+- (void)useFaceCapure:(BOOL)isUse
+{
+    self.useFaceCapure = isUse;
+    [FURenderer itemSetParam:self.defalutQController withName:@"is_close_dde" value:@(self.useFaceCapure?1.0:0.0)];
+    //需要与初值相反
+    self.isFaceCaptureEnabled = YES;
+    [self enableFaceCapture:!self.isFaceCaptureEnabled];
+}
+
+- (void)enableFaceCapture:(BOOL)isEnable
+{
+    if(self.isFaceCaptureEnabled != isEnable)
+    {
+        self.isFaceCaptureEnabled = isEnable;
+        [FURenderer itemSetParam:self.defalutQController withName:@"close_face_capture" value:@(isEnable?0.0:1.0)];
     }
+}
 
-    TAvatarInfo info;
-    info.p_translation = translation;
-    info.p_rotation = rotation;
-    info.p_expression = expression;
-    info.rotation_mode = rotation_mode;
-    info.pupil_pos = pupil_pos;
-    info.is_valid = is_valid ;
 ```
+
+
+
+脸部识别处理
+
+```
+/**
+ Run face capturing
+ 
+ @param manager_ptr_addr the pointer of the capture manager
+ @param img input image pointer, data type must be byte
+ @param w input image width
+ @param h input image height
+ @param fu_image_format FU_FORMAT_*_BUFFER
+ @param rotation_mode w.r.t to rotation the the camera view, 0=0^deg, 1=90^deg, 2=180^deg, 3=270^deg
+ @return whether the current frame is valid for tracking
+*/
++ (int)faceCaptureProcessFrame:(void*)model inPtr:(void *)inPtr inFormat:(FUFormat)inFormat w:(int)w h:(int)h rotationMode:(int)rotationMode;
+```
+
+显示识别点位
+
+```
++ (int)faceCaptureGetResultLandmarks:(void*)model faceN:(int)faceN buffer:(float *)buffer length:(int)length;
+```
+
+
+
+示例代码
+
+```
+- (CVPixelBufferRef)renderP2AItemWithPixelBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength
+{
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+    
+    FUAvatarInfo* info;
+    if(self.useFaceCapure)
+    {
+        info = [[FUAvatarInfo alloc] init];
+        [self enableFaceCapture:(FURenderPreviewMode==renderMode?YES:NO)];
+        if(FURenderPreviewMode == renderMode)
+        {
+            [self trackFace:pixelBuffer];
+            if(landmarks)
+            {
+                [self GetLandmarks:landmarks length:landmarksLength faceIdx:0];
+            }
+        }
+    }
+    else
+    {
+        info = [self GetAvatarInfo:pixelBuffer renderMode:renderMode];
+        if(FURenderPreviewMode == renderMode)
+        {
+            if(landmarks)
+            {
+                memcpy(landmarks, info->landmarks, sizeof(info->landmarks));
+            }
+        }
+    }
+    
+    int h = (int)CVPixelBufferGetHeight(renderTarget);
+    int stride = (int)CVPixelBufferGetBytesPerRow(renderTarget);
+    int w = stride/4;
+    CVPixelBufferLockBaseAddress(renderTarget, 0);
+    void* pod = (void *)CVPixelBufferGetBaseAddress(renderTarget);
+    [[FURenderer shareRenderer] renderBundles:&info->info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
+    
+    [self rotateImage:pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
+    
+    memcpy(pod, self.rotatedImageManager.mData, w*h*4);
+    CVPixelBufferUnlockBaseAddress(renderTarget, 0);
+    
+    dispatch_semaphore_signal(signal);
+    
+    return renderTarget ;
+}
+```
+
+
 
 ## 形象编辑
 
@@ -646,7 +692,7 @@ static int frameid = 0 ;
 		}
 		[self.currentAvatar setExpression_wieght0:expression_weight0Expression];
 		[self.currentAvatar setExpression_wieght1:expression_weight1Expression];
- ```
+```
 (2)通过FUStaLite.framework获取口型系数；
 ```objective-c
 [[FUStaLiteRequestManager shareManager] process:text
@@ -658,7 +704,7 @@ static int frameid = 0 ;
 											 result:^(NSError * _Nullable error, NSData * _Nonnull voiceData, NSData * _Nonnull expressionData,float timeStride) {
 
  }];
- ```
+```
  (3)将获取的口型系数传至nama驱动形象表情；
  ```objective-c
 		double exp[57] = {0.0};
@@ -682,7 +728,7 @@ AR驱动是指，在AR环境下，使用 Nama SDK 进行人脸检测，再使用
 		[[FUManager shareInstance] reloadBackGroundAndBindToController:nil];
 		// 5.向nama设置enter_ar_mode为1，进入AR滤镜模式
 		[self.currentAvatar enterARMode];
-```
+ ```
 
 在AR滤镜模式下，首先将 controller 道具 int 数组中，然后把该 int 数组作为参数传入 renderItems 进行绘制即可。相关接口相关API如下：
 
@@ -763,7 +809,7 @@ static int frameid = 0 ;
 (2)将nama渲染后的CVPixelBufferRef 作为参数传入[FUP2AHelper shareInstance]对象，作为MP4文件的一帧；
  ```objective-c
 [[FUP2AHelper shareInstance] recordBufferWithType:FUP2AHelperRecordTypeVideo buffer:imageBuffer sampleBuffer:sampleBuffer];
-```
+ ```
 
 
 (3)当当前动画一个循环全部录制完成，调用[FUP2AHelper shareInstance]对象的录制完成方法，获取MP4视频文件路径；
@@ -797,3 +843,6 @@ static int frameid = 0 ;
 
 
 **更多详情，请参考Demo代码!**
+
+
+
