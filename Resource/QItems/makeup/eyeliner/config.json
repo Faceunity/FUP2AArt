@@ -1,0 +1,18 @@
+{
+    "list": [
+        {
+            "bundle": "",
+            "icon": "none",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/Eyeliner_1.bundle",
+            "icon": "mid/Eyeliner_1",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        }
+    ]
+}

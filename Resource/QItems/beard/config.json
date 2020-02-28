@@ -1,0 +1,74 @@
+{
+    "list": [
+        {
+            "bundle": "",
+            "icon": "none",
+            "label": [-1, 0],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/beard_1.bundle",
+            "icon": "mid/beard_1",
+            "label": [],
+            "gender": 2,
+            "gender_match": 0
+        },
+        {
+            "bundle": "mid/beard_2.bundle",
+            "icon": "mid/beard_2",
+            "label": [],
+            "gender": 2,
+            "gender_match": 0
+        },
+        {
+            "bundle": "mid/beard_3.bundle",
+            "icon": "mid/beard_3",
+            "label": [],
+            "gender": 2,
+            "gender_match": 0
+        },
+        {
+            "bundle": "mid/beard_4.bundle",
+            "icon": "mid/beard_4",
+            "label": [],
+            "gender": 2,
+            "gender_match": 0
+        },
+        {
+            "bundle": "mid/beard_5.bundle",
+            "icon": "mid/beard_5",
+            "label": [],
+            "gender": 2,
+            "gender_match": 0
+        },
+        {
+            "bundle": "mid/beard_6.bundle",
+            "icon": "mid/beard_6",
+            "label": [],
+            "gender": 2,
+            "gender_match": 0
+        },
+        {
+            "bundle": "mid/beard_7.bundle",
+            "icon": "mid/beard_7",
+            "label": [],
+            "gender": 2,
+            "gender_match": 0
+        },
+        {
+            "bundle": "mid/beard_8.bundle",
+            "icon": "mid/beard_8",
+            "label": [],
+            "gender": 2,
+            "gender_match": 0
+        },
+        {
+            "bundle": "mid/beard_9.bundle",
+            "icon": "mid/beard_9",
+            "label": [],
+            "gender": 2,
+            "gender_match": 0
+        }
+    ]
+}

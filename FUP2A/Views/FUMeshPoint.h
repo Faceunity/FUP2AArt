@@ -13,10 +13,10 @@
 
 @property (nonatomic, assign) NSInteger index ;
 @property (nonatomic, assign) FUMeshPiontDirection direction ;
-@property (nonatomic, copy) NSArray *leftKey ;
-@property (nonatomic, copy) NSArray *rightKey ;
-@property (nonatomic, copy) NSArray *upKey ;
-@property (nonatomic, copy) NSArray *downKey ;
+@property (nonatomic, copy) NSString *leftKey ;
+@property (nonatomic, copy) NSString *rightKey ;
+@property (nonatomic, copy) NSString *upKey ;
+@property (nonatomic, copy) NSString *downKey ;
 
 
 @property (nonatomic, assign) BOOL selected ;

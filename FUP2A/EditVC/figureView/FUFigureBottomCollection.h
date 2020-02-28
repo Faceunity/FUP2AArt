@@ -11,16 +11,23 @@
 @protocol FUFigureBottomCollectionDelegate <NSObject>
 
 @optional
-- (void)bottomCollectionDidSelectedIndex:(NSInteger)index show:(BOOL)show animation:(BOOL)animation ;
+- (void)bottomCollectionDidSelectedIndex:(NSInteger)index show:(BOOL)show animation:(BOOL)animation;
+
 @end
 
 @interface FUFigureBottomCollection : UICollectionView
 
-@property (nonatomic, assign) id<FUFigureBottomCollectionDelegate>mDelegate ;
-@property (nonatomic, strong) NSArray *dataArray ;
+@property (nonatomic, assign) id<FUFigureBottomCollectionDelegate>mDelegate;
 
-- (void)hiddenSelectedItem ;
+- (void)hiddenSelectedLine ;
+
 @end
+
+
+
+
+
+
 
 @interface FUFigureBottomCell : UICollectionViewCell
 

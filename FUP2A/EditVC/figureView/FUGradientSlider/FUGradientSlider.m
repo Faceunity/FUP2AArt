@@ -33,14 +33,11 @@
 @end
 
 @implementation FUGradientSlider
-//-(void)awakeFromNib{
-//  [super awakeFromNib];
-//	        [self setDefaultValues];
-//        [self setup];
-//}
--(instancetype)initWithCoder:(NSCoder *)aDecoder {
+-(instancetype)initWithCoder:(NSCoder *)aDecoder
+{
 	self = [super initWithCoder:aDecoder];
-	if(self) {
+	if(self)
+    {
 		[self setDefaultValues];
 		[self setup];
 		self.value = 0;
@@ -49,22 +46,23 @@
 	return self;
 }
 
--(instancetype)initWithFrame:(CGRect)frame {
+-(instancetype)initWithFrame:(CGRect)frame
+{
 	self = [super initWithFrame:frame];
-	if(self) {
+	if(self)
+    {
 		[self setDefaultValues];
 		[self setup];
 	}
 	return self;
 }
 
--(void)setDefaultValues {
+-(void)setDefaultValues
+{
 	_isRainbow = NO;
+//    [self updateTrackColors];
 	_minValue = 0.0;
 	_maxValue = 1.0;
-	float minColorArr[3] = FUGradientSlider_minColorArr;
-	float maxColorArr[3] = FUGradientSlider_maxColorArr;
-	
 	
 	_thickness = defaultThickness;
 	currentValue = 0.0f;
@@ -74,7 +72,8 @@
 	_thumbBorderColor = [UIColor whiteColor];
 }
 
--(void)setup {
+-(void)setup
+{
 	self.layer.delegate = self;
 	[self.layer addSublayer:self.trackLayer];
 	[self.layer addSublayer:self.thumbLayer];
@@ -85,18 +84,21 @@
 	
 }
 
--(CGSize) intrinsicContentSize {
+-(CGSize) intrinsicContentSize
+{
 	return CGSizeMake(UIViewNoIntrinsicMetric, self.thumbSize);
 }
 
 
--(UIEdgeInsets) alignmentRectInsets {
+-(UIEdgeInsets) alignmentRectInsets
+{
 	return UIEdgeInsetsMake(4.0, 2.0, 4.0, 2.0);
 }
 
 #pragma mark - layer
 
--(void)layoutSublayersOfLayer:(CALayer *)layer {
+-(void)layoutSublayersOfLayer:(CALayer *)layer
+{
 	
 	//[super layoutSublayersOfLayer:layer];
 	
@@ -152,7 +154,8 @@
 	[self updateThumbPosition:NO];
 }
 
--(void) updateThumbPosition:(BOOL) animated {
+-(void) updateThumbPosition:(BOOL) animated
+{
 	CGFloat diff = _maxValue - _minValue;
 	CGFloat perc = (currentValue - _minValue) / diff;
 	
@@ -160,18 +163,21 @@
 	CGFloat trackWidth = _trackLayer.bounds.size.width - _thumbSize;
 	CGFloat left = _trackLayer.position.x - trackWidth/2.0;
 	
-	if (animated) {
+	if (animated)
+    {
 		[CATransaction begin]; //Move the thumb position without animations
 		[CATransaction setValue:@YES forKey: kCATransactionDisableActions];
 		_thumbLayer.position = CGPointMake(left + (trackWidth * perc), halfHeight);
 		_balloonLayer.position = CGPointMake(left + (trackWidth * perc),_balloonLayer.position.y);
-		UIColor *newColor = [appManager returnFUGradientSliderColor:currentValue];
+        UIColor *newColor = [[[FUManager shareInstance] getSkinColorWithProgress:self.value] valueForKey:@"color"];
 		[self setThumbColor:newColor];
 		//		[self setBalloonColor:newColor];
 		self.balloonLayer.fillColor = newColor.CGColor;
 		[CATransaction commit];
-	} else {
-		UIColor *newColor = [appManager returnFUGradientSliderColor:currentValue];
+	}
+    else
+    {
+		UIColor *newColor = [[[FUManager shareInstance] getSkinColorWithProgress:self.value] valueForKey:@"color"];
 		[self setThumbColor:newColor];
 		//		[self setBalloonColor:newColor];
 		self.balloonLayer.fillColor = newColor.CGColor;
@@ -182,7 +188,8 @@
 
 #pragma mark - delegate
 
--(BOOL)beginTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
+-(BOOL)beginTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event
+{
 	CGPoint pt = [touch locationInView:self];
 	
 	//  self.balloonLayer.hidden = NO;
@@ -190,42 +197,51 @@
 	CGPoint center = _thumbLayer.position;
 	CGFloat diameter = fmax(_thumbSize,44.0);
 	CGRect r = CGRectMake(center.x - diameter/2.0, center.y - diameter/2.0, diameter,  diameter);
-	if(CGRectContainsPoint(r, pt)) {
+	if(CGRectContainsPoint(r, pt))
+    {
 		[self sendActionsForControlEvents:UIControlEventTouchDown];
 		return YES;
 	}
 	return NO;
 }
 
--(BOOL)continueTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
+-(BOOL)continueTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event
+{
 	
 	CGPoint pt = [touch locationInView:self];
 	CGFloat newValue = [self valueForLocation:pt];
 	[self setValue:newValue animated:NO];
-	if(continuous){
+	if(continuous)
+    {
 		[self sendActionsForControlEvents:UIControlEventValueChanged];
-		if(self.actionBlock) {
+		if(self.actionBlock)
+        {
 			self.actionBlock(self,newValue, NO);
 		}
 	}
 	return YES;
 }
 
--(void)endTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
+-(void)endTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event
+{
 	//   self.balloonLayer.hidden = YES;
 	[self.balloonLayer removeFromSuperlayer];
-	if(touch) {
+	if(touch)
+    {
 		CGPoint pt = [touch locationInView:self];
 		CGFloat newValue = [self valueForLocation:pt];
 		[self setValue:newValue animated:NO];
-		[FUManager shareInstance].currentAvatars.firstObject.skinColorProgress = newValue;
 	}
 	//  [self layoutSubviews];
-	if(self.actionBlock) {
+	if(self.actionBlock)
+    {
 		self.actionBlock(self,currentValue, YES);
 	}
-	[self sendActionsForControlEvents:UIControlEventValueChanged|UIControlEventTouchUpInside];
+    [self sendActionsForControlEvents:UIControlEventValueChanged];
+    [self.delegate gradientSliderValueChangeFinished:self.value];
+
 }
+
 
 
 #pragma mark - properties
@@ -298,35 +314,7 @@
 	_trackLayer.borderColor = trackBorderColor.CGColor;
 }
 
--(CALayer*)thumbLayer
-{
-	if(!_thumbLayer) {
-		_thumbLayer = [CALayer new];
-		_thumbLayer.cornerRadius = defaultThumbSize/2.0;
-		_thumbLayer.bounds = CGRectMake(0, 0, defaultThumbSize, defaultThumbSize);
-		_thumbLayer.backgroundColor = [UIColor whiteColor].CGColor;
-		_thumbLayer.borderColor = _thumbBorderColor.CGColor;
-		_thumbLayer.borderWidth = _thumbBorderWidth;
-	}
-	return _thumbLayer;
-}
--(CAShapeLayer *)balloonLayer{
-	if (!_balloonLayer) {
-		_balloonLayer = [CAShapeLayer layer];
-		CGFloat balloonLayerX = 0;
-		CGFloat balloonLayerY = -50;
-		CGFloat balloonLayerW = 44;
-		CGFloat balloonLayerH = 52;
-		
-		CGFloat balloonLayerCenterX = balloonLayerW / 2.0;
-		CGFloat balloonLayerCenterY = balloonLayerCenterX;
-		
-		
-		_balloonLayer.frame = CGRectMake(balloonLayerX,balloonLayerY, balloonLayerW, balloonLayerH);
-		_balloonLayer.path = [self drawBalloonPath:CGPointMake(balloonLayerCenterX, balloonLayerCenterY)].CGPath;
-	}
-	return _balloonLayer;
-}
+
 
 -(UIBezierPath*)drawBalloonPath:(CGPoint)center{
 	float _radius = 22;
@@ -379,37 +367,10 @@
 	
 }
 
-
--(CAGradientLayer*)trackLayer
-{
-	if(!_trackLayer) {
-		_trackLayer = [CAGradientLayer new];
-		_trackLayer.cornerRadius = defaultThickness / 2.0;
-		_trackLayer.startPoint = CGPointMake(0.0, 0.5);
-		_trackLayer.endPoint = CGPointMake(1.0, 0.5);
-		_trackLayer.locations = @[@0.0,@1.0];
-		_trackLayer.colors = @[(id)[UIColor blueColor].CGColor,(id)[UIColor orangeColor].CGColor];
-		_trackLayer.borderColor = [UIColor blackColor].CGColor;
-	}
-	return _trackLayer;
-}
-
--(CALayer*)thumbIconLayer
-{
-	
-	if(!_thumbIconLayer) {
-		CGFloat size = defaultThumbSize - 4;
-		_thumbIconLayer = [CALayer new];
-		_thumbIconLayer.cornerRadius = size/2.0;
-		_thumbIconLayer.bounds = CGRectMake(0, 0, size, size);
-		_thumbIconLayer.backgroundColor = [UIColor whiteColor].CGColor;
-	}
-	return _thumbIconLayer;
-}
-
 #pragma mark - private
 
--(CGFloat)valueForLocation:(CGPoint) point {
+-(CGFloat)valueForLocation:(CGPoint) point
+{
 	CGFloat left = self.bounds.origin.x;
 	CGFloat w = self.bounds.size.width;
 	
@@ -465,17 +426,18 @@
 	}
 	else {
 		//    _trackLayer.colors = @[(id)_minColor.CGColor, (id)_maxColor.CGColor];
-		int colorsCount = [FUManager shareInstance].skinColorArray.count;
-		double step = appManager.colorSliderStep;
+//		int colorsCount = [FUManager shareInstance].skinColorArray.count;
+        NSInteger colorsCount = [[FUManager shareInstance] getColorArrayCountWithType:FUFigureColorTypeSkinColor];
+		double step = 1.0/(colorsCount - 1);
 		NSMutableArray * colorsArrary = [NSMutableArray array];
 		NSMutableArray * locationsArray = [NSMutableArray array];
 		for (int i = 0; i < colorsCount; i++) {
-			FUP2AColor * avatarColor = [FUManager shareInstance].skinColorArray[i];
+			FUP2AColor * avatarColor = [[FUManager shareInstance]getColorWithType:FUFigureColorTypeSkinColor andIndex:i];
 			UIColor * color = avatarColor.color;
 			[colorsArrary addObject:(id)color.CGColor];
 			[locationsArray addObject:@(i * step)];
 		}
-		_trackLayer.colors = colorsArrary;
+		_trackLayer.colors = colorsArrary; 
 		_trackLayer.locations = locationsArray;
 	}
 }
@@ -491,5 +453,63 @@
 	return [UIColor whiteColor];
 }
 
+#pragma mark ------ GET/SET ------
+-(CAGradientLayer*)trackLayer
+{
+    if(!_trackLayer) {
+        _trackLayer = [CAGradientLayer new];
+        _trackLayer.cornerRadius = defaultThickness / 2.0;
+        _trackLayer.startPoint = CGPointMake(0.0, 0.5);
+        _trackLayer.endPoint = CGPointMake(1.0, 0.5);
+        _trackLayer.locations = @[@0.0,@1.0];
+        _trackLayer.colors = @[(id)[UIColor blueColor].CGColor,(id)[UIColor orangeColor].CGColor];
+        _trackLayer.borderColor = [UIColor blackColor].CGColor;
+    }
+    return _trackLayer;
+}
+
+-(CALayer*)thumbIconLayer
+{
+    
+    if(!_thumbIconLayer) {
+        CGFloat size = defaultThumbSize - 4;
+        _thumbIconLayer = [CALayer new];
+        _thumbIconLayer.cornerRadius = size/2.0;
+        _thumbIconLayer.bounds = CGRectMake(0, 0, size, size);
+        _thumbIconLayer.backgroundColor = [UIColor whiteColor].CGColor;
+    }
+    return _thumbIconLayer;
+}
+
+-(CALayer*)thumbLayer
+{
+    if(!_thumbLayer) {
+        _thumbLayer = [CALayer new];
+        _thumbLayer.cornerRadius = defaultThumbSize/2.0;
+        _thumbLayer.bounds = CGRectMake(0, 0, defaultThumbSize, defaultThumbSize);
+        _thumbLayer.backgroundColor = [UIColor whiteColor].CGColor;
+        _thumbLayer.borderColor = _thumbBorderColor.CGColor;
+        _thumbLayer.borderWidth = _thumbBorderWidth;
+    }
+    return _thumbLayer;
+}
+
+-(CAShapeLayer *)balloonLayer{
+    if (!_balloonLayer) {
+        _balloonLayer = [CAShapeLayer layer];
+        CGFloat balloonLayerX = 0;
+        CGFloat balloonLayerY = -50;
+        CGFloat balloonLayerW = 44;
+        CGFloat balloonLayerH = 52;
+        
+        CGFloat balloonLayerCenterX = balloonLayerW / 2.0;
+        CGFloat balloonLayerCenterY = balloonLayerCenterX;
+        
+        
+        _balloonLayer.frame = CGRectMake(balloonLayerX,balloonLayerY, balloonLayerW, balloonLayerH);
+        _balloonLayer.path = [self drawBalloonPath:CGPointMake(balloonLayerCenterX, balloonLayerCenterY)].CGPath;
+    }
+    return _balloonLayer;
+}
 
 @end

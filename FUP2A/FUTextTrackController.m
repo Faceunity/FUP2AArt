@@ -26,6 +26,7 @@
 #import "Faceunity/FUSta/FUStaLiteRequestManager.h"
 #import "Faceunity/FUSta/FUAudioPlayer.h"
 #import "Faceunity/FUSta/FUMusicPlayer.h"
+
 @interface FUTextTrackController ()<
 FUCameraDelegate,
 UIGestureRecognizerDelegate,
@@ -140,7 +141,7 @@ static int expSize = 57;
 -(void)setIsShow:(BOOL)isShow{
 	_isShow = isShow;
 	if (isShow) {   // 显示当前界面
-		[[FUManager shareInstance] reloadRenderAvatarInSameController:self.currentAvatar];
+		[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:self.currentAvatar];
 		NSString *default_bg_Path = [[NSBundle mainBundle] pathForResource:@"default_bg" ofType:@"bundle"];
 		[[FUManager shareInstance] reloadBackGroundAndBindToController:default_bg_Path];
 		[self.currentAvatar resetScaleToBody];
@@ -197,7 +198,7 @@ static int expSize = 57;
 		[FURenderer destroy3DBodyTracker:_human3dPtr];     // 销毁 _human3dPtr 句柄
 		
 		[weakSelf.navigationController popViewControllerAnimated:NO];
-		[[FUManager shareInstance] reloadRenderAvatarInSameController:weakSelf.commonAvatar];     // 以不销毁controller的方式，重新加载avatar
+		[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:weakSelf.commonAvatar];     // 以不销毁controller的方式，重新加载avatar
 		[weakSelf.commonAvatar loadStandbyAnimation];
 		[weakSelf.commonAvatar resetScaleToSmallBody];
 	});
@@ -294,13 +295,13 @@ static int frameIndex = 0 ;
 	frameIndex ++ ;
 	CVPixelBufferRef pixelBuffer;
 	pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
-	int h = (int)CVPixelBufferGetHeight(pixelBuffer);
-	int w = (int)CVPixelBufferGetWidth(pixelBuffer);
 	
-	CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
-	float landmarks[150];
+    CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
+    const int landmarks_cnt = 150;
+    float landmarks[landmarks_cnt];
 	// 人体追踪的渲染方法
-	CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemInFUStaWithPixelBuffer:mirrored_pixel RenderMode:renderMode Landmarks:landmarks];
+    CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemWithPixelBuffer:mirrored_pixel RenderMode:renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
+
 	if (self.staPlayState == StaPlaying) {
 		static int staFrameIndex = 0;
 		float currentTime = [FUMusicPlayer sharePlayer].currentTime;
@@ -407,7 +408,7 @@ static int frameIndex = 0 ;
 // 重新选择的avatar
 -(void)TextTrackViewDidSelectedAvatar:(FUAvatar *)avatar{
 	loadingBundles = YES;
-	[[FUManager shareInstance] reloadRenderAvatarInSameController:avatar];
+	[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:avatar];
 	if (avatar == nil) {
 		self.currentAvatar = nil;
 	}else{

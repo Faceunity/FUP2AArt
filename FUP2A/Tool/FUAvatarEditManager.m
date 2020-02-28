@@ -23,15 +23,18 @@ static FUAvatarEditManager *sharedInstance;
 	});
 	return sharedInstance;
 }
--(void)undoStackPop:(PopCompleteBlock)completion{
+
+-(void)undoStackPop:(PopCompleteBlock)completion
+{
     self.undo = YES;
     NSObject *obj = self.undoStack.top;
     [self.redoStack push:[self.undoStack pop]];
     [[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditManagerStackNotEmptyNot object:nil];
-    completion([obj valueForKey:@"oldConfig"],self.undoStack.isEmpty);
+    completion(obj,self.undoStack.isEmpty);
 }
 
--(void)redoStackPop:(PopCompleteBlock)completion{
+-(void)redoStackPop:(PopCompleteBlock)completion
+{
 	self.redo = YES;
 	[self.undoStack push:[self.redoStack pop]];
     if (self.redoStack.isEmpty)
@@ -39,21 +42,26 @@ static FUAvatarEditManager *sharedInstance;
         [[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditManagerStackNotEmptyNot object:nil];
     }
 	NSObject *obj = self.undoStack.top;
-	completion([obj valueForKey:@"currentConfig"],self.redoStack.isEmpty);
+	completion(obj,self.redoStack.isEmpty);
 	
 }
--(void)push:(NSObject *)object{
-	if (self.undoStack.top == nil) {
+-(void)push:(NSObject *)object
+{
+	if (self.undoStack.top == nil)
+    {
 		self.undoStack.top = object;
 		[[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditManagerStackNotEmptyNot object:nil];
 	}
 	[self.undoStack push:object];
 }
 // 字典模型数组里面是否包含某个键值
--(BOOL)exsit:(NSString *)key{
+-(BOOL)exsit:(NSString *)key
+{
 	return [self.undoStack exsit:key] || [self.redoStack exsit:key];
 }
--(void)clear{
+
+-(void)clear
+{
 	self.hadNotEdit = YES;
 	self.enterEditVC = NO;
 	self.undo = NO;

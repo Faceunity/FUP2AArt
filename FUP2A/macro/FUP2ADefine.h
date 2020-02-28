@@ -44,6 +44,18 @@ typedef NS_ENUM(NSInteger, FUMeshPiontDirection) {
     FUMeshPiontDirectionAll              = 2,   // 0 && 1
 };
 
+typedef enum : NSInteger {
+    FUFigureShapeTypeNone           = -1 ,
+    FUFigureShapeTypeFaceFront      = 0,
+    FUFigureShapeTypeFaceSide,
+    FUFigureShapeTypeEyesFront,
+    FUFigureShapeTypeEyesSide,
+    FUFigureShapeTypeLipsFront,
+    FUFigureShapeTypeLipsSide,
+    FUFigureShapeTypeNoseFront,
+    FUFigureShapeTypeNoseSide,
+} FUFigureShapeType;
+
 //#define TOKENURL        @"https://api2.faceunity.com:7070/token?company=faceunity"
 //#define UPLOADURL       @"https://api-ptoa.faceunity.com/api/p2a/upload"
 //#define DOWNLOADURL     @"https://api-ptoa.faceunity.com/api/p2a/download"
@@ -55,8 +67,8 @@ typedef NS_ENUM(NSInteger, FUMeshPiontDirection) {
 
 #define AvatarQPath         [documentPath stringByAppendingPathComponent:@"AvatarQs"]
 
-#define CurrentAvatarStylePath ([FUManager shareInstance].avatarStyle == FUAvatarStyleNormal ? AvatarListPath : AvatarQPath)
-
+//#define CurrentAvatarStylePath ([FUManager shareInstance].avatarStyle == FUAvatarStyleNormal ? AvatarListPath : AvatarQPath)
+#define CurrentAvatarStylePath  AvatarQPath
 #define VideoPath           [documentPath stringByAppendingPathComponent:@"video.mp4"]
 
 #define DefaultAvatarNum    2
@@ -71,7 +83,10 @@ typedef NS_ENUM(NSInteger, FUMeshPiontDirection) {
 #define FUAvatarEditManagerStackNotEmptyNot @"FUAvatarEditManagerStackNotEmptyNot"
 // 编辑脸部点位时的通知
 #define FUNielianEditManagerStackNotEmptyNot @"FUNielianEditManagerStackNotEmptyNot"
-
+// 进入捏脸模式通知
+#define FUEnterNileLianNot @"FUEnterNileLianNot"
+// 生成头发中
+#define FUCreatingHairBundleNot @"FUCreatingHairBundleNot"
 // 撤销重做的通知
 #define FUAvatarEditedDoNot @"FUAvatarEditedDoNot"
 
@@ -97,3 +112,51 @@ typedef NS_ENUM(NSInteger, FUMeshPiontDirection) {
 
 #pragma mark ===================错误码================
 static int const FUAppVersionInvalid = 3001;
+
+
+
+#pragma mark ------ itemKey ------
+
+//#define TAG_FU_ITEM_HAIR  @"发型"
+//#define TAG_FU_ITEM_FACE  @"脸型"
+//#define TAG_FU_ITEM_MOUTH  @"嘴型"
+//#define TAG_FU_ITEM_EYE  @"眼型"
+//#define TAG_FU_ITEM_NOSE  @"鼻型"
+//#define TAG_FU_ITEM_CLOTH  @"套装"
+//#define TAG_FU_ITEM_UPPER  @"上衣"
+//#define TAG_FU_ITEM_LOWER  @"下衣"
+//#define TAG_FU_ITEM_SHOES  @"鞋子"
+//#define TAG_FU_ITEM_HAT  @"帽子"
+//#define TAG_FU_ITEM_EYELASH  @"睫毛"
+//#define TAG_FU_ITEM_EYEBROW  @"眉毛"
+//#define TAG_FU_ITEM_BEARD  @"胡子"
+//#define TAG_FU_ITEM_GLASSES  @"眼镜"
+//#define TAG_FU_ITEM_EYESHADOW  @"眼影"
+//#define TAG_FU_ITEM_EYELINER  @"眼线"
+//#define TAG_FU_ITEM_PUPIL  @"美瞳"
+//#define TAG_FU_ITEM_FACEMAKEUP  @"脸妆"
+//#define TAG_FU_ITEM_LIPGLOSS  @"唇妆"
+//#define TAG_FU_ITEM_DECORATION  @"饰品"
+#define TAG_FU_ITEM_HAIR  @"hair"
+#define TAG_FU_ITEM_FACE  @"face"
+#define TAG_FU_ITEM_MOUTH  @"mouth"
+#define TAG_FU_ITEM_EYE  @"eyes"
+#define TAG_FU_ITEM_NOSE  @"nose"
+#define TAG_FU_ITEM_CLOTH  @"clothes"
+#define TAG_FU_ITEM_UPPER  @"upper"
+#define TAG_FU_ITEM_LOWER  @"lower"
+#define TAG_FU_ITEM_SHOES  @"shoes"
+#define TAG_FU_ITEM_HAT  @"hat"
+#define TAG_FU_ITEM_EYELASH  @"eyeLash"
+#define TAG_FU_ITEM_EYEBROW  @"eyeBrow"
+#define TAG_FU_ITEM_BEARD  @"beard"
+#define TAG_FU_ITEM_GLASSES  @"glasses"
+#define TAG_FU_ITEM_EYESHADOW  @"eyeShadow"
+#define TAG_FU_ITEM_EYELINER  @"eyeLiner"
+#define TAG_FU_ITEM_PUPIL  @"pupil"
+#define TAG_FU_ITEM_FACEMAKEUP  @"faceMakeup"
+#define TAG_FU_ITEM_LIPGLOSS  @"lipGloss"
+#define TAG_FU_ITEM_DECORATION  @"decorations"
+
+
+#define TAG_FU_SKIN_COLOR_PROGRESS  @"skin_color_progress"

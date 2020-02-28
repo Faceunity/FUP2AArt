@@ -1,0 +1,40 @@
+{
+    "list": [
+        {
+            "bundle": "",
+            "icon": "none",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/peishi_erji.bundle",
+            "icon": "mid/peishi_erji",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/peishi_xianglian_1.bundle",
+            "icon": "mid/peishi_xianglian_1",
+            "gender": 2
+        },
+        
+        {
+            "bundle": "mid/peishi_xianglian_2.bundle",
+            "icon": "mid/peishi_xianglian_2",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/peishi_xianglian_3.bundle",
+            "icon": "mid/peishi_xianglian_3",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/peishi_xianglian_4.bundle",
+            "icon": "mid/peishi_xianglian_4",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_14.bundle",
+            "icon": "mid/toushi_14",
+            "gender": 2
+        }
+    ]
+}

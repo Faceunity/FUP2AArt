@@ -41,6 +41,7 @@ FUARFilterViewDelegate
 	FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
 	self.currentAvatar = avatar ;
 	self.commonAvatar = avatar;
+    
 	[self.filterView selectedModeWith:self.currentAvatar];
 	[[FUManager shareInstance] setMaxFaceNum:1];
 //	[[FUManager shareInstance] reloadRenderAvatarInARModeInSameController:avatar];
@@ -55,9 +56,11 @@ FUARFilterViewDelegate
 	// 添加进入和退出后台的监听
 	[self addObserver];
 }
--(void)setIsShow:(BOOL)isShow{
+-(void)setIsShow:(BOOL)isShow
+{
 	_isShow = isShow;
-	if (isShow) {
+	if (isShow)
+    {
 		// 1.即将进入AR滤镜，加载处理头发的道具
 		[[FUManager shareInstance] bindHairMask];
 		// 2.解绑定身体、上衣、裤子、鞋子资源，只保留头部的一些素材
@@ -69,7 +72,9 @@ FUARFilterViewDelegate
 		// 5.向nama设置enter_ar_mode为1，进入AR滤镜模式
 		[self.currentAvatar enterARMode];
 		[self.camera startCapture];
-	}else{
+	}
+    else
+    {
 	    // 离开AR滤镜，删除处理头发的道具
 	    [[FUManager shareInstance] destoryHairMask];
 		[self.camera stopCapture];
@@ -83,17 +88,17 @@ FUARFilterViewDelegate
 	
 }
 - (IBAction)onCameraChange:(id)sender {
-	fuOnCameraChange();
+    
 	self.camera.shouldMirror = !self.camera.shouldMirror ;
 	[self.camera changeCameraInputDeviceisFront:!self.camera.isFrontCamera];
-	
+	[[FUManager shareInstance] faceCapureReset];
 }
 - (IBAction)backAction:(id)sender {
 	// 离开AR滤镜，删除处理头发的道具
 	[[FUManager shareInstance] destoryHairMask];
 	[self.camera stopCapture];
 	[self.currentAvatar quitARMode];
-	[[FUManager shareInstance] reloadRenderAvatarInSameController:self.commonAvatar];
+	[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:self.commonAvatar];
 	[self.commonAvatar  loadStandbyAnimation];
 	
 	
@@ -104,9 +109,6 @@ FUARFilterViewDelegate
 }
 
 
-
-
-
 /**
  FUCameraDelegate的代理方法，用来输出相机CMSampleBufferRef 对象
  
@@ -115,31 +117,36 @@ FUARFilterViewDelegate
 -(void)didOutputVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer {
 	
 	CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
-	int h = (int)CVPixelBufferGetHeight(pixelBuffer);
-	int w = (int)CVPixelBufferGetWidth(pixelBuffer);
-	if (self.camera.isFrontCamera) {
+    const int landmarks_cnt = 314;
+    float landmarks[landmarks_cnt] ;
+    if (self.camera.isFrontCamera)
+    {
 		CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
-		[[FUManager shareInstance] renderARFilterItemWithBuffer:mirrored_pixel];
+		[[FUManager shareInstance] renderARFilterItemWithBuffer:mirrored_pixel Landmarks:landmarks LandmarksLength:landmarks_cnt];
 		
 		[self.renderView displayPixelBuffer:mirrored_pixel withLandmarks:nil count:0 Mirr:NO];
 		CVPixelBufferRelease(mirrored_pixel);
-	}else{
+	}
+    else
+    {
 		[[FURenderer shareRenderer] setInputCameraMatrix:0 flip_y:0 rotate_mode:0];
-		[[FUManager shareInstance] renderARFilterItemWithBuffer:pixelBuffer];
+		[[FUManager shareInstance] renderARFilterItemWithBuffer:pixelBuffer Landmarks:landmarks LandmarksLength:landmarks_cnt];
 		[self.renderView displayPixelBuffer:pixelBuffer withLandmarks:nil count:0 Mirr:NO];
 	}
 }
 
 #pragma mark ---- FUARFilterViewDelegate
--(void)ARFilterViewDidSelectedAvatar:(FUAvatar *)avatar {
+-(void)ARFilterViewDidSelectedAvatar:(FUAvatar *)avatar
+{
 	avatarChanged = YES;
-	[self.currentAvatar quitTrackBodyMode];
+//	[self.currentAvatar quitTrackBodyMode];
 	[[FUManager shareInstance] reloadRenderAvatarInARModeInSameController:avatar];
 	self.currentAvatar = avatar;
 }
 
 // 点击滤镜
-- (void)ARFilterViewDidSelectedARFilter:(NSString *)filterName {
+- (void)ARFilterViewDidSelectedARFilter:(NSString *)filterName
+{
 	NSString *filterPath = [[NSBundle mainBundle] pathForResource:filterName ofType:@"bundle"];
 	[[FUManager shareInstance] reloadARFilterWithPath:filterPath];
 }
@@ -161,7 +168,6 @@ FUARFilterViewDelegate
 
 - (IBAction)takePhoto:(UIButton *)sender {
 	[self.camera takePhoto:YES];
-	fuOnCameraChange();
 }
 
 - (void)tapClick:(UITapGestureRecognizer *)gesture {

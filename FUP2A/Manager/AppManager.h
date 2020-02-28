@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (AppManager *)sharedInstance;
 -(void)checkSavePhotoAuth:(void (^)(PHAuthorizationStatus status))isAuthorizedCompletion;
 -(void)openAppSettingView;
--(UIColor *)returnFUGradientSliderColor:(float) progress;
+//-(UIColor *)returnFUGradientSliderColor:(float) progress;
 
 @end
 

@@ -18,6 +18,7 @@ NSString * NetConfigVersion;   // 作为区分请求客户端的字段
 @property (nonatomic, strong) AFHTTPSessionManager *requestManager;
 @property(nonatomic,copy) void(^requestResultBlock)(NSData *data, NSError *error);
 @property(nonatomic,copy) FURequestResultDicBlock requestResultDicBlock;
+@property (nonatomic, assign) CFAbsoluteTime startDownloadTime;
 @end
 
 static FURequestManager *sharedInstance;
@@ -150,11 +151,15 @@ static FURequestManager *sharedInstance;
 	NSMutableDictionary * paramsDic = [NSMutableDictionary dictionary];
 	paramsDic[@"company"] = @"faceunity";
 	paramsDic[@"type"] = @"QStyle";
-	
+	CFAbsoluteTime startUpdateTime = CFAbsoluteTimeGetCurrent() ;
+    
+    
 	[_requestManager GET:TOKENURL parameters:paramsDic progress:^(NSProgress * _Nonnull downloadProgress) {
 	} success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
 		NSDictionary *ret = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
 		NSLog(@"====== ret: %@", ret);
+        
+        NSLog(@"------------ avatar token time: %f ms", (CFAbsoluteTimeGetCurrent() - startUpdateTime) * 1000.0);
 		NSString *latestVersion = ret[@"latest"];
 		NSString *token = ret[@"token"];
 		
@@ -192,6 +197,9 @@ static FURequestManager *sharedInstance;
 	
 	NSString *url = [[UPLOADURL stringByAppendingString:@"?access_token="] stringByAppendingString:token];
 	__weak typeof(self)weakSelf = self ;
+    CFAbsoluteTime startUpdateTime = CFAbsoluteTimeGetCurrent() ;
+
+    
 	[_requestManager POST:url parameters:params constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
 		[formData appendPartWithFileData:imageData name:@"image" fileName:@"image" mimeType:@"image/jpeg"];
 	} progress:^(NSProgress * _Nonnull uploadProgress) {
@@ -201,7 +209,7 @@ static FURequestManager *sharedInstance;
 		}
 		
 	} success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-		
+		NSLog(@"------------ avatar upload time: %f ms", (CFAbsoluteTimeGetCurrent() - startUpdateTime) * 1000.0);
 		NSData *responData = (NSData *)responseObject ;
 		
 		NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:responData options:NSJSONReadingAllowFragments error:nil];
@@ -209,7 +217,7 @@ static FURequestManager *sharedInstance;
 		
 		NSString *taskid = dict[@"data"][@"taskid"] ;
 		NSLog(@"====== task_id: %@", taskid);
-		
+		weakSelf.startDownloadTime = CFAbsoluteTimeGetCurrent() ;
 		[weakSelf downloadDataWithTask:taskid token:token];
 		
 	} failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
@@ -223,15 +231,19 @@ static FURequestManager *sharedInstance;
 	
 	NSString *url = [[DOWNLOADURL stringByAppendingString:@"?access_token="] stringByAppendingString:token];
 	__weak typeof(self)weakSelf = self ;
+    CFAbsoluteTime startUpdateTime = CFAbsoluteTimeGetCurrent() ;
+    
+    
 	[_requestManager POST:url parameters:params progress:^(NSProgress * _Nonnull uploadProgress) {
+        
 	} success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
 		NSData *jsonData = (NSData *)responseObject ;
-		
 		NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingAllowFragments error:nil];
 		NSLog(@"====== dict: %@", dict);
 		int code = [dict[@"code"] intValue];
 		NSString * message = dict[@"message"];
 		if (code == 2) {   // 代表成功
+            NSLog(@"------------ avatar downloadTry time: %f ms", (CFAbsoluteTimeGetCurrent()  - weakSelf.startDownloadTime  ) * 1000.0);
 			weakSelf.requestResultDicBlock(YES,dict, nil) ;
 			
 		}else if (code == 1 && [message isEqualToString:@"PROCESSING"] )  // 代表处理中

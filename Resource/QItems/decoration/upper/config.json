@@ -1,0 +1,119 @@
+{
+    "list": [
+        {
+            "bundle": "",
+            "icon": "none",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/peishi_erding_1.bundle",
+            "icon": "mid/peishi_erding_1",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/peishi_erding_2.bundle",
+            "icon": "mid/peishi_erding_2",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/peishi_erding_3.bundle",
+            "icon": "mid/peishi_erding_3",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/peishi_erding_4.bundle",
+            "icon": "mid/peishi_erding_4",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/peishi_erding_5.bundle",
+            "icon": "mid/peishi_erding_5",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_1.bundle",
+            "icon": "mid/toushi_1",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_2.bundle",
+            "icon": "mid/toushi_2",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_3.bundle",
+            "icon": "mid/toushi_3",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_4.bundle",
+            "icon": "mid/toushi_4",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_5.bundle",
+            "icon": "mid/toushi_5",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_6.bundle",
+            "icon": "mid/toushi_6",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_7.bundle",
+            "icon": "mid/toushi_7",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_8.bundle",
+            "icon": "mid/toushi_8",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_9.bundle",
+            "icon": "mid/toushi_9",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_10.bundle",
+            "icon": "mid/toushi_10",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_11.bundle",
+            "icon": "mid/toushi_11",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_13.bundle",
+            "icon": "mid/toushi_13",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_15.bundle",
+            "icon": "mid/toushi_15",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_16.bundle",
+            "icon": "mid/toushi_16",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_17.bundle",
+            "icon": "mid/toushi_17",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_maozi_1.bundle",
+            "icon": "mid/toushi_maozi_1",
+            "gender": 2
+        },
+        {
+            "bundle": "mid/toushi_maozi_2.bundle",
+            "icon": "mid/toushi_maozi_2",
+            "gender": 2
+        }
+    ]
+}

@@ -8,7 +8,6 @@
 
 #import "FUGroupSelectedController.h"
 
-
 typedef enum : NSUInteger {
 	GroupSelectedRunModeCommon          = 0,
 	GroupSelectedRunModePhotoTake,
@@ -31,7 +30,7 @@ UINavigationControllerDelegate
 	
 	BOOL customRenderBackground ;
 	
-	//__block NSString *gifPath ;
+	__block NSString *gifPath ;
 	__block NSString *videoPath ;
 }
 @property (weak, nonatomic) IBOutlet UIButton *nextBtn;
@@ -210,7 +209,7 @@ UINavigationControllerDelegate
 			
 			[self.camera stopCapture];
 			
-			//	[self performSegueWithIdentifier:@"FUGroupImageController" sender:gifPath];
+//				[self performSegueWithIdentifier:@"FUGroupImageController" sender:gifPath];
 			[self performSegueWithIdentifier:@"FUGroupVideoController" sender:videoPath];
 		}
 			
@@ -237,76 +236,79 @@ UINavigationControllerDelegate
 }
 
 -(void)didOutputVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer {
-	dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER) ;
-	CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
-	CGFloat width = CVPixelBufferGetWidth(pixelBuffer);
-	CGFloat height = CVPixelBufferGetHeight(pixelBuffer);
-	CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemWithPixelBuffer:pixelBuffer RenderMode:FURenderCommonMode Landmarks:nil];
-	if (customRenderBackground) {
-		buffer = [[CRender shareRenderer] mergeBgImageToBuffer:buffer];
-	}
-	
-	[self.glView displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:NO];
-	switch (renderMode) {
-		case GroupSelectedRunModeCommon:
-			break;
-		case GroupSelectedRunModePhotoTake:{
-			renderMode = GroupSelectedRunModeCommon ;
-			CVPixelBufferRef mirrorBuffer = [[CRender shareRenderer] mirrorPixelBufferInXUseC:buffer];
-			UIImage *image = [[FUP2AHelper shareInstance] createImageWithBuffer:mirrorBuffer mirr:YES];
-			CVPixelBufferRelease(mirrorBuffer);
-			dispatch_async(dispatch_get_main_queue(), ^{
-				[self.camera stopCapture];
-				[self performSegueWithIdentifier:@"FUGroupImageController" sender:image];
-			});
-		}
-			break ;
-		case GroupSelectedRunModeVideoRecord:{
+    dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER) ;
+    CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
+    CGFloat width = CVPixelBufferGetWidth(pixelBuffer);
+    CGFloat height = CVPixelBufferGetHeight(pixelBuffer);
+    CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemWithPixelBuffer:pixelBuffer HightResolution:1];
+    BOOL isNeedRelease = NO;
+    if (customRenderBackground) {
+        buffer = [[CRender shareRenderer] mergeBgImageToBuffer:buffer ReleaseBuffer:&isNeedRelease];
+    }
+    
+    [self.glView displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:NO];
+    switch (renderMode) {
+        case GroupSelectedRunModeCommon:
+            break;
+        case GroupSelectedRunModePhotoTake:{
+            renderMode = GroupSelectedRunModeCommon ;
+            CVPixelBufferRef mirrorBuffer = [[CRender shareRenderer] mirrorPixelBufferInXUseC:buffer];
+            UIImage *image = [[FUP2AHelper shareInstance] createImageWithBuffer:mirrorBuffer mirr:YES];
+            CVPixelBufferRelease(mirrorBuffer);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.camera stopCapture];
+                [self performSegueWithIdentifier:@"FUGroupImageController" sender:image];
+            });
+        }
+            break ;
+        case GroupSelectedRunModeVideoRecord:{
 #if 0
-			[[FUP2AHelper shareInstance] recordBufferWithType:FUP2AHelperRecordTypeGIF buffer:buffer sampleBuffer:sampleBuffer];
-			
-			FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
-			int index = [avatar getCurrentAnimationFrameIndex];
-			if (index == animationFrameCount - 1) {
-				renderMode = GroupSelectedRunModeCommon ;
-				
-				__weak typeof(self)weakSelf = self ;
-				[[FUP2AHelper shareInstance] stopRecordWithType:FUP2AHelperRecordTypeGIF Completion:^(NSString *retPath) {
-					dispatch_async(dispatch_get_main_queue(), ^{
-						[weakSelf setNextBtnEnable:YES];
-						self->gifPath = retPath ;
-					});
-				}];
-			}
+            [[FUP2AHelper shareInstance] recordBufferWithType:FUP2AHelperRecordTypeGIF buffer:buffer sampleBuffer:sampleBuffer];
+            
+            FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+            int index = [avatar getCurrentAnimationFrameIndex];
+            if (index == animationFrameCount - 1) {
+                renderMode = GroupSelectedRunModeCommon ;
+                
+                __weak typeof(self)weakSelf = self ;
+                [[FUP2AHelper shareInstance] stopRecordWithType:FUP2AHelperRecordTypeGIF Completion:^(NSString *retPath) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [weakSelf setNextBtnEnable:YES];
+                        self->gifPath = retPath ;
+                    });
+                }];
+            }
 #else
-			CVPixelBufferRef mirrorBuffer;
-			//	[self.glView convertMirrorPixelBuffer2:buffer dstPixelBuffer:&mirrorBuffer];
-			int h = (int)CVPixelBufferGetHeight(buffer);
-			int w = (int)CVPixelBufferGetWidth(buffer);
-			//		NSLog(@"h----------%d---------w---------%d",h,w);
-			CVPixelBufferRef imageBuffer ;
-			imageBuffer = buffer;
-			[[FUP2AHelper shareInstance] recordBufferWithType:FUP2AHelperRecordTypeVideo buffer:imageBuffer sampleBuffer:sampleBuffer];
-			FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
-				[avatar setCurrentAvatarIndex:avatar.currentInstanceId];
-			float progress = [avatar getAnimateProgress];   // 获取动画的播放进度
-			if (progress > 1) {   // 如果动画的播放进度 大于 1，表示动画一个循环录制完成，获取录制的视频文件路径
-				renderMode = GroupSelectedRunModeCommon ;
-				__weak typeof(self)weakSelf = self ;
-				[[FUP2AHelper shareInstance] stopRecordWithType:FUP2AHelperRecordTypeVideo Completion:^(NSString *retPath) {
-					dispatch_async(dispatch_get_main_queue(), ^{
-						[weakSelf setNextBtnEnable:YES];
-						self->videoPath = retPath;
-					});
-				}];
-			}
-			
+            CVPixelBufferRef mirrorBuffer;
+            //    [self.glView convertMirrorPixelBuffer2:buffer dstPixelBuffer:&mirrorBuffer];
+            int h = (int)CVPixelBufferGetHeight(buffer);
+            int w = (int)CVPixelBufferGetWidth(buffer);
+            //        NSLog(@"h----------%d---------w---------%d",h,w);
+            CVPixelBufferRef imageBuffer ;
+            imageBuffer = buffer;
+            [[FUP2AHelper shareInstance] recordBufferWithType:FUP2AHelperRecordTypeVideo buffer:imageBuffer sampleBuffer:sampleBuffer];
+            FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+                [avatar setCurrentAvatarIndex:avatar.currentInstanceId];
+            float progress = [avatar getAnimateProgress];   // 获取动画的播放进度
+            if (progress > 1) {   // 如果动画的播放进度 大于 1，表示动画一个循环录制完成，获取录制的视频文件路径
+                renderMode = GroupSelectedRunModeCommon ;
+                __weak typeof(self)weakSelf = self ;
+                [[FUP2AHelper shareInstance] stopRecordWithType:FUP2AHelperRecordTypeVideo Completion:^(NSString *retPath) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [weakSelf setNextBtnEnable:YES];
+                        self->videoPath = retPath;
+                    });
+                }];
+            }
+            
 #endif
-		}
-			break ;
-	}
-	
-	dispatch_semaphore_signal(self.signal) ;
+        }
+            break ;
+    }
+    if (!customRenderBackground || isNeedRelease)
+    if (buffer)
+    CVPixelBufferRelease(buffer);
+    dispatch_semaphore_signal(self.signal) ;
 }
 
 - (int)shouldAddCurrentAvatar:(FUAvatar *)avatar {
@@ -491,7 +493,7 @@ UINavigationControllerDelegate
 		// 增加
 		[self->selectedIndex addObject:@(indexPath.row)];
 		
-		int selectedAvatarNum = [FUManager shareInstance].currentAvatars.count;
+		NSInteger selectedAvatarNum = [FUManager shareInstance].currentAvatars.count;
 		switch (selectedAvatarNum) {
 			case 0:
 				[avatar setCurrentAvatarIndex:0];
@@ -513,7 +515,7 @@ UINavigationControllerDelegate
 		[[FUManager shareInstance] addRenderAvatar:avatar];
 	//	[avatar resetScaleToSmallBody];
 		
-			[avatar resetScaleToOriginal];
+        [avatar resetScaleToOriginal];
 		
 		
 		dispatch_async(dispatch_get_main_queue(), ^{
@@ -597,7 +599,8 @@ UINavigationControllerDelegate
 					self.tipLabel.text = @"完美" ;
 				});
 				
-				[[FUP2AHelper shareInstance] startRecordWithType:FUP2AHelperRecordTypeGIF];
+                [FUP2AHelper shareInstance].saveVideoPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"fup2a_video.mp4"];
+				[[FUP2AHelper shareInstance] startRecordWithType:FUP2AHelperRecordTypeVideo];
 				
 				self->renderMode = GroupSelectedRunModeVideoRecord ;
 			}
@@ -667,16 +670,31 @@ UINavigationControllerDelegate
 	// 关闭相册
 	[picker dismissViewControllerAnimated:YES completion:nil];
 	
+     
 	UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
 //	UIImage* flippedImage = [UIImage imageWithCGImage:image.CGImage
 //		  scale:image.scale
 //	orientation:UIImageOrientationUpMirrored];
-	size_t width;
-	size_t height;
-//	UIImage* flippedImage = AGLKDataWithResizedCGImageBytes(image.CGImage);
+//	size_t width;
+//	size_t height;
 	FUCutoutOption op = malloc(sizeof(*op));
 	op->orientation = FUOrientationHorizontallyMirror;
-	UIImage* flippedImage = [[CRender shareRenderer] fixImageOrientationWithImage:image option:op];
+	UIImage* flippedImage = nil;
+	if (image.imageOrientation == NULL)
+	{
+		flippedImage = [[CRender shareRenderer] fixNilOrientionImage:image];
+		if (flippedImage == nil) {
+			flippedImage = [[CRender shareRenderer] fixImageOrientationWithImageWithOutDetect:image option:op];
+		}
+		if (flippedImage == nil) {
+			flippedImage = image;
+		}
+	}
+	else
+	{
+		flippedImage = [[CRender shareRenderer] fixImageOrientationWithImage:image option:op];
+	}
+	
 
 	[self.camera startCapture];
 	

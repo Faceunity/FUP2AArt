@@ -4,243 +4,243 @@
       {
         "index": 2935,
         "direction": 0,
-        "left": ["cheekbone_narrow"],
-        "right": ["cheek_wide"]
+        "left": "cheekbone_narrow",
+        "right": "cheek_wide"
       },
       {
         "index": 6449,
         "direction": 0,
-        "left": ["cheek_wide"],
-        "right": ["cheekbone_narrow"]
+        "left": "cheek_wide",
+        "right": "cheekbone_narrow"
       },
       {
         "index": 2929,
         "direction": 2,
-        "left": ["jaw_M_narrow"],
-        "right": ["jaw_m_wide"],
-        "up": ["jawbone_Narrow"],
-        "down": ["jawbone_Wide"]
+        "left": "jaw_M_narrow",
+        "right": "jaw_m_wide",
+        "up": "jawbone_Narrow",
+        "down": "jawbone_Wide"
       },
       {
         "index": 6443,
         "direction": 2,
-        "left": ["jaw_m_wide"],
-        "right": ["jaw_M_narrow"],
-        "up": ["jawbone_Narrow"],
-        "down": ["jawbone_Wide"]
+        "left": "jaw_m_wide",
+        "right": "jaw_M_narrow",
+        "up": "jawbone_Narrow",
+        "down": "jawbone_Wide"
       },
       {
         "index": 794,
         "direction": 1,
-        "up": ["jaw_up"],
-        "down": ["jaw_lower"]
+        "up": "jaw_up",
+        "down": "jaw_lower"
       },
       {
         "index": 3073,
         "direction": 0,
-        "left": ["jaw_narrow"],
-        "right": ["jaw_wide"]
+        "left": "jaw_narrow",
+        "right": "jaw_wide"
       },
       {
         "index": 6587,
         "direction": 0,
-        "left": ["jaw_wide"],
-        "right": ["jaw_narrow"]
+        "left": "jaw_wide",
+        "right": "jaw_narrow"
       },
       {
         "index": 1529,
         "direction": 0,
-        "left": ["head_thin"],
-        "right": ["head_fat"]
+        "left": "head_thin",
+        "right": "head_fat"
       },
       {
         "index": 5043,
         "direction": 0,
-        "left": ["head_fat"],
-        "right": ["head_thin"]
+        "left": "head_fat",
+        "right": "head_thin"
       }
     ],
     "face_side": [
       {
         "index": 7171,
         "direction": 0,
-        "left": ["cheek_wide"],
-        "right": ["cheekbone_narrow"]
+        "left": "cheek_wide",
+        "right": "cheekbone_narrow"
       },
       {
         "index": 5072,
         "direction": 0,
-        "left": ["head_fat"],
-        "right": ["head_thin"]
+        "left": "head_fat",
+        "right": "head_thin"
       },
       {
         "index": 6830,
         "direction": 1,
-        "up": ["jawbone_Narrow"],
-        "down": ["jawbone_Wide"]
+        "up": "jawbone_Narrow",
+        "down": "jawbone_Wide"
       },
       {
         "index": 7137,
         "direction": 2,
-        "left": ["jaw_m_wide"],
-        "right": ["jaw_M_narrow"],
-        "up": ["jawBone_m_up"],
-        "down": ["jawBone_m_down"]
+        "left": "jaw_m_wide",
+        "right": "jaw_M_narrow",
+        "up": "jawBone_m_up",
+        "down": "jawBone_m_down"
       },
       {
         "index": 6648,
         "direction": 0,
-        "left": ["jaw_wide"],
-        "right": ["jaw_narrow"]
+        "left": "jaw_wide",
+        "right": "jaw_narrow"
       },
       {
         "index": 794,
         "direction": 2,
-        "left": ["jawTip_backward"],
-        "right": ["jawTip_forward"],
-        "up": ["jaw_up"],
-        "down": ["jaw_lower"]
+        "left": "jawTip_backward",
+        "right": "jawTip_forward",
+        "up": "jaw_up",
+        "down": "jaw_lower"
 
       }
     ],
-    "eye_front": [
+    "eyes_front": [
       {
         "index": 816,
         "direction": 2,
-        "left": ["Eye_in"],
-        "right": ["Eye_out"],
-        "up": ["Eye_up"],
-        "down": ["Eye_down"]
+        "left": "Eye_in",
+        "right": "Eye_out",
+        "up": "Eye_up",
+        "down": "Eye_down"
       },
       {
         "index": 4986,
         "direction": 2,
-        "left": ["Eye_wide"],
-        "right": ["Eye_shrink"],
-        "up": ["Eye_open_L", "Eye_open_R"],
-        "down": ["Eye_close_L", "Eye_close_R"]
+        "left": "Eye_wide",
+        "right": "Eye_shrink",
+        "up": "Eye_open_L",
+        "down": "Eye_close_L"
       },
       {
         "index": 1472,
         "direction": 2,
-        "left": ["Eye_shrink"],
-        "right": ["Eye_wide"],
-        "up": ["Eye_open_L","Eye_open_R"],
-        "down": ["Eye_close_L","Eye_close_R"]
+        "left": "Eye_shrink",
+        "right": "Eye_wide",
+        "up": "Eye_open_L",
+        "down": "Eye_close_L"
       },
       {
         "index": 5824,
         "direction": 2,
-        "left": ["Eye_upperBend_out_L", "Eye_upperBend_out_R"],
-        "right": ["Eye_upperBend_in_L", "Eye_upperBend_in_R"],
-        "up": ["Eye_upper_up_L", "Eye_upper_up_R"],
-        "down": ["Eye_upper_down_L", "Eye_upper_down_R"]
+        "left": "Eye_upperBend_out_L",
+        "right": "Eye_upperBend_in_L",
+        "up": "Eye_upper_up_L",
+        "down": "Eye_upper_down_L"
       },
       {
         "index": 2310,
         "direction": 2,
-        "left": ["Eye_upperBend_in_L", "Eye_upperBend_in_R"],
-        "right": ["Eye_upperBend_out_L", "Eye_upperBend_out_R"],
-        "up": ["Eye_upper_up_L", "Eye_upper_up_R"],
-        "down": ["Eye_upper_down_L", "Eye_upper_down_R"]
+        "left": "Eye_upperBend_in_L",
+        "right": "Eye_upperBend_out_L",
+        "up": "Eye_upper_up_L",
+        "down": "Eye_upper_down_L"
       },
       {
         "index": 5556,
         "direction": 2,
-        "left": ["Eye_outter_out"],
-        "right": ["Eye_outter_in"],
-        "up": ["Eye_outter_up"],
-        "down": ["Eye_outter_down"]
+        "left": "Eye_outter_out",
+        "right": "Eye_outter_in",
+        "up": "Eye_outter_up",
+        "down": "Eye_outter_down"
       },
       {
         "index": 2042,
         "direction": 2,
-        "left": ["Eye_outter_in"],
-        "right": ["Eye_outter_out"],
-        "up": ["Eye_outter_up"],
-        "down": ["Eye_outter_down"]
+        "left": "Eye_outter_in",
+        "right": "Eye_outter_out",
+        "up": "Eye_outter_up",
+        "down": "Eye_outter_down"
       },
       {
         "index": 7025,
         "direction": 2,
-        "left": ["Eye_inner_out"],
-        "right": ["Eye_inner_in"],
-        "up": ["Eye_inner_up"],
-        "down": ["Eye_inner_down"]
+        "left": "Eye_inner_out",
+        "right": "Eye_inner_in",
+        "up": "Eye_inner_up",
+        "down": "Eye_inner_down"
       },
       {
         "index": 3511,
         "direction": 2,
-        "left": ["Eye_inner_in"],
-        "right": ["Eye_inner_out"],
-        "up": ["Eye_inner_up"],
-        "down": ["Eye_inner_down"]
+        "left": "Eye_inner_in",
+        "right": "Eye_inner_out",
+        "up": "Eye_inner_up",
+        "down": "Eye_inner_down"
       },
       {
         "index": 5445,
         "direction": 2,
-        "left": ["Eye_downerBend_out_L", "Eye_downerBend_out_R"],
-        "right": ["Eye_downerBend_in_L", "Eye_downerBend_in_R"],
-        "up": ["Eye_downer_up_L", "Eye_downer_up_R"],
-        "down": ["Eye_downer_dn_L", "Eye_downer_dn_R"]
+        "left": "Eye_downerBend_out_L",
+        "right": "Eye_downerBend_in_L",
+        "up": "Eye_downer_up_L",
+        "down": "Eye_downer_dn_L"
       },
       {
         "index": 1931,
         "direction": 2,
-        "left": ["Eye_downerBend_in_L", "Eye_downerBend_in_R"],
-        "right": ["Eye_downerBend_out_L", "Eye_downerBend_out_R"],
-        "up": ["Eye_downer_up_L", "Eye_downer_up_R"],
-        "down": ["Eye_downer_dn_L", "Eye_downer_dn_R"]
+        "left": "Eye_downerBend_in_L",
+        "right": "Eye_downerBend_out_L",
+        "up": "Eye_downer_up_L",
+        "down": "Eye_downer_dn_L"
       }
     ],
-    "eye_side": [
+    "eyes_side": [
       {
         "index": 4923,
         "direction": 2,
-        "left": ["Eye_wide"],
-        "right": ["Eye_shrink"],
-        "up": ["Eye_open_L", "Eye_open_R"],
-        "down": ["Eye_close_L", "Eye_close_R"]
+        "left": "Eye_wide",
+        "right": "Eye_shrink",
+        "up": "Eye_open_L",
+        "down": "Eye_close_L"
       },
       {
         "index": 5824,
         "direction": 2,
-        "left": ["Eye_upperBend_out_L", "Eye_upperBend_out_R"],
-        "right": ["Eye_upperBend_in_L", "Eye_upperBend_in_R"],
-        "up": ["Eye_upper_up_L", "Eye_upper_up_R"],
-        "down": ["Eye_upper_down_L", "Eye_upper_down_R"]
+        "left": "Eye_upperBend_out_L",
+        "right": "Eye_upperBend_in_L",
+        "up": "Eye_upper_up_L",
+        "down": "Eye_upper_down_L"
       },
       {
         "index": 5470,
         "direction": 2,
-        "left": ["Eye_outter_out"],
-        "right": ["Eye_outter_in"],
-        "up": ["Eye_outter_up"],
-        "down": ["Eye_outter_down"]
+        "left": "Eye_outter_out",
+        "right": "Eye_outter_in",
+        "up": "Eye_outter_up",
+        "down": "Eye_outter_down"
       },
       {
         "index": 7037,
         "direction": 2,
-        "left": ["Eye_inner_out"],
-        "right": ["Eye_inner_in"],
-        "up": ["Eye_inner_up"],
-        "down": ["Eye_inner_down"]
+        "left": "Eye_inner_out",
+        "right": "Eye_inner_in",
+        "up": "Eye_inner_up",
+        "down": "Eye_inner_down"
       },
       {
         "index": 5445,
         "direction": 2,
-        "left": ["Eye_downerBend_out_L","Eye_downerBend_out_R"],
-        "right": ["Eye_downerBend_in_L","Eye_downerBend_in_R"],
-        "up": ["Eye_downer_up_L","Eye_downer_up_R"],
-        "down": ["Eye_downer_dn_L","Eye_downer_dn_R"]
+        "left": "Eye_downerBend_out_L",
+        "right": "Eye_downerBend_in_L",
+        "up": "Eye_downer_up_L",
+        "down": "Eye_downer_dn_L"
       },
       {
         "index": 816,
         "direction": 2,
-        "left": ["Eye_forward"],
-        "right": ["Eye_backward"],
-        "up": ["Eye_up"],
-        "down": ["Eye_down"]
+        "left": "Eye_forward",
+        "right": "Eye_backward",
+        "up": "Eye_up",
+        "down": "Eye_down"
       }
 
     ],
@@ -248,153 +248,153 @@
       {
         "index": 3642,
         "direction": 2,
-        "left": ["lipCorner_In"],
-        "right": ["lipCorner_Out"],
-        "up": ["lipCorner_up"],
-        "down": ["lipCorner_down"]
+        "left": "lipCorner_In",
+        "right": "lipCorner_Out",
+        "up": "lipCorner_up",
+        "down": "lipCorner_down"
       },
       {
         "index": 7156,
         "direction": 2,
-        "left": ["lipCorner_Out"],
-        "right": ["lipCorner_In"],
-        "up": ["lipCorner_up"],
-        "down": ["lipCorner_down"]
+        "left": "lipCorner_Out",
+        "right": "lipCorner_In",
+        "up": "lipCorner_up",
+        "down": "lipCorner_down"
       },
       {
         "index": 903,
         "direction": 2,
-        "left": ["upperLipSide_thin"],
-        "right": ["upperLipSide_Thick"],
-        "up": ["upperLip_Thick"],
-        "down": ["upperLip_Thin"]
+        "left": "upperLipSide_thin",
+        "right": "upperLipSide_Thick",
+        "up": "upperLip_Thick",
+        "down": "upperLip_Thin"
       },
       {
         "index": 788,
         "direction": 2,
-        "left": ["lowerLipSide_Thin"],
-        "right": ["lowerLipSide_Thick"],
-        "up": ["lowerLip_Thin"],
-        "down": ["lowerLip_Thick"]
+        "left": "lowerLipSide_Thin",
+        "right": "lowerLipSide_Thick",
+        "up": "lowerLip_Thin",
+        "down": "lowerLip_Thick"
       },
       {
         "index": 807,
         "direction": 2,
-        "left": ["mouth_side_up"],
-        "right": ["mouth_side_down"],
-        "up": ["mouth_m_up"],
-        "down": ["mouth_m_down"]
+        "left": "mouth_side_up",
+        "right": "mouth_side_down",
+        "up": "mouth_m_up",
+        "down": "mouth_m_down"
 
       },
       {
         "index": 5075,
         "direction": 2,
-        "left": ["mouth_magnify"],
-        "right": ["mouth_shrink"],
-        "up": ["mouth_Up"],
-        "down": ["mouth_Down"]
+        "left": "mouth_magnify",
+        "right": "mouth_shrink",
+        "up": "mouth_Up",
+        "down": "mouth_Down"
       }
     ],
     "mouth_side": [
       {
         "index": 864,
         "direction": 2,
-        "left": ["upperLipSide_Thick"],
-        "right": ["upperLipSide_thin"],
-        "up": ["upperLip_Thick"],
-        "down": ["upperLip_Thin"]
+        "left": "upperLipSide_Thick",
+        "right": "upperLipSide_thin",
+        "up": "upperLip_Thick",
+        "down": "upperLip_Thin"
       },
       {
         "index": 788,
         "direction": 2,
-        "left": ["lowerLipSide_Thick"],
-        "right": ["lowerLipSide_Thin"],
-        "up": ["lowerLip_Thin"],
-        "down": ["lowerLip_Thick"]
+        "left": "lowerLipSide_Thick",
+        "right": "lowerLipSide_Thin",
+        "up": "lowerLip_Thin",
+        "down": "lowerLip_Thick"
       },
       {
         "index": 7156,
         "direction": 2,
-        "left": ["lipCorner_Out"],
-        "right": ["lipCorner_In"],
-        "up": ["lipCorner_up"],
-        "down": ["lipCorner_down"]
+        "left": "lipCorner_Out",
+        "right": "lipCorner_In",
+        "up": "lipCorner_up",
+        "down": "lipCorner_down"
       },
       {
         "index": 5075,
         "direction": 2,
-        "left": ["mouth_forward"],
-        "right": ["mouth_backward"],
-        "up": ["mouth_Up"],
-        "down": ["mouth_Down"]
+        "left": "mouth_forward",
+        "right": "mouth_backward",
+        "up": "mouth_Up",
+        "down": "mouth_Down"
       }
     ],
     "nose_front": [
       {
         "index": 884,
         "direction": 2,
-        "left": ["nose_shrink"],
-        "right": ["nose_wide"],
-        "up": ["nose_Up"],
-        "down": ["nose_Down"]
+        "left": "nose_shrink",
+        "right": "nose_wide",
+        "up": "nose_Up",
+        "down": "nose_Down"
 
       },
       {
         "index": 1350,
         "direction": 2,
-        "left": ["nostril_In"],
-        "right": ["nostril_Out"],
-        "up": ["nostril_up"],
-        "down": ["nostril_down"]
+        "left": "nostril_In",
+        "right": "nostril_Out",
+        "up": "nostril_up",
+        "down": "nostril_down"
       },
       {
         "index": 4864,
         "direction": 2,
-        "left": ["nostril_Out"],
-        "right": ["nostril_In"],
-        "up": ["nostril_up"],
-        "down": ["nostril_down"]
+        "left": "nostril_Out",
+        "right": "nostril_In",
+        "up": "nostril_up",
+        "down": "nostril_down"
       },
       {
         "index": 910,
         "direction": 2,
-        "left": ["noseTip_shrink"],
-        "right": ["noseTip_magnify"],
-        "up": ["noseTip_Up"],
-        "down": ["noseTip_Down"]
+        "left": "noseTip_shrink",
+        "right": "noseTip_magnify",
+        "up": "noseTip_Up",
+        "down": "noseTip_Down"
       }
     ],
     "nose_side": [
       {
         "index": 880,
         "direction": 0,
-        "left": ["nose_low"],
-        "right": ["nose_tall"]
+        "left": "nose_low",
+        "right": "nose_tall"
 
       },
       {
         "index": 884,
         "direction": 2,
-        "left": ["noseBone_low"],
-        "right": ["noseBone_tall"],
-        "up": ["nose_Up"],
-        "down": ["nose_Down"]
+        "left": "noseBone_low",
+        "right": "noseBone_tall",
+        "up": "nose_Up",
+        "down": "nose_Down"
       },
       {
         "index": 910,
         "direction": 2,
-        "left": ["noseTip_backward"],
-        "right": ["noseTip_forward"],
-        "up": ["noseTip_Up"],
-        "down": ["noseTip_Down"]
+        "left": "noseTip_backward",
+        "right": "noseTip_forward",
+        "up": "noseTip_Up",
+        "down": "noseTip_Down"
       },
       {
         "index": 4864,
         "direction": 2,
-        "left": ["nostril_Out"],
-        "right": ["nostril_In"],
-        "up": ["nostril_up"],
-        "down": ["nostril_down"]
+        "left": "nostril_Out",
+        "right": "nostril_In",
+        "up": "nostril_up",
+        "down": "nostril_down"
       }
     ]
   }

@@ -1,0 +1,53 @@
+{
+    "list": [
+        {
+            "bundle": "",
+            "icon": "none",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/facemakeup_1.bundle",
+            "icon": "mid/facemakeup_1",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/facemakeup_2.bundle",
+            "icon": "mid/facemakeup_2",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/facemakeup_3.bundle",
+            "icon": "mid/facemakeup_3",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/facemakeup_4.bundle",
+            "icon": "mid/facemakeup_4",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/facemakeup_5.bundle",
+            "icon": "mid/facemakeup_5",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/facemakeup_6.bundle",
+            "icon": "mid/facemakeup_6",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        }
+    ]
+}
