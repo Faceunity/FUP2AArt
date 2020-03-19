@@ -7,11 +7,12 @@
 //
 
 #import "AppManager.h"
+#import "../AppDelegate.h"
 @interface AppManager()
 {
-	float _RStep;
-	float _GStep;
-	float _BStep;
+float _RStep;
+float _GStep;
+float _BStep;
 }
 @end
 static AppManager *sharedInstance;
@@ -19,7 +20,7 @@ static AppManager *sharedInstance;
 
 -(BOOL)checkIsXFamily{
 	if (@available(iOS 11.0, *)) {
-		return [UIApplication sharedApplication].delegate.window.safeAreaInsets.top > 20;
+	return [UIApplication sharedApplication].delegate.window.safeAreaInsets.top > 20;
 	} else {
 		// Fallback on earlier versions
 	}
@@ -27,21 +28,21 @@ static AppManager *sharedInstance;
 }
 + (AppManager *)sharedInstance
 {
-	static dispatch_once_t onceToken;
-	dispatch_once(&onceToken, ^{
-		sharedInstance = [[AppManager alloc] init];
-		int colorsCount = [FUManager shareInstance].skinColorArray.count;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sharedInstance = [[AppManager alloc] init];
+        sharedInstance.isXFamily = [sharedInstance checkIsXFamily];
+        
+		NSInteger colorsCount = [[FUManager shareInstance] getColorArrayCountWithType:FUFigureColorTypeSkinColor];;
 		double step = 1.0 / (colorsCount - 1);
-		sharedInstance.colorSliderStep = step;
+        sharedInstance.colorSliderStep = step;
 		float minColorArr[3] = FUGradientSlider_minColorArr;
-		float maxColorArr[3] = FUGradientSlider_maxColorArr;
+	    float maxColorArr[3] = FUGradientSlider_maxColorArr;
 		sharedInstance->_RStep = maxColorArr[0] - minColorArr[0];
 		sharedInstance->_GStep = maxColorArr[1] - minColorArr[1];
 		sharedInstance->_BStep = maxColorArr[2] - minColorArr[2];
-		sharedInstance.isXFamily = [sharedInstance checkIsXFamily];
-		
-	});
-	return sharedInstance;
+    });
+    return sharedInstance;
 }
 
 -(void)checkSavePhotoAuth:(void (^)(PHAuthorizationStatus status))isAuthorizedCompletion{
@@ -90,22 +91,22 @@ static AppManager *sharedInstance;
 }
 
 
--(UIColor *)returnFUGradientSliderColor:(float) progress{
-	// 获取颜色区间的位置
-	double colorIndexDouble = progress / self.colorSliderStep;
-	int colorIndex = colorIndexDouble;
-	FUP2AColor * baseColor = [FUManager shareInstance].skinColorArray[colorIndex];
-	UIColor * newColor;
-	if (colorIndex >= [FUManager shareInstance].skinColorArray.count - 1) {
-		newColor = baseColor.color;
-	}else{
-		FUP2AColor * nextColor = [FUManager shareInstance].skinColorArray[colorIndex + 1];
-		_RStep = (nextColor.r - baseColor.r);
-		_GStep = (nextColor.g - baseColor.g);
-		_BStep = (nextColor.b - baseColor.b);
-		double colorInterval = colorIndexDouble - colorIndex;
-		newColor = [UIColor colorWithRed:(baseColor.r + _RStep * colorInterval)/ 255.0 green:(baseColor.g + _GStep * colorInterval)/ 255.0 blue:(baseColor.b + _BStep * colorInterval)/ 255.0 alpha:1];
-	}
-	return newColor;
-}
+//-(UIColor *)returnFUGradientSliderColor:(float) progress{
+//// 获取颜色区间的位置
+//   double colorIndexDouble = progress / self.colorSliderStep;
+//	int colorIndex = colorIndexDouble;
+//	FUP2AColor * baseColor = [FUManager shareInstance].skinColorArray[colorIndex];
+//	UIColor * newColor;
+//	if (colorIndex >= [FUManager shareInstance].skinColorArray.count - 1) {
+//		newColor = baseColor.color;
+//}else{
+//	FUP2AColor * nextColor = [FUManager shareInstance].skinColorArray[colorIndex + 1];
+//	_RStep = (nextColor.r - baseColor.r);
+//	_GStep = (nextColor.g - baseColor.g);
+//	_BStep = (nextColor.b - baseColor.b);
+//	double colorInterval = colorIndexDouble - colorIndex;
+//	newColor = [UIColor colorWithRed:(baseColor.r + _RStep * colorInterval)/ 255.0 green:(baseColor.g + _GStep * colorInterval)/ 255.0 blue:(baseColor.b + _BStep * colorInterval)/ 255.0 alpha:1];
+//	}
+//	return newColor;
+//}
 @end

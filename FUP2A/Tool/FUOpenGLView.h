@@ -16,6 +16,10 @@
 //- (void)displayPixelBuffer:(CVPixelBufferRef)pixelBuffer;
 
 - (void)displayPixelBuffer:(CVPixelBufferRef)pixelBuffer withLandmarks:(float *)landmarks count:(int)count Mirr:(BOOL) mirr;
+// 画横屏
+- (void)displayLandscapePixelBuffer:(CVPixelBufferRef)pixelBuffer withLandmarks:(float *)landmarks count:(int)count Mirr:(BOOL) mirr;
+// 画竖屏的全屏，主要用于动画组
+- (void)displayFullPixelBuffer:(CVPixelBufferRef)pixelBuffer withLandmarks:(float *)landmarks count:(int)count Mirr:(BOOL) mirr;
 - (void)convertMirrorPixelBuffer:(CVPixelBufferRef)pixelBuffer dstPixelBuffer:(CVPixelBufferRef*)dstPixelBuffer;
 - (void)convertMirrorPixelBuffer2:(CVPixelBufferRef)pixelBuffer dstPixelBuffer:(CVPixelBufferRef*)dstPixelBuffer;
 -(void)playDefaultAvatarInOpengl:(void (^)(void))completeBlock;

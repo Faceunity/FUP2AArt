@@ -39,7 +39,7 @@
     [super viewDidLoad];
     [self setupNavigation];
     [self setupData];
-    
+
     self.currentAvatar = [FUManager shareInstance].currentAvatars.firstObject;
 }
 
@@ -96,13 +96,14 @@
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-     [[FUManager shareInstance].currentAvatars.firstObject resetScaleToSmallBody];
+    [[FUManager shareInstance] reloadCamItemWithPath:nil];
     [self.navigationController setNavigationBarHidden:YES animated:YES];
 }
 
 - (void)backAction {
     
     if ([FUManager shareInstance].currentAvatars.count == 0) {
+    [self.currentAvatar setCurrentAvatarIndex:0];
         [[FUManager shareInstance] addRenderAvatar:self.currentAvatar];
         [self.currentAvatar loadStandbyAnimation];
     }
@@ -186,6 +187,7 @@
         
         currentModeType = FUSceneryModeAnimation ;
         model = self.animationArray[indexPath.row] ;
+        NSLog(@"camera------%@",((FUSingleModel *)model).camera);
     }
     
     [self performSegueWithIdentifier:@"FUGroupSelectedController" sender:model];
@@ -196,6 +198,7 @@
 }
 -(void)dealloc{
  NSLog(@"FUGroupPhotoController-------销毁了");
+ 
 	
 }
 @end

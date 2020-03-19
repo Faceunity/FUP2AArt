@@ -9,12 +9,16 @@
 #import "FURequestManager.h"
 #import <AFNetworking.h>
 #import "FUManager.h"
-
+NSString * TOKENURL;      // 获取token地址，现在是从json文件获取
+NSString * UPLOADURL;    // 上传图片地址，现在是从json文件获取
+NSString * DOWNLOADURL; // 下载avatar地址，现在是从json文件获取
+NSString * NetConfigVersion;   // 作为区分请求客户端的字段
+#define FUCurrentClient   @"master"     // 定义当前客户，用于取得相应的网络配置
 @interface FURequestManager()
-
 @property (nonatomic, strong) AFHTTPSessionManager *requestManager;
 @property(nonatomic,copy) void(^requestResultBlock)(NSData *data, NSError *error);
-
+@property(nonatomic,copy) FURequestResultDicBlock requestResultDicBlock;
+@property (nonatomic, assign) CFAbsoluteTime startDownloadTime;
 @end
 
 static FURequestManager *sharedInstance;
@@ -36,6 +40,18 @@ static FURequestManager *sharedInstance;
 	self = [super init];
 	
 	if (self) {
+		
+		// 获取各个客户网络请求的配置文件，并设置
+		NSString *netConfigPath = [[NSBundle mainBundle] pathForResource:@"netconfig" ofType:@"json"];
+		NSData *tmpData = [[NSString stringWithContentsOfFile:netConfigPath encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
+		if (tmpData != nil) {
+			NSMutableDictionary *netConfigDic = [NSJSONSerialization JSONObjectWithData:tmpData options:NSJSONReadingMutableContainers error:nil];
+			NSDictionary * currentClientConfigDic = netConfigDic[FUCurrentClient];
+			TOKENURL = currentClientConfigDic[@"TOKENURL"];
+			UPLOADURL = currentClientConfigDic[@"UPLOADURL"];
+			DOWNLOADURL = currentClientConfigDic[@"DOWNLOADURL"];
+			NetConfigVersion = currentClientConfigDic[@"NetConfigVersion"];
+		}
 		
 		AFSecurityPolicy *policy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeNone];
 		policy.allowInvalidCertificates = YES;
@@ -124,43 +140,66 @@ static FURequestManager *sharedInstance;
 	return YES;
 }
 
-- (void)createQAvatarWithImage:(UIImage *)image Params:(NSDictionary *)params CompletionWithData:(void (^)(NSData *data, NSError *error))handle {
+- (void)createQAvatarWithImage:(UIImage *)image Params:(NSDictionary *)params CompletionWithData:(FURequestResultDicBlock)handle {
 	
 	if (handle) {
-		self.requestResultBlock = handle ;
+		self.requestResultDicBlock = handle ;
 	}
-	
+	BOOL isQType = [FUManager shareInstance].avatarStyle == FUAvatarStyleQ;
 	__weak typeof(self)weakSelf = self ;
-	[_requestManager GET:TOKENURL parameters:nil progress:^(NSProgress * _Nonnull downloadProgress) {
+	//NSString *tokenURL = TOKENURL;
+	NSMutableDictionary * paramsDic = [NSMutableDictionary dictionary];
+	paramsDic[@"company"] = @"faceunity";
+	paramsDic[@"type"] = @"QStyle";
+	CFAbsoluteTime startUpdateTime = CFAbsoluteTimeGetCurrent() ;
+    
+    
+	[_requestManager GET:TOKENURL parameters:paramsDic progress:^(NSProgress * _Nonnull downloadProgress) {
 	} success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-		
-		NSString *ret = [[NSString alloc] initWithData:responseObject encoding:NSUTF8StringEncoding];
+		NSDictionary *ret = [NSJSONSerialization JSONObjectWithData:responseObject options:NSJSONReadingAllowFragments error:nil];
 		NSLog(@"====== ret: %@", ret);
+        
+        NSLog(@"------------ avatar token time: %f ms", (CFAbsoluteTimeGetCurrent() - startUpdateTime) * 1000.0);
+		NSString *latestVersion = ret[@"latest"];
+		NSString *token = ret[@"token"];
 		
 		dispatch_async(dispatch_get_main_queue(), ^{
-			[weakSelf uploadImageWith:image params:params token:ret qType:[FUManager shareInstance].avatarStyle == FUAvatarStyleQ];
+			if ([NetConfigVersion compare:latestVersion options:NSNumericSearch]) {  // 当前版本号小于网上版本号
+			NSError * error = [NSError errorWithDomain:@"" code:FUAppVersionInvalid userInfo:nil];
+			//	[SVProgressHUD showErrorWithStatus:@"testflight 有新版本APP，请您更新"];
+				weakSelf.requestResultDicBlock(NO,nil, error);
+				return ;
+			}
+			[weakSelf uploadImageWith:image params:params token:token qType:isQType];
 		});
 		
 	} failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-		weakSelf.requestResultBlock(nil, error) ;
-		weakSelf.requestResultBlock = nil ;
+		weakSelf.requestResultDicBlock(NO,nil, error) ;
+		weakSelf.requestResultDicBlock = nil ;
 	}];
 }
 
 - (void)uploadImageWith:(UIImage *)image params:(NSDictionary *)params token:(NSString *)token qType:(BOOL)qType {
+	NSError * error;
 	
-	NSString *version = qType ? @"1.0.4" : @"1.0.2" ;
 	
 	NSData *imageData = UIImagePNGRepresentation(image) ;
 	
 	BOOL gender = [params[@"gender"] boolValue];
+	NSDictionary * paramsDic = @{@"client_type": @(1)};
+	NSData *jsonData = [NSJSONSerialization dataWithJSONObject:paramsDic options:NSJSONWritingPrettyPrinted error:&error];
+	NSString * jsonStr = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 	params = @{
 		@"gender":@(gender),
-		@"version": version,
+		@"version": NetConfigVersion,
+		//      @"params" : jsonStr,
 	};
 	
 	NSString *url = [[UPLOADURL stringByAppendingString:@"?access_token="] stringByAppendingString:token];
 	__weak typeof(self)weakSelf = self ;
+    CFAbsoluteTime startUpdateTime = CFAbsoluteTimeGetCurrent() ;
+
+    
 	[_requestManager POST:url parameters:params constructingBodyWithBlock:^(id<AFMultipartFormData>  _Nonnull formData) {
 		[formData appendPartWithFileData:imageData name:@"image" fileName:@"image" mimeType:@"image/jpeg"];
 	} progress:^(NSProgress * _Nonnull uploadProgress) {
@@ -170,7 +209,7 @@ static FURequestManager *sharedInstance;
 		}
 		
 	} success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-		
+		NSLog(@"------------ avatar upload time: %f ms", (CFAbsoluteTimeGetCurrent() - startUpdateTime) * 1000.0);
 		NSData *responData = (NSData *)responseObject ;
 		
 		NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:responData options:NSJSONReadingAllowFragments error:nil];
@@ -178,47 +217,44 @@ static FURequestManager *sharedInstance;
 		
 		NSString *taskid = dict[@"data"][@"taskid"] ;
 		NSLog(@"====== task_id: %@", taskid);
-		
-		//     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		weakSelf.startDownloadTime = CFAbsoluteTimeGetCurrent() ;
 		[weakSelf downloadDataWithTask:taskid token:token];
-		//   });
 		
 	} failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-		weakSelf.requestResultBlock(nil, error) ;
-		weakSelf.requestResultBlock = nil ;
+		weakSelf.requestResultDicBlock(NO,nil, error) ;
+		weakSelf.requestResultDicBlock = nil ;
 	}];
 }
 
 - (void)downloadDataWithTask:(NSString *)taskID token:(NSString *)token {
-	NSDictionary *params = @{@"taskid":taskID};
+	NSDictionary *params = @{@"taskid":taskID,@"encoding":@"url"};
 	
 	NSString *url = [[DOWNLOADURL stringByAppendingString:@"?access_token="] stringByAppendingString:token];
 	__weak typeof(self)weakSelf = self ;
+    CFAbsoluteTime startUpdateTime = CFAbsoluteTimeGetCurrent() ;
+    
+    
 	[_requestManager POST:url parameters:params progress:^(NSProgress * _Nonnull uploadProgress) {
+        
 	} success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
 		NSData *jsonData = (NSData *)responseObject ;
-		
 		NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingAllowFragments error:nil];
 		NSLog(@"====== dict: %@", dict);
-		int code = (int)dict[@"code"];
-		
+		int code = [dict[@"code"] intValue];
 		NSString * message = dict[@"message"];
-		NSError  *error = [[NSError alloc]init];
-		if ([message isEqualToString:@"FAILED"]) {
-			NSString* str = @"上传的图片未检测到人脸！";
-			NSData* data = [str dataUsingEncoding:NSUTF8StringEncoding];
-			weakSelf.requestResultBlock(data, error) ;
-			// [SVProgressHUD showErrorWithStatus:@"上传的图片未检测到人脸！"];
-		}else{
-			NSString *dataString = dict[@"data"];
-			if (dataString == nil) {
-				[weakSelf downloadDataWithTask:taskID token:token];
-			}else{
-				NSData *data = [[NSData alloc] initWithBase64EncodedString:dataString options:NSDataBase64DecodingIgnoreUnknownCharacters] ;
-				
-				weakSelf.requestResultBlock(data, nil) ;
-			}
+		if (code == 2) {   // 代表成功
+            NSLog(@"------------ avatar downloadTry time: %f ms", (CFAbsoluteTimeGetCurrent()  - weakSelf.startDownloadTime  ) * 1000.0);
+			weakSelf.requestResultDicBlock(YES,dict, nil) ;
+			
+		}else if (code == 1 && [message isEqualToString:@"PROCESSING"] )  // 代表处理中
+		{
+			[weakSelf downloadDataWithTask:taskID token:token];
+		}else if (code == 1 &&  [message isEqualToString:@"FAILED"] )   // 代表生成失败，需要处理错误码
+		{
+			weakSelf.requestResultDicBlock(NO,dict, nil);
 		}
+		
+		
 	} failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
 	}];
 }

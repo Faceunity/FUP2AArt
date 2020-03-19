@@ -1,0 +1,162 @@
+{
+    "list":[
+        {
+            "bundle":"",
+            "icon":"none",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/shangyi_chushi.bundle",
+            "icon":"mid/shangyi_chushi",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/shangyi_chenshan_1.bundle",
+            "icon":"mid/shangyi_chenshan_1",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/shangyi_chenshan_2.bundle",
+            "icon":"mid/shangyi_chenshan_2",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/shangyi_chenshan_3.bundle",
+            "icon":"mid/shangyi_chenshan_3",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/shangyi_chenshan_4.bundle",
+            "icon":"mid/shangyi_chenshan_4",
+            "gender": 1,
+            "body_match_level": 3
+        },
+        {
+            "bundle":"mid/shangyi_chenshan_6.bundle",
+            "icon":"mid/shangyi_chenshan_6",
+            "gender": 1,
+            "body_match_level": 3
+        },
+        {
+            "bundle":"mid/shangyi_maoyi_1.bundle",
+            "icon":"mid/shangyi_maoyi_1",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/shangyi_maoyi_2.bundle",
+            "icon":"mid/shangyi_maoyi_2",
+            "gender": 0,
+            "body_match_level": 4
+            
+        },
+        {
+            "bundle":"mid/shangyi_maoyi_3.bundle",
+            "icon":"mid/shangyi_maoyi_3",
+            "gender": 1,
+            "body_match_level": 3
+        },
+        {
+            "bundle":"mid/shangyi_POLO_1.bundle",
+            "icon":"mid/shangyi_POLO_1",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/shangyi_Txu_1.bundle",
+            "icon":"mid/shangyi_Txu_1",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/shangyi_weiyi_1.bundle",
+            "icon":"mid/shangyi_weiyi_1",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/shangyi_weiyi_2.bundle",
+            "icon":"mid/shangyi_weiyi_2",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/shangyi_weiyi_3.bundle",
+            "icon":"mid/shangyi_weiyi_3",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/waitao_1.bundle",
+            "icon":"mid/waitao_1",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/waitao_3.bundle",
+            "icon":"mid/waitao_3",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/waitao_5.bundle",
+            "icon":"mid/waitao_5",
+            "gender": 1,
+            "body_match_level": 3
+        },
+        {
+            "bundle":"mid/waitao_6.bundle",
+            "icon":"mid/waitao_6",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/waitao_7.bundle",
+            "icon":"mid/waitao_7",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/waitao_10.bundle",
+            "icon":"mid/waitao_10",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/waitao_dayi_1.bundle",
+            "icon":"mid/waitao_dayi_1",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/waitao_dayi_2.bundle",
+            "icon":"mid/waitao_dayi_2",
+            "gender": 1,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/waitao_dayi_3.bundle",
+            "icon":"mid/waitao_dayi_3",
+            "gender": 0,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/waitao_yurong_1.bundle",
+            "icon":"mid/waitao_yurong_1",
+            "gender": 2,
+            "body_match_level": 4
+            
+        },
+        {
+            "bundle":"mid/waitao_yurong_2.bundle",
+            "icon":"mid/waitao_yurong_2",
+            "gender": 2,
+            "body_match_level": 4
+        }
+    ]
+}

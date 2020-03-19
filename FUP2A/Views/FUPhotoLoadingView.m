@@ -84,6 +84,8 @@
 	
     gender = FUGenderUnKnow ;
 }
-
+-(void)dealloc{
+  NSLog(@"FUPhotoLoadingView---------------销毁了");
+}
 @end
 

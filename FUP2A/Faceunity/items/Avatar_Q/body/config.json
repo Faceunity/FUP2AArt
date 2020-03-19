@@ -1,0 +1,64 @@
+{
+    "list":[
+        {
+            "bundle":"male/midBody_male0.bundle",
+            "icon":"",
+            "gender": 0,
+            "body_level": 0
+        },
+        {
+            "bundle":"male/midBody_male1.bundle",
+            "icon":"",
+            "gender": 0,
+            "body_level": 1
+        },
+        {
+            "bundle":"male/midBody_male2.bundle",
+            "icon":"",
+            "gender": 0,
+            "body_level": 2
+        },
+        {
+            "bundle":"male/midBody_male3.bundle",
+            "icon":"",
+            "gender": 0,
+            "body_level": 3
+        },
+        {
+            "bundle":"male/midBody_male4.bundle",
+            "icon":"",
+            "gender": 0,
+            "body_level": 4
+        },
+        {
+            "bundle":"female/midBody_female0.bundle",
+            "icon":"",
+            "gender": 1,
+            "body_level": 0
+        },
+        {
+            "bundle":"female/midBody_female1.bundle",
+            "icon":"",
+            "gender": 1,
+            "body_level": 1
+        },
+        {
+            "bundle":"female/midBody_female2.bundle",
+            "icon":"",
+            "gender": 1,
+            "body_level": 2
+        },
+        {
+            "bundle":"female/midBody_female3.bundle",
+            "icon":"",
+            "gender": 1,
+            "body_level": 3
+        },
+        {
+            "bundle":"female/midBody_female4.bundle",
+            "icon":"",
+            "gender": 1,
+            "body_level": 4
+        }
+    ]
+}

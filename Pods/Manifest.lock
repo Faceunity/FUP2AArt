@@ -25,7 +25,7 @@ DEPENDENCIES:
   - SVProgressHUD (~> 2.0.3)
 
 SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
+  https://github.com/CocoaPods/Specs.git:
     - AFNetworking
     - SDWebImage
     - SVProgressHUD
@@ -37,4 +37,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: f37b2cdac84e146c37fb86eee7bdb66e3cecd34b
 
-COCOAPODS: 1.6.1
+COCOAPODS: 1.8.1

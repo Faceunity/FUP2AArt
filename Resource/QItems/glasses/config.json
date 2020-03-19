@@ -1,0 +1,158 @@
+{
+    "list": [
+        {
+            "bundle": "",
+            "icon": "none",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_1.bundle",
+            "icon": "mid/glass_1",
+            "label": [1, 0],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_2.bundle",
+            "icon": "mid/glass_2",
+            "label": [0, 0],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_3.bundle",
+            "icon": "mid/glass_3",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_4.bundle",
+            "icon": "mid/glass_4",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_5.bundle",
+            "icon": "mid/glass_5",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_6.bundle",
+            "icon": "mid/glass_6",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_7.bundle",
+            "icon": "mid/glass_7",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_8.bundle",
+            "icon": "mid/glass_8",
+            "label": [1, 1],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_9.bundle",
+            "icon": "mid/glass_9",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_10.bundle",
+            "icon": "mid/glass_10",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_11.bundle",
+            "icon": "mid/glass_11",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_12.bundle",
+            "icon": "mid/glass_12",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_13.bundle",
+            "icon": "mid/glass_13",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_14.bundle",
+            "icon": "mid/glass_14",
+            "label": [1, 0],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_15.bundle",
+            "icon": "mid/glass_15",
+            "label": [1, 2],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_16.bundle",
+            "icon": "mid/glass_16",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_17.bundle",
+            "icon": "mid/glass_17",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_18.bundle",
+            "icon": "mid/glass_18",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_19.bundle",
+            "icon": "mid/glass_19",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_20.bundle",
+            "icon": "mid/glass_20",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        },
+        {
+            "bundle": "mid/glass_21.bundle",
+            "icon": "mid/glass_21",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
+        }
+    ]
+}

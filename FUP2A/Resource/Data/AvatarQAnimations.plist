@@ -8,7 +8,9 @@
 			<key>gender</key>
 			<string>0</string>
 			<key>animation</key>
-			<string>pose_danren_01</string>
+			<string>ani_pose_danren_01</string>
+			<key>camera</key>
+			<string>ani_pose_danren_01_cam</string>
 			<key>image</key>
 			<string>pose_danren_01</string>
 		</dict>
@@ -16,6 +18,8 @@
 	<key>多人场景</key>
 	<array>
 		<dict>
+			<key>camera</key>
+			<string>ani_pose_shuangren_03_cam</string>
 			<key>image</key>
 			<string>pose_shaungren_03_2</string>
 			<key>items</key>
@@ -24,13 +28,13 @@
 					<key>gender</key>
 					<string>0</string>
 					<key>animation</key>
-					<string>pose_shaungren_03_1</string>
+					<string>ani_pose_shuangren_03_01_mid</string>
 				</dict>
 				<dict>
 					<key>gender</key>
 					<string>1</string>
 					<key>animation</key>
-					<string>pose_shaungren_03_2</string>
+					<string>ani_pose_shuangren_03_02_mid</string>
 				</dict>
 			</array>
 		</dict>
@@ -41,47 +45,65 @@
 			<key>gender</key>
 			<string>0</string>
 			<key>animation</key>
-			<string>ani_LRPP</string>
-			<key>image</key>
-			<string>ani_LRPP</string>
-		</dict>
-		<dict>
-			<key>gender</key>
-			<string>0</string>
-			<key>animation</key>
-			<string>ani_SJG</string>
-			<key>image</key>
-			<string>ani_SJG</string>
-		</dict>
-		<dict>
-			<key>gender</key>
-			<string>0</string>
-			<key>animation</key>
-			<string>ani_SZW</string>
-			<key>image</key>
-			<string>ani_SZW</string>
-		</dict>
-		<dict>
-			<key>gender</key>
-			<string>0</string>
-			<key>animation</key>
-			<string>ani_dance</string>
+			<string>ani_dance_mid</string>
+			<key>camera</key>
+			<string>ani_dance_cam</string>
 			<key>image</key>
 			<string>ani_dance</string>
 		</dict>
 		<dict>
+			<key>camera</key>
+			<string>ani_LRPP_cam</string>
+			<key>otherAnimations</key>
+			<array>
+				<string>LRPP_shanzi</string>
+				<string>ani_LRPP_shanzi</string>
+			</array>
 			<key>gender</key>
 			<string>0</string>
 			<key>animation</key>
+			<string>ani_LRPP_mid</string>
+			<key>image</key>
+			<string>ani_LRPP</string>
+		</dict>
+		<dict>
+			<key>otherAnimations</key>
+			<array>
+				<string>ani_SJG_shaungjiegun</string>
+				<string>SJG_shaungjiegun</string>
+			</array>
+			<key>camera</key>
+			<string>ani_SJG_cam</string>
+			<key>gender</key>
+			<string>0</string>
+			<key>animation</key>
+			<string>ani_SJG_mid</string>
+			<key>image</key>
+			<string>ani_SJG</string>
+		</dict>
+		<dict>
+			<key>gender</key>
+			<string>0</string>
+			<key>animation</key>
+			<string>ani_SZW_mid</string>
+			<key>camera</key>
+			<string>ani_SZW_cam</string>
+			<key>image</key>
+			<string>ani_SZW</string>
+		</dict>
+		<dict>
+			<key>gender</key>
+			<string>0</string>
+			<key>animation</key>
+			<string>ani_danshoubixin_mid</string>
+			<key>image</key>
 			<string>ani_danshoubixin</string>
-			<key>image</key>
-			<string>ani_danshoubixin</string>
 		</dict>
 		<dict>
 			<key>gender</key>
 			<string>0</string>
 			<key>animation</key>
-			<string>ani_guzhang</string>
+			<string>ani_guzhang_mid</string>
 			<key>image</key>
 			<string>ani_guzhang</string>
 		</dict>
@@ -89,33 +111,33 @@
 			<key>gender</key>
 			<string>0</string>
 			<key>animation</key>
-			<string>ani_hi</string>
-			<key>image</key>
-			<string>ani_hi</string>
-		</dict>
-		<dict>
-			<key>gender</key>
-			<string>0</string>
-			<key>animation</key>
-			<string>ani_ok</string>
-			<key>image</key>
-			<string>ani_ok</string>
-		</dict>
-		<dict>
-			<key>gender</key>
-			<string>0</string>
-			<key>animation</key>
-			<string>ani_rock</string>
-			<key>image</key>
-			<string>ani_rock</string>
-		</dict>
-		<dict>
-			<key>gender</key>
-			<string>0</string>
-			<key>animation</key>
-			<string>ani_shuangshoubixin</string>
+			<string>ani_shuangshoubixin_mid</string>
 			<key>image</key>
 			<string>ani_shuangshoubixin</string>
+		</dict>
+		<dict>
+			<key>gender</key>
+			<string>0</string>
+			<key>animation</key>
+			<string>ani_hi_mid</string>
+			<key>image</key>
+			<string>ani_hi</string>
+		</dict>
+		<dict>
+			<key>gender</key>
+			<string>0</string>
+			<key>animation</key>
+			<string>ani_ok_mid</string>
+			<key>image</key>
+			<string>ani_ok</string>
+		</dict>
+		<dict>
+			<key>gender</key>
+			<string>0</string>
+			<key>animation</key>
+			<string>ani_rock_mid</string>
+			<key>image</key>
+			<string>ani_rock</string>
 		</dict>
 	</array>
 </dict>

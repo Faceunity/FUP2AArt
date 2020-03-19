@@ -9,15 +9,17 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
-
 typedef enum : NSUInteger {
     FUP2AHelperRecordTypeVideo,     // 视频
+	FUP2AHelperRecordTypeVoicedVideo,     // 有声视频
+	FUP2AHelperRecordTypeStaVideo,     // 有声sta视频
     FUP2AHelperRecordTypeGIF,       // gif
 } FUP2AHelperRecordType;
 
 @interface FUP2AHelper : NSObject
 
-
+@property (nonatomic,strong)NSString * saveVideoPath;    // 保存视频路径  ⚠️⚠️⚠️⚠️⚠️⚠️ 录制视频前必须设置
+@property (nonatomic,strong)NSString * saveAudioPath;    // 保存音频路径  ⚠️⚠️⚠️⚠️⚠️⚠️ 录制sta有声视频前必须设置
 /**
  FUP2AHelper 单例
  */
@@ -44,6 +46,14 @@ typedef enum : NSUInteger {
 - (UIImage *)createImageWithBuffer:(CVPixelBufferRef)buffer mirr:(BOOL)mirr;
 
 /**
+ 视频数据生成原始尺寸的平面图片
+ 
+ @param buffer  视频数据
+ @param mirr    是否镜像
+ @return        图片
+ */
+- (UIImage *)createOriginSizeImageWithBuffer:(CVPixelBufferRef)buffer mirr:(BOOL)mirr;
+/**
  开始视频录制
 
  @param recordType 录制类型
@@ -60,6 +70,17 @@ typedef enum : NSUInteger {
 - (void)recordBufferWithType:(FUP2AHelperRecordType)recordType
                       buffer:(CVPixelBufferRef)buffer
                 sampleBuffer:(CMSampleBufferRef)sampleBuffer ;
+                /**
+ 拼接视频数据
+
+ @param recordType      录制类型
+ @param buffer          最后拼接的视频数据
+ @param sampleBuffer    原始视频数据
+ @param handle          是录制开始到当前帧的时长的d回调
+ */
+- (void)recordBufferWithType:(FUP2AHelperRecordType)recordType
+                      buffer:(CVPixelBufferRef)buffer
+                sampleBuffer:(CMSampleBufferRef)sampleBuffer Completion:(void (^)(CFAbsoluteTime duration))handle;
 
 /**
  停止视频录制
@@ -70,6 +91,14 @@ typedef enum : NSUInteger {
 - (void)stopRecordWithType:(FUP2AHelperRecordType)recordType
                 Completion:(void (^)(NSString *retPath))handle ;
 
+/**
+ 停止视频录制,并回调时长
+ 
+ @param recordType  录制类型
+ @param handle      返回录制结果所在路径，时长
+ */
+- (void)stopRecordWithType:(FUP2AHelperRecordType)recordType
+				TimeCompletion:(void (^)(NSString *retPath,CFAbsoluteTime duration))handle;
 /**
  取消录制
  */

@@ -14,13 +14,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) BOOL OpenGLESCapture;
 @property (assign, nonatomic) BOOL localizeHairBundlesSuccess;   // 本地发型bundles是否保存完成
 @property (assign, nonatomic) BOOL isXFamily;   // 是不是iphonex家族
+// 记录当前的UINavigationController
+@property (nonatomic,strong) UINavigationController * keyNavVC;
 // 记录当前FUEditViewController 
-@property (nonatomic,strong) FUEditViewController * editVC;
+@property (nonatomic,weak) FUEditViewController * editVC;
 @property (nonatomic,assign) double colorSliderStep;   // 渐变色条  间隔
 + (AppManager *)sharedInstance;
 -(void)checkSavePhotoAuth:(void (^)(PHAuthorizationStatus status))isAuthorizedCompletion;
 -(void)openAppSettingView;
--(UIColor *)returnFUGradientSliderColor:(float) progress;
+//-(UIColor *)returnFUGradientSliderColor:(float) progress;
 
 @end
 

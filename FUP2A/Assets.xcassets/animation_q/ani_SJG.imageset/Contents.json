@@ -2,17 +2,17 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "sjg.png",
+      "filename" : "ani_SJG@1x.png",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
-      "filename" : "sjg@2x.png",
+      "filename" : "ani_SJG@2x.png",
       "scale" : "2x"
     },
     {
       "idiom" : "universal",
-      "filename" : "sjg@3x.png",
+      "filename" : "ani_SJG@3x.png",
       "scale" : "3x"
     }
   ],

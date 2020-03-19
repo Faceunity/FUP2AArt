@@ -23,40 +23,45 @@ static FUAvatarEditManager *sharedInstance;
 	});
 	return sharedInstance;
 }
--(void)undoStackPop:(PopCompleteBlock)completion{
-	self.undo = YES;
-	if (self.redoStack.isEmpty) {
-		[self.redoStack push:[self.undoStack pop]];
-		[[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditManagerStackNotEmptyNot object:nil];
-	}else{
-		[self.redoStack push:[self.undoStack pop]];
-	}
-	NSDictionary * currentConfig = self.undoStack.top;
-	if (self.undoStack.isEmpty) {
-		completion(self.orignalStateDic,YES);
-	}else{
-		completion(currentConfig,NO);
-	}
+
+-(void)undoStackPop:(PopCompleteBlock)completion
+{
+    self.undo = YES;
+    NSObject *obj = self.undoStack.top;
+    [self.redoStack push:[self.undoStack pop]];
+    [[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditManagerStackNotEmptyNot object:nil];
+    completion(obj,self.undoStack.isEmpty);
 }
--(void)redoStackPop:(PopCompleteBlock)completion{
+
+-(void)redoStackPop:(PopCompleteBlock)completion
+{
 	self.redo = YES;
 	[self.undoStack push:[self.redoStack pop]];
-	NSDictionary * currentConfig = self.undoStack.top;
-	completion(currentConfig,self.redoStack.isEmpty);
+    if (self.redoStack.isEmpty)
+    {
+        [[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditManagerStackNotEmptyNot object:nil];
+    }
+	NSObject *obj = self.undoStack.top;
+	completion(obj,self.redoStack.isEmpty);
 	
 }
--(void)push:(NSObject *)object{
-	if (self.undoStack.top == nil) {
+-(void)push:(NSObject *)object
+{
+	if (self.undoStack.top == nil)
+    {
 		self.undoStack.top = object;
 		[[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditManagerStackNotEmptyNot object:nil];
 	}
-    [self.undoStack push:object];
+	[self.undoStack push:object];
 }
 // 字典模型数组里面是否包含某个键值
--(BOOL)exsit:(NSString *)key{
-  return [self.undoStack exsit:key] || [self.redoStack exsit:key];
+-(BOOL)exsit:(NSString *)key
+{
+	return [self.undoStack exsit:key] || [self.redoStack exsit:key];
 }
--(void)clear{
+
+-(void)clear
+{
 	self.hadNotEdit = YES;
 	self.enterEditVC = NO;
 	self.undo = NO;
@@ -64,6 +69,21 @@ static FUAvatarEditManager *sharedInstance;
 	[self.orignalStateDic removeAllObjects];
 	[self.undoStack clear];
 	[self.redoStack clear];
+}
+
+@end
+
+@implementation FUAvatarChangeModel
+
+- (instancetype)init
+{
+    if (self = [super init])
+    {
+        self.oldConfig = [[NSMutableDictionary alloc]init];
+        self.currentConfig = [[NSMutableDictionary alloc]init];
+    }
+    
+    return self;
 }
 
 @end

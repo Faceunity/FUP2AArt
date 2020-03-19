@@ -1,0 +1,107 @@
+{
+    "list":[
+        {
+            "bundle":"",
+            "icon":"none",
+            "gender": 2,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/kuzi_chushi.bundle",
+            "icon":"mid/kuzi_chushi",
+            "gender": 2,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/kuzi_changku_1.bundle",
+            "icon":"mid/kuzi_changku_1",
+            "gender": 2,
+            "body_match_level": 4
+        },
+         {
+            "bundle":"mid/kuzi_changku_2.bundle",
+            "icon":"mid/kuzi_changku_2",
+            "gender": 2,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/kuzi_changku_3.bundle",
+            "icon":"mid/kuzi_changku_3",
+            "gender": 2,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/kuzi_changku_4.bundle",
+            "icon":"mid/kuzi_changku_4",
+            "gender": 2,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/kuzi_changku_5.bundle",
+            "icon":"mid/kuzi_changku_5",
+            "gender": 2,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/kuzi_changku_6.bundle",
+            "icon":"mid/kuzi_changku_6",
+            "gender": 2,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/kuzi_duanku_1.bundle",
+            "icon":"mid/kuzi_duanku_1",
+            "gender": 2,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/kuzi_duanku_2.bundle",
+            "icon":"mid/kuzi_duanku_2",
+            "gender": 2,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/kuzi_duanku_3.bundle",
+            "icon":"mid/kuzi_duanku_3",
+            "gender": 2,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/kuzi_duanku_4.bundle",
+            "icon":"mid/kuzi_duanku_4",
+            "gender": 2,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/kuzi_duanku_5.bundle",
+            "icon":"mid/kuzi_duanku_5",
+            "gender": 2,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/kuzi_duanku_6.bundle",
+            "icon":"mid/kuzi_duanku_6",
+            "gender": 2,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/kuzi_zhongku_1.bundle",
+            "icon":"mid/kuzi_zhongku_1",
+            "gender": 2,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/kuzi_zhongku_2.bundle",
+            "icon":"mid/kuzi_zhongku_2",
+            "gender": 2,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/kuzi_zhongku_3.bundle",
+            "icon":"mid/kuzi_zhongku_3",
+            "gender": 2,
+            "body_match_level": 4
+        }
+        
+    ]
+}
