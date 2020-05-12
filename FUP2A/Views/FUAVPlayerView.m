@@ -8,7 +8,6 @@
 
 #import "FUAVPlayerView.h"
 
-
 @implementation FUAVPlayerView
 + (Class)layerClass {
     return [AVPlayerLayer class];

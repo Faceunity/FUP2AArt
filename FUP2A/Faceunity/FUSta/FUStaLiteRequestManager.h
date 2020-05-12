@@ -14,9 +14,6 @@ typedef void(^FUStaLiteHandler)(NSError* __nullable error,NSData *voiceData,NSDa
 
 @interface FUStaLiteRequestManager : NSObject
 
-
-+ (instancetype)shareManager;
-
 /*
  合成方式A
  

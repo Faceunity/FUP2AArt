@@ -7,11 +7,7 @@
 //
 
 #import "FUARFilterController.h"
-#import "FUOpenGLView.h"
-#import "FUCamera.h"
-#import "FUManager.h"
-
-
+@import CoreMotion;
 @interface FUARFilterController ()<
 FUCameraDelegate,
 FUARFilterViewDelegate
@@ -23,11 +19,11 @@ FUARFilterViewDelegate
 @property (nonatomic, strong) FUCamera *camera ;
 @property (weak, nonatomic) IBOutlet FUOpenGLView *renderView;
 
-
+@property (nonatomic, strong) CMMotionManager *motionManager;
 @property (weak, nonatomic) IBOutlet UIButton *photoBtn;
 @property (nonatomic, strong) FUAvatar *commonAvatar;    //  记录进入人体追踪之前的avatar，当从追踪界面返回时，继续渲染这个 avatar
 @property (nonatomic, strong) FUAvatar *currentAvatar;    // 当前选择的AR追踪 Avatar
-
+@property (nonatomic, assign) int  rotationMode ;
 @end
 
 @implementation FUARFilterController
@@ -38,14 +34,8 @@ FUARFilterViewDelegate
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
-	FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
-	self.currentAvatar = avatar ;
-	self.commonAvatar = avatar;
-    
-	[self.filterView selectedModeWith:self.currentAvatar];
-	[[FUManager shareInstance] setMaxFaceNum:1];
-//	[[FUManager shareInstance] reloadRenderAvatarInARModeInSameController:avatar];
-	
+
+    [self initializeMotionManager];
 	UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapClick:)];
 	[self.renderView addGestureRecognizer:tapGesture];
 	
@@ -56,15 +46,68 @@ FUARFilterViewDelegate
 	// 添加进入和退出后台的监听
 	[self addObserver];
 }
+
+- (void)initializeMotionManager{
+    self.motionManager = [[CMMotionManager alloc] init];
+    self.motionManager .accelerometerUpdateInterval = .2;
+    self.motionManager .gyroUpdateInterval = .2;
+    __weak FUARFilterController *weakSelf = self;
+    [self.motionManager  startAccelerometerUpdatesToQueue:[NSOperationQueue currentQueue]
+                                        withHandler:^(CMAccelerometerData  *accelerometerData, NSError *error) {
+                                            if (!error) {
+                                              UIInterfaceOrientation orientation = [weakSelf outputAccelerationData:accelerometerData.acceleration];
+                                              [[FUManager shareInstance] setScreenOrientation:orientation];
+                                              
+                                            }
+                                            else{
+                                                NSLog(@"%@", error);
+                                            }
+                                        }];
+}
+
+/// 获取当前屏幕方向
+/// @param acceleration
+- (UIInterfaceOrientation)outputAccelerationData:(CMAcceleration)acceleration{
+    UIInterfaceOrientation orientationNew;
+    
+    if (acceleration.x >= 0.75) {
+        orientationNew = UIInterfaceOrientationLandscapeLeft;
+        self.rotationMode = 3;
+        NSLog(@"Landscape Left");
+        
+    }
+    else if (acceleration.x <= -0.75) {
+        orientationNew = UIInterfaceOrientationLandscapeRight;
+        self.rotationMode = 1;
+        NSLog(@"Landscape Right");
+    }
+    else if (acceleration.y <= -0.75) {
+        orientationNew = UIInterfaceOrientationPortrait;
+        self.rotationMode = 0;
+        NSLog(@"Portrait");
+    }
+    else if (acceleration.y >= 0.75) {
+        orientationNew = UIInterfaceOrientationPortraitUpsideDown;
+        self.rotationMode = 2;
+        NSLog(@"UpsideDown");
+    }
+    return orientationNew;
+}
+
 -(void)setIsShow:(BOOL)isShow
 {
 	_isShow = isShow;
 	if (isShow)
     {
+        [[FUManager shareInstance]setOutputResolutionAdjustCamera];
+        FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+        self.currentAvatar = avatar ;
+        self.commonAvatar = avatar;
 		// 1.即将进入AR滤镜，加载处理头发的道具
 		[[FUManager shareInstance] bindHairMask];
 		// 2.解绑定身体、上衣、裤子、鞋子资源，只保留头部的一些素材
 	    [[FUManager shareInstance] reloadRenderAvatarInARModeInSameController:self.currentAvatar];
+         [self.filterView selectedModeWith:self.currentAvatar];
 	    // 3.设置AR滤镜的controller句柄为arItems[0]
 		[[FUManager shareInstance] enterARMode];
 		// 4.去除背景道具
@@ -77,7 +120,7 @@ FUARFilterViewDelegate
     {
 	    // 离开AR滤镜，删除处理头发的道具
 	    [[FUManager shareInstance] destoryHairMask];
-		[self.camera stopCapture];
+ 		[self.camera stopCapture];
 		[self.currentAvatar quitARMode];
 		NSString *filterName = @"noitem";
 		[self ARFilterViewDidSelectedARFilter:filterName];
@@ -102,7 +145,6 @@ FUARFilterViewDelegate
 	[self.commonAvatar  loadStandbyAnimation];
 	
 	
-	[self.commonAvatar resetScaleToSmallBody];
 	[self.navigationController popViewControllerAnimated:NO];
 	NSString *filterName = @"noitem";
 	[self ARFilterViewDidSelectedARFilter:filterName];
@@ -122,7 +164,7 @@ FUARFilterViewDelegate
     if (self.camera.isFrontCamera)
     {
 		CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
-		[[FUManager shareInstance] renderARFilterItemWithBuffer:mirrored_pixel Landmarks:landmarks LandmarksLength:landmarks_cnt];
+		[[FUManager shareInstance] renderARFilterItemWithBuffer:mirrored_pixel rotationMode:self.rotationMode];
 		
 		[self.renderView displayPixelBuffer:mirrored_pixel withLandmarks:nil count:0 Mirr:NO];
 		CVPixelBufferRelease(mirrored_pixel);
@@ -130,7 +172,7 @@ FUARFilterViewDelegate
     else
     {
 		[[FURenderer shareRenderer] setInputCameraMatrix:0 flip_y:0 rotate_mode:0];
-		[[FUManager shareInstance] renderARFilterItemWithBuffer:pixelBuffer Landmarks:landmarks LandmarksLength:landmarks_cnt];
+		[[FUManager shareInstance] renderARFilterItemWithBuffer:pixelBuffer rotationMode:self.rotationMode];
 		[self.renderView displayPixelBuffer:pixelBuffer withLandmarks:nil count:0 Mirr:NO];
 	}
 }
@@ -185,8 +227,12 @@ FUARFilterViewDelegate
 	return _camera ;
 }
 -(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
-	self.filterView.superview.hidden = !self.filterView.superview.hidden;
-	[self ARFilterViewDidShowTopView:!self.filterView.superview.hidden];
+	[self hideOrShowFilterView];
+}
+-(void)hideOrShowFilterView{
+	self.filterView.hidden = !self.filterView.hidden;
+	[self ARFilterViewDidShowTopView:!self.filterView.hidden];
+	self.touchBlock();
 }
 
 

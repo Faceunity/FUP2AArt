@@ -10,7 +10,7 @@
 #import <FUStaLite/FUStaLite.h>
 #import "authpack.h"
 #import <AFNetworking.h>
-static NSString *const  url                  = @"http://xxx/xxx/xxx/xxx";//请联系Faceunity使用TTS功能
+static NSString *const  url                  = @"http://tts-migu.faceunity.com/api/tts/upload";
 
 
 @interface FUStaLiteRequestManager ()
@@ -21,24 +21,17 @@ static NSString *const  url                  = @"http://xxx/xxx/xxx/xxx";//请�
 
 @implementation FUStaLiteRequestManager
 
-
-+ (instancetype)shareManager{
-    static FUStaLiteRequestManager *_shareManager;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        _shareManager = [[FUStaLiteRequestManager alloc] init];
-    });
-    
-    return _shareManager;
-}
-
 - (instancetype)init {
     
     if (self = [super init]) {
         //Stalite初始化,全局仅一次
         NSData *authData = [NSData dataWithBytes:g_auth_package length:sizeof(g_auth_package)];
         NSData * ttaData = [[NSData alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"fustalite_tta.bin" ofType:nil]];
-        self.fusta_lite = [FUStaLite staLiteWithTtaData:ttaData authData:authData];
+        NSData * decoderData = [[NSData alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"data_decoder.bin" ofType:nil]];
+        
+        [FUStaLite setupWithAuthData:authData decoderData:decoderData];
+        self.fusta_lite = [[FUStaLite alloc]init];
+        [self.fusta_lite setPhonemeExpressionConfig:ttaData];
     }
     return self;
 }
@@ -109,7 +102,7 @@ voiceSamplerate:(NSString*)samplerate
                 NSData *expressionData = nil;
                 if (self.fusta_lite) {
                     self.fusta_lite.expOffsetTime = 0.25;//偏移
-                    expressionData = [self.fusta_lite queryExpressionWith:tts ttsType:FUTTSTypeCharacter];
+                    expressionData = [self.fusta_lite queryExpressionWith:tts ttsType:FUTTSTypeCharacter streamType:0];
                 }
                 
                 //表情时间间隔
@@ -124,6 +117,8 @@ voiceSamplerate:(NSString*)samplerate
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
         
         NSLog(@"⚠️⚠️⚠️request filed");
+        
+        result(error,nil,nil,0);
         
     }];
     

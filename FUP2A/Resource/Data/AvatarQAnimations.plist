@@ -42,6 +42,8 @@
 	<key>动画场景</key>
 	<array>
 		<dict>
+			<key>bg</key>
+			<string>keting_mesh</string>
 			<key>gender</key>
 			<string>0</string>
 			<key>animation</key>
@@ -52,6 +54,8 @@
 			<string>ani_dance</string>
 		</dict>
 		<dict>
+			<key>bg</key>
+			<string>yuanlin_mesh</string>
 			<key>camera</key>
 			<string>ani_LRPP_cam</string>
 			<key>otherAnimations</key>
@@ -67,6 +71,8 @@
 			<string>ani_LRPP</string>
 		</dict>
 		<dict>
+			<key>bg</key>
+			<string>wuguan_mesh</string>
 			<key>otherAnimations</key>
 			<array>
 				<string>ani_SJG_shaungjiegun</string>
@@ -85,9 +91,9 @@
 			<key>gender</key>
 			<string>0</string>
 			<key>animation</key>
-			<string>ani_SZW_mid</string>
+			<string>ani_szw_mid</string>
 			<key>camera</key>
-			<string>ani_SZW_cam</string>
+			<string>ani_szw_cam</string>
 			<key>image</key>
 			<string>ani_SZW</string>
 		</dict>

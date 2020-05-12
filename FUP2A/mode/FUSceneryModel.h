@@ -7,8 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FUP2ADefine.h"
-
 
 @interface FUSingleModel : NSObject
 
@@ -17,6 +15,7 @@
 @property (nonatomic, copy) NSString *imageName ;
 @property (nonatomic, copy) NSString * animationName ;
 @property (nonatomic,strong)NSArray<NSString *> * otherAnimations;
+@property (nonatomic, copy) NSString * animationBG ;
 
 + (instancetype)modelWithDict:(NSDictionary *)dict ;
 @end

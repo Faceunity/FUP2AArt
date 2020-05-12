@@ -5,36 +5,33 @@
 //  Created by L on 2018/12/15.
 //  Copyright © 2018年 L. All rights reserved.
 //
-
-#import "FUAvatar.h"
-#import "FUP2AColor.h"
+#include "objc/runtime.h"
 
 @interface FUAvatar ()
 
 @end
 
-
 @implementation FUAvatar
 
 - (instancetype)init
 {
-	self = [super init];
-	if (self)
+    self = [super init];
+    if (self)
     {
-		signal = dispatch_semaphore_create(1) ;
-	}
-	return self ;
+        signal = dispatch_semaphore_create(1) ;
+    }
+    return self ;
 }
 
 #pragma mark ------ SET/GET ------
 // 图片路径
 -(NSString *)imagePath
 {
-	if (!_imagePath)
+    if (!_imagePath)
     {
-		_imagePath = [[self filePath] stringByAppendingPathComponent:@"image.png"];
-	}
-	return _imagePath ;
+        _imagePath = [[self filePath] stringByAppendingPathComponent:@"image.png"];
+    }
+    return _imagePath ;
 }
 
 /**
@@ -44,16 +41,16 @@
  */
 - (NSString *)filePath
 {
-	NSString *filePath ;
-	if (self.defaultModel)
+    NSString *filePath ;
+    if (self.defaultModel)
     {
-		filePath = [[[NSBundle mainBundle].resourcePath stringByAppendingPathComponent:@"Resource"] stringByAppendingPathComponent:self.name];
-	}
+        filePath = [[[NSBundle mainBundle].resourcePath stringByAppendingPathComponent:@"Resource"] stringByAppendingPathComponent:self.name];
+    }
     else
     {
-		filePath = [documentPath stringByAppendingPathComponent:self.name];
-	}
-	return filePath ;
+        filePath = [documentPath stringByAppendingPathComponent:self.name];
+    }
+    return filePath ;
 }
 
 /**
@@ -63,7 +60,7 @@
  */
 - (int)getControllerHandle
 {
-	return  items[FUItemTypeController];
+    return  items[FUItemTypeController];
 }
 
 /**
@@ -71,45 +68,52 @@
  -- 包括 controller, head, body, hair, clothes, glasses, beard, hat, animatiom, arfilter.
  */
 - (void)destroyAvatar {
-	
-	// 先销毁普通道具
-	for (int i = 1 ; i < sizeof(items)/sizeof(int); i ++) {
-		if (items[i] != 0) {
-			
-			// 先解绑
-			fuUnbindItems(items[FUItemTypeController], &items[i], 1) ;
-			// 再销毁
-			[FURenderer destroyItem:items[i]];
-			items[i] = 0 ;
-		}
-	}
-	// 再销毁 controller
-	[FURenderer destroyItem:items[FUItemTypeController]];
-	items[FUItemTypeController] = 0 ;
+    
+    // 先销毁普通道具
+    for (int i = 1 ; i < sizeof(items)/sizeof(int); i ++) {
+        if (items[i] != 0) {
+            
+            // 先解绑
+            fuUnbindItems(items[FUItemTypeController], &items[i], 1) ;
+            // 再销毁
+            [FURenderer destroyItem:items[i]];
+            items[i] = 0 ;
+        }
+    }
+    // 再销毁 controller
+    [FURenderer destroyItem:items[FUItemTypeController]];
+    items[FUItemTypeController] = 0 ;
 }
 /**
  销毁此模型,只包括avatar资源
  -- 包括 , head, body, hair, clothes, glasses, beard, hat, animatiom, arfilter.
  */
 - (void)destroyAvatarResouce {
-	
-	// 先销毁普通道具
-	for (int i = 1 ; i < sizeof(items)/sizeof(int); i ++) {
-		if (items[i] != 0) {
-			
-			// 先解绑
-			fuUnbindItems(items[FUItemTypeController], &items[i], 1) ;
-			// 再销毁
-			[FURenderer destroyItem:items[i]];
-			items[i] = 0 ;
-		}
-	}
-	// 销毁临时道具
-	[self destoryAllTmpItems];
+    
+    // 先销毁普通道具
+    for (int i = 1 ; i < sizeof(items)/sizeof(int); i ++) {
+        if (items[i] != 0) {
+            
+            // 先解绑
+            fuUnbindItems(items[FUItemTypeController], &items[i], 1) ;
+            // 再销毁
+            [FURenderer destroyItem:items[i]];
+            items[i] = 0 ;
+        }
+    }
+    // 销毁临时道具
+    [self destoryAllTmpItems];
 }
 
 
+/**
+ 更新Cam道具
 
+ @param camPath 辅助道具路径
+ */
+- (void)reloadCamItemWithPath:(NSString * __nullable)camPath {
+	[self loadItemWithtype:FUItemTypeCamera filePath:camPath];
+}
 /**
  更换动画
  
@@ -117,7 +121,7 @@
  */
 - (void)reloadAnimationWithPath:(NSString *)animationPath
 {
-	[self loadItemWithtype:FUItemTypeAnimation filePath:animationPath];
+    [self loadItemWithtype:FUItemTypeAnimation filePath:animationPath];
 }
 
 /**
@@ -127,39 +131,39 @@
  */
 - (void)reloadTmpItemWithPath:(NSString *)tmpPath
 {
-	[self loadItemWithtype:FUItemTypeTmp filePath:tmpPath];
+    [self loadItemWithtype:FUItemTypeTmp filePath:tmpPath];
 }
 
 // 加载controller道具
 //- (void)reloadControllerItemFilePath:(NSString *)path {}
 // 加载普通道具
 - (void)loadItemWithtype:(FUItemType)itemType filePath:(NSString *)path {
-	
-	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
-	BOOL isDirectory;
-	BOOL isExist = [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDirectory];
-	
-	if (path == nil || !isExist || isDirectory) {
-		
-		[self destroyItemWithType:itemType];
-		
-		dispatch_semaphore_signal(signal) ;
-		return ;
-	}
-	// 创建道具
-	int tmpHandle = [FURenderer itemWithContentsOfFile:path];
-	
-	// 销毁同类道具
-	[self destroyItemWithType:itemType];
-	
-	// 绑定到 controller 上
-	items[itemType] = tmpHandle;
-	
-	if (items[FUItemTypeController] && itemType > 0) {
-		[FURenderer bindItems:items[FUItemTypeController] items:&items[itemType] itemsCount:1] ;
-	}
-	
-	dispatch_semaphore_signal(signal);
+    
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+    BOOL isDirectory;
+    BOOL isExist = [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDirectory];
+    
+    if (path == nil || !isExist || isDirectory) {
+        
+        [self destroyItemWithType:itemType];
+        
+        dispatch_semaphore_signal(signal) ;
+        return ;
+    }
+    // 创建道具
+    int tmpHandle = [FURenderer itemWithContentsOfFile:path];
+    
+    // 销毁同类道具
+    [self destroyItemWithType:itemType];
+    
+    // 绑定到 controller 上
+    items[itemType] = tmpHandle;
+    
+    if (items[FUItemTypeController] && itemType > 0) {
+        [FURenderer bindItems:items[FUItemTypeController] items:&items[itemType] itemsCount:1] ;
+    }
+    
+    dispatch_semaphore_signal(signal);
 }
 // 添加普通道具，不销毁老的同类道具
 
@@ -167,25 +171,25 @@
 /// @param handle 记录当前的句柄
 /// @param path 动画文件路径
 - (void)addItemWithHandle:(int*)handle filePath:(NSString *)path {
-	
-	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
-	// 创建道具
-	int tmpHandle = [FURenderer itemWithContentsOfFile:path];
-	
-	
-	// 绑定到 controller 上
-	 *handle = tmpHandle;
-	
-	if (items[FUItemTypeController]) {
-		[FURenderer bindItems:items[FUItemTypeController] items: handle itemsCount:1] ;
-	}
-	dispatch_semaphore_signal(signal);
-	
+    
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+    // 创建道具
+    int tmpHandle = [FURenderer itemWithContentsOfFile:path];
+    
+    
+    // 绑定到 controller 上
+    *handle = tmpHandle;
+    
+    if (items[FUItemTypeController]) {
+        [FURenderer bindItems:items[FUItemTypeController] items: handle itemsCount:1] ;
+    }
+    dispatch_semaphore_signal(signal);
+    
 }
 
 /// 获取当前动画句柄
 -(int)getCurrentAnimationHandle{
-	return items[FUItemTypeAnimation];
+    return items[FUItemTypeAnimation];
 }
 /// 获取当前动画播放进度
 /// 获取某个动画的播放进度
@@ -194,39 +198,39 @@
 //
 // @param anim_id 当前动画的句柄
 -(float)getAnimateProgress{
-	int anim_id = [self getCurrentAnimationHandle];
-	if (anim_id > 0) {
-		
-		NSString * paramDicStr = [NSString stringWithFormat:@"{\"name\":\"get_animation_progress\",\"anim_id\":%d}",anim_id];
-		return  fuItemGetParamd(items[FUItemTypeController],paramDicStr.UTF8String);
-	}else{
-		return 0;
-	}
+    int anim_id = [self getCurrentAnimationHandle];
+    if (anim_id > 0) {
+        
+        NSString * paramDicStr = [NSString stringWithFormat:@"{\"name\":\"get_animation_progress\",\"anim_id\":%d}",anim_id];
+        return  fuItemGetParamd(items[FUItemTypeController],paramDicStr.UTF8String);
+    }else{
+        return 0;
+    }
 }
 
 // 销毁某个道具
 - (void)destroyItemWithType:(FUItemType)itemType {
-	
-	if (items[itemType] != 0) {
-		
-		// 解绑
-		if (items[FUItemTypeController] && itemType > 0) {
-			[FURenderer unBindItems:items[FUItemTypeController] items:&items[itemType] itemsCount:1];
-		}
-		// 销毁
-		[FURenderer destroyItem:items[itemType]];
-		items[itemType] = 0;
-	}
+    
+    if (items[itemType] != 0) {
+        
+        // 解绑
+        if (items[FUItemTypeController] && itemType > 0) {
+            [FURenderer unBindItems:items[FUItemTypeController] items:&items[itemType] itemsCount:1];
+        }
+        // 销毁
+        [FURenderer destroyItem:items[itemType]];
+        items[itemType] = 0;
+    }
 }
 
 /// 获取 tmpItems 第一个空闲的位置
 -(int)getTmpItemsNullIndex{
-	for (int i = 0; i < tmpItemsCount; i++) {
-		if (tmpItems[i] == 0) {
-			return i;
-		}
-	}
-	return tmpItemsCount - 1;
+    for (int i = 0; i < tmpItemsCount; i++) {
+        if (tmpItems[i] == 0) {
+            return i;
+        }
+    }
+    return tmpItemsCount - 1;
 }
 // 添加临时道具
 - (void)addTmpItemFilePath:(NSString *)path{
@@ -235,24 +239,24 @@
 }
 /// 销毁所有的临时句柄
 -(void)destoryAllTmpItems{
-	for (int i = 0; i < tmpItemsCount; i++) {
-	    if (tmpItems[i] > 0) {
-
-		// 解绑
-		[FURenderer unBindItems:items[FUItemTypeController] items:&tmpItems[i] itemsCount:1];
-		// 销毁
-		[FURenderer destroyItem:tmpItems[i]];
-		tmpItems[i] = 0;
-		}
-	}
+    for (int i = 0; i < tmpItemsCount; i++) {
+        if (tmpItems[i] > 0) {
+            
+            // 解绑
+            [FURenderer unBindItems:items[FUItemTypeController] items:&tmpItems[i] itemsCount:1];
+            // 销毁
+            [FURenderer destroyItem:tmpItems[i]];
+            tmpItems[i] = 0;
+        }
+    }
 }
 // 销毁某个道具
 - (void)destroyItemAnimationItemType{
-	// 解绑
-	[FURenderer unBindItems:items[FUItemTypeController] items:&items[FUItemTypeAnimation] itemsCount:1];
-	// 销毁
-	[FURenderer destroyItem:items[FUItemTypeAnimation]];
-	items[FUItemTypeAnimation] = 0;
+    // 解绑
+    [FURenderer unBindItems:items[FUItemTypeController] items:&items[FUItemTypeAnimation] itemsCount:1];
+    // 销毁
+    [FURenderer destroyItem:items[FUItemTypeAnimation]];
+    items[FUItemTypeAnimation] = 0;
 }
 
 
@@ -265,14 +269,14 @@
  进入面部追踪模式
  */
 - (void)enterTrackFaceMode {
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"enter_track_rotation_mode" value:@(1)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"enter_track_rotation_mode" value:@(1)];
 }
 
 /**
  退出面部追踪模式
  */
 - (void)quitTrackFaceMode {
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"quit_track_rotation_mode" value:@(1)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"quit_track_rotation_mode" value:@(1)];
 }
 #pragma mark --- 以下身体追踪模式
 
@@ -280,91 +284,91 @@
  进入身体追踪模式
  */
 - (void)enterTrackBodyMode {
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"enter_human_pose_track_mode" value:@(1)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"enter_human_pose_track_mode" value:@(1)];
 }
 
 /**
  退出身体追踪模式
  */
 - (void)quitTrackBodyMode {
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"quit_human_pose_track_mode" value:@(1)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"quit_human_pose_track_mode" value:@(1)];
 }
 /**
  进入身体跟随模式
  */
 - (void)enterFollowBodyMode {
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"human_3d_track_is_follow" value:@(1)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"human_3d_track_is_follow" value:@(1)];
 }
 
 /**
  退出身体跟随模式
  */
 - (void)quitFollowBodyMode {
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"human_3d_track_is_follow" value:@(0)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"human_3d_track_is_follow" value:@(0)];
 }
 /**
  进入DDE追踪模式
  */
 - (void)enterDDEMode {
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"open_dde" value:@(1)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"open_dde" value:@(1)];
 }
 
 /**
  退出DDE追踪模式
  */
 - (void)quitDDEMode {
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"close_dde" value:@(1)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"close_dde" value:@(1)];
 }
 /**
  去掉脖子
  */
 - (void)removeNeck {
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"hide_neck" value:@(1)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"hide_neck" value:@(1)];
 }
 /**
  重新加上脖子
  */
 - (void)reAddNeck {
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"hide_neck" value:@(0)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"hide_neck" value:@(0)];
 }
 
 /**
  打开Blendshape 混合
  */
 - (void)enableBlendshape {
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"enable_expression_blend" value:@(1)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"enable_expression_blend" value:@(1)];
 }
 /**
  关闭Blendshape 混合
  */
 - (void)disableBlendshape {
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"enable_expression_blend" value:@(0)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"enable_expression_blend" value:@(0)];
 }
 /**
  设置用户输入的bs系数数组
  */
 - (void)setBlend_expression:(double*)blend_expression{
-	[FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"blend_expression" value:blend_expression length:57];
+    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"blend_expression" value:blend_expression length:57];
 }
 /**
  设置blend_expression的权重
  */
 - (void)setExpression_wieght0:(double*)expression_wieght0{
-	[FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"expression_weight0" value:expression_wieght0 length:57];
-	
+    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"expression_weight0" value:expression_wieght0 length:57];
+    
 }
 /**
  设置blend_expression的权重
  */
 - (void)setExpression_wieght1:(double*)expression_wieght1{
-	[FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"expression_weight1" value:expression_wieght1 length:57];
-	
+    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"expression_weight1" value:expression_wieght1 length:57];
+    
 }
 /// 向nama声明当前avatar时第几个avatar，在多个avatar同时存在时使用
 /// @param index 声明当前avatar序号
 -(void)setCurrentAvatarIndex:(int) index{
-	self.currentInstanceId = index;
-	fuItemSetParamd([FUManager shareInstance].defalutQController , "current_instance_id", index);
+    self.currentInstanceId = index;
+    fuItemSetParamd([FUManager shareInstance].defalutQController , "current_instance_id", index);
 }
 #pragma mark ---- AR 滤镜模式
 
@@ -377,20 +381,27 @@
  */
 - (int)loadAvatarWithARMode
 {
-	// load controller
-	if (items[FUItemTypeController] == 0) {
-		items[FUItemTypeController] = [FUManager shareInstance].defalutQController;
-	}
-
-	// 主要是设置参数，只要设置一次就好
-	[self enterARMode];
-	// load Head
-	NSString *headPath = [self.filePath stringByAppendingPathComponent:FU_HEAD_BUNDLE];
-	[self loadItemWithtype:FUItemTypeHead filePath:headPath];
-	
-    // load hair
-    NSString *hairPath = [self.filePath stringByAppendingPathComponent:self.hair.name];
-    [self bindItemWithType:FUItemTypeHair filePath:hairPath];
+    // load controller
+    if (items[FUItemTypeController] == 0) {
+        items[FUItemTypeController] = [FUManager shareInstance].defalutQController;
+    }
+    
+    // 主要是设置参数，只要设置一次就好
+    [self enterARMode];
+    // load Head
+    NSString *headPath = [self.filePath stringByAppendingPathComponent:FU_HEAD_BUNDLE];
+    [self loadItemWithtype:FUItemTypeHead filePath:headPath];
+    
+    if (self.hairType == FUAvataHairTypeHair)
+    {
+        // load hair
+        NSString *hairPath = [self.filePath stringByAppendingPathComponent:self.hair.name];
+        [self bindItemWithType:FUItemTypeHair filePath:hairPath];
+    }
+    else
+    {
+        [self bindHairHatWithItemModel:self.hairHat];
+    }
     
     [self bindGlassesWithItemModel:self.glasses];
     [self bindBeardWithItemModel:self.beard];
@@ -404,8 +415,21 @@
     [self bindLipGlossWithItemModel:self.lipGloss];
     
     [self loadAvatarColor];
+    
+    return items[FUItemTypeController] ;
+}
 
-	return items[FUItemTypeController] ;
+
+- (void)loadHalfAvatar {
+    fuItemSetParamd(items[FUItemTypeController],"human_3d_track_set_scene",0);
+}
+- (void)loadFullAvatar {
+    fuItemSetParamd(items[FUItemTypeController],"human_3d_track_set_scene",1);
+}
+/// 在半身驱动时，身体追踪时，设置avatar向上的偏移量
+/// @param y_offset 偏移量
+- (void)human3dSetYOffset:(float)y_offset {
+    fuItemSetParamd(items[FUItemTypeController],"human_3d_detector_set_y_offset",y_offset);
 }
 
 /**
@@ -414,9 +438,9 @@
  -- 去除 身体、衣服、动画，但是不会销毁这些道具
  */
 - (void)enterARMode {
-	// 2、传参
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@1];
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"enter_ar_mode" value:@(1)];
+    // 2、传参
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@1];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"enter_ar_mode" value:@(1)];
 }
 
 /**
@@ -425,7 +449,7 @@
  -- 销毁 ARFilter 道具
  */
 - (void)quitARMode {
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"quit_ar_mode" value:@(1)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"quit_ar_mode" value:@(1)];
 }
 
 
@@ -435,17 +459,17 @@
  进入捏脸模式
  */
 - (void)enterFacepupMode {
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"enter_facepup_mode" value:@(1)];
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"animState" value:@2.0];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"enter_facepup_mode" value:@(1)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"animState" value:@2.0];
 }
 
 /**
  退出捏脸模式
  */
 - (void)quitFacepupMode {
-	//[self loadStandbyAnimation];
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"quit_facepup_mode" value:@(1)];
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"animState" value:@1.0];
+    //[self loadStandbyAnimation];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"quit_facepup_mode" value:@(1)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"animState" value:@1.0];
 }
 
 /**
@@ -455,15 +479,15 @@
  @return        顶点坐标
  */
 - (CGPoint)getMeshPointOfIndex:(NSInteger)index {
-	
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"query_vert" value: @(index)];
-	
-	double x = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"query_vert_x"];
-	double y = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"query_vert_y"];
-	
-	CGSize size = [UIScreen mainScreen].currentMode.size;
-	
-	return CGPointMake((1.0 - x/size.width) * [UIScreen mainScreen].bounds.size.width,(1.0 - y/size.height) * [UIScreen mainScreen].bounds.size.height) ;
+    
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"query_vert" value: @(index)];
+    
+    double x = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"query_vert_x"];
+    double y = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"query_vert_y"];
+    
+    CGSize size = [UIScreen mainScreen].currentMode.size;
+    
+    return CGPointMake((1.0 - x/size.width) * [UIScreen mainScreen].bounds.size.width,(1.0 - y/size.height) * [UIScreen mainScreen].bounds.size.height) ;
 }
 
 
@@ -474,40 +498,40 @@
  @return        顶点坐标
  */
 - (CGPoint)getMeshPointOfIndex:(NSInteger)index PixelBufferW:(int)pixelBufferW PixelBufferH:(int)pixelBufferH {
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:@"query_vert" value: @(index)];
-	
-	double x = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"query_vert_x"];
-	double y = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"query_vert_y"];
-	//	NSLog(@"getMeshPointOfIndex-----x---------%f-------y------%f",x,y);
-	y = pixelBufferH - y;
-	CGSize size = [UIScreen mainScreen].bounds.size;
-	double realScreenWidth  = size.width;
-	double realScreenHeight = size.height;
-	double xR = realScreenWidth / pixelBufferW;
-	double yR = realScreenHeight / pixelBufferH;
-	
-	if (xR < yR){
-		x = x * xR;
-		y = y*xR;// - (pixelBufferH*xR - realScreenHeight)/2;
-	} else {
-		
-		//x = x*yR - (x*xR - size.width) / 2;
-		//x =  x * yR + (size.width / 2.0 - pixelBufferW * yR) / 2.0;
-		x = x* yR;// - (pixelBufferW * yR - realScreenWidth) / 2;
-		y = y * yR;
-	}
-	
-	
-	
-	//return.wCGPointMake((1.0 - x*xR/size.width) * [UIScreen mainScreen].bounds.size.width,(1.0 - y*yR/size.height) * [UIScreen mainScreen].bounds.size.height) ;
-	return CGPointMake( x , y);
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"query_vert" value: @(index)];
+    
+    double x = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"query_vert_x"];
+    double y = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"query_vert_y"];
+    //	NSLog(@"getMeshPointOfIndex-----x---------%f-------y------%f",x,y);
+    y = pixelBufferH - y;
+    CGSize size = [UIScreen mainScreen].bounds.size;
+    double realScreenWidth  = size.width;
+    double realScreenHeight = size.height;
+    double xR = realScreenWidth / pixelBufferW;
+    double yR = realScreenHeight / pixelBufferH;
+    
+    if (xR < yR){
+        x = x * xR;
+        y = y*xR;// - (pixelBufferH*xR - realScreenHeight)/2;
+    } else {
+        
+        //x = x*yR - (x*xR - size.width) / 2;
+        //x =  x * yR + (size.width / 2.0 - pixelBufferW * yR) / 2.0;
+        x = x* yR;// - (pixelBufferW * yR - realScreenWidth) / 2;
+        y = y * yR;
+    }
+    
+    
+    
+    //return.wCGPointMake((1.0 - x*xR/size.width) * [UIScreen mainScreen].bounds.size.width,(1.0 - y*yR/size.height) * [UIScreen mainScreen].bounds.size.height) ;
+    return CGPointMake( x , y);
 }
 
 /**
  获取当前身体追踪状态，0.no_body,1.half_body,2.half_more_body,3.full_body
  */
 - (int)getCurrentBodyTrackState{
-	return [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"human_status"];
+    return [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"human_status"];
 }
 /**
  设置捏脸参数
@@ -516,8 +540,8 @@
  @param level   参数
  */
 - (void)facepupModeSetParam:(NSString *)key level:(double)level {
-	key  = [NSString stringWithFormat:@"{\"name\":\"facepup\",\"param\":\"%@\"}", key];
-	[FURenderer itemSetParam:items[FUItemTypeController] withName:key value:@(level)];
+    key  = [NSString stringWithFormat:@"{\"name\":\"facepup\",\"param\":\"%@\"}", key];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:key value:@(level)];
 }
 /**
  获取捏脸参数
@@ -526,9 +550,9 @@
  @return       参数
  */
 - (double)getFacepupModeParamWith:(NSString *)key {
-	key  = [NSString stringWithFormat:@"{\"name\":\"facepup\",\"param\":\"%@\"}", key];
-	double level = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:key];
-	return level ;
+    key  = [NSString stringWithFormat:@"{\"name\":\"facepup\",\"param\":\"%@\"}", key];
+    double level = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:key];
+    return level ;
 }
 
 /**
@@ -548,20 +572,65 @@
  @param key     参数名
  */
 - (void)facepupModeSetColor:(FUP2AColor *)color key:(NSString *)key {
-	
-	double c[3] = {
-		color.r ,
-		color.g,
-		color.b
-	} ;
-	[FURenderer itemSetParamdv:items[FUItemTypeController] withName:key value:c length:3];
-	
-	if ([key isEqualToString:@"hair_color"])
+    
+    if ([key isEqualToString:@"lip_color"])
     {
-		[FURenderer itemSetParam:items[FUItemTypeController] withName:@"hair_color_intensity" value:@(color.intensity)];
-	}
+        double c[3] = {
+            color.r / 255.0 ,
+            color.g / 255.0,
+            color.b / 255.0
+        } ;
+        NSString * paramDicStr = [NSString stringWithFormat:@"{\"name\":\"global\",\"type\":\"face_detail\",\"param\":\"blend_color\",\"UUID\":%d}",items[FUItemTypeLipGloss]];
+        [FURenderer itemSetParamdv:items[FUItemTypeController] withName:paramDicStr value:c length:3];
+        return;
+    }
+    else if ([key isEqualToString:@"eyelash_color"])
+    {
+        double c[3] = {
+            color.r / 255.0 ,
+            color.g / 255.0,
+            color.b / 255.0
+        } ;
+        NSString * paramDicStr = [NSString stringWithFormat:@"{\"name\":\"global\",\"type\":\"face_detail\",\"param\":\"blend_color\",\"UUID\":%d}",items[FUItemTypeEyeLash]];
+        [FURenderer itemSetParamdv:items[FUItemTypeController] withName:paramDicStr value:c length:3];
+        return;
+    }
+    else if ([key isEqualToString:@"eyeshadow_color"])
+    {
+        double c[3] = {
+            color.r / 255.0 ,
+            color.g / 255.0,
+            color.b / 255.0
+        } ;
+        NSString * paramDicStr = [NSString stringWithFormat:@"{\"name\":\"global\",\"type\":\"face_detail\",\"param\":\"blend_color\",\"UUID\":%d}",items[FUItemTypeEyeShadow]];
+        [FURenderer itemSetParamdv:items[FUItemTypeController] withName:paramDicStr value:c length:3];
+        return;
+    }
+    
+    
+    double c[3] = {
+        color.r ,
+        color.g,
+        color.b
+    } ;
+    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:key value:c length:3];
+    
+    if ([key isEqualToString:@"hair_color"])
+    {
+        [FURenderer itemSetParam:items[FUItemTypeController] withName:@"hair_color_intensity" value:@(color.intensity)];
+    }
 }
 
+- (void)facepupModeSetEyebrowColor:(FUP2AColor *)color
+{
+    double c[3] = {
+        color.r / 255.0 ,
+        color.g / 255.0,
+        color.b / 255.0
+    } ;
+    NSString * paramDicStr = [NSString stringWithFormat:@"{\"name\":\"global\",\"type\":\"face_detail\",\"param\":\"blend_color\",\"UUID\":%d}",items[FUItemTypeEyeBrow]];
+    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:paramDicStr value:c length:3];
+}
 
 
 
@@ -573,8 +642,8 @@
  @return 动画总帧数
  */
 - (int)getAnimationFrameCount {
-	int num = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"frameNum"];
-	return num ;
+    int num = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"frameNum"];
+    return num ;
 }
 
 /**
@@ -583,8 +652,8 @@
  @return    当前动画播放的位置
  */
 - (int)getCurrentAnimationFrameIndex {
-	int num = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"animFrameId"];
-	return num ;
+    int num = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"animFrameId"];
+    return num ;
 }
 
 
@@ -592,113 +661,121 @@
  重新开始播放动画
  */
 - (void)restartAnimation {
-	[self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后播放动画。
-	[self stopAnimation];
-	fuItemSetParamd(items[FUItemTypeController], "play_animation", [self getCurrentAnimationHandle]);
+    [self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后播放动画。
+    fuItemSetParamd(items[FUItemTypeController],"stop_camera_animation",[self getCurrentAnimationHandle]);
+    [self stopAnimation];
+    fuItemSetParamd(items[FUItemTypeController], "play_animation", [self getCurrentAnimationHandle]);
+    fuItemSetParamd(items[FUItemTypeController],"start_camera_animation",[self getCurrentAnimationHandle]);
 }
 /**
  播放动画
  */
 - (void)startAnimation {
-	[self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后播放动画。
-	
-	fuItemSetParamd(items[FUItemTypeController], "start_animation", [self getCurrentAnimationHandle]);
+    [self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后播放动画。
+    
+    fuItemSetParamd(items[FUItemTypeController], "start_animation", [self getCurrentAnimationHandle]);
 }
 /**
  播放一次动画
  */
 - (void)playOnceAnimation {
-	[self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后播放动画。
-	
-	fuItemSetParamd(items[FUItemTypeController], "play_animation_once", [self getCurrentAnimationHandle]);
+    [self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后播放动画。
+    
+    fuItemSetParamd(items[FUItemTypeController], "play_animation_once", [self getCurrentAnimationHandle]);
 }
 /**
  暂停动画
  */
 - (void)pauseAnimation {
-	[self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后暂停动画。
-	//结束播放动画
-	fuItemSetParamd(items[FUItemTypeController], "pause_animation", [self getCurrentAnimationHandle]);
+    [self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后暂停动画。
+    //结束播放动画
+    fuItemSetParamd(items[FUItemTypeController], "pause_animation", [self getCurrentAnimationHandle]);
 }
 /**
  结束动画
  */
 - (void)stopAnimation {
-	[self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后结束动画。
-	//结束播放动画
-	fuItemSetParamd(items[FUItemTypeController], "stop_animation",[self getCurrentAnimationHandle]);
+    [self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后结束动画。
+    //结束播放动画
+    fuItemSetParamd(items[FUItemTypeController], "stop_animation",[self getCurrentAnimationHandle]);
 }
 
 /**
  启用相机动画
  */
 - (void)enableCameraAnimation {
-	[self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后播放动画。
-	
-	fuItemSetParamd(items[FUItemTypeController], "enable_camera_animation",1);
+    [self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后播放动画。
+    
+    fuItemSetParamd(items[FUItemTypeController], "start_camera_animation",1);
 }
 /**
  停止相机动画
  */
 - (void)stopCameraAnimation {
-	[self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后播放动画。
-	
-	fuItemSetParamd(items[FUItemTypeController], "stop_camera_animation",1);
+    [self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后播放动画。
+    
+    fuItemSetParamd(items[FUItemTypeController], "stop_camera_animation",1);
 }
 /**
  循环相机动画
  */
 - (void)loopCameraAnimation {
-	[self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后播放动画。
-	
-	fuItemSetParamd(items[FUItemTypeController], "camera_animation_loop",1);
+    [self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后播放动画。
+    fuItemSetParamd(items[FUItemTypeController], "camera_animation_loop",1);
+}
+/**
+ 停止循环相机动画
+ */
+- (void)stopLoopCameraAnimation {
+    [self setCurrentAvatarIndex:self.currentInstanceId];   // 设置为当前操作的avatar，然后播放动画。
+    fuItemSetParamd(items[FUItemTypeController], "camera_animation_loop",0);
 }
 
 -(NSString *)description
 {
-	unsigned int outCount, i;
-	objc_property_t *properties = class_copyPropertyList([self class], &outCount);
-	NSMutableString * descriptionString = [NSMutableString string];
-	for(i = 0; i < outCount; i++)
+    unsigned int outCount, i;
+    objc_property_t *properties = class_copyPropertyList([self class], &outCount);
+    NSMutableString * descriptionString = [NSMutableString string];
+    for(i = 0; i < outCount; i++)
     {
-		objc_property_t property = properties[i];
-		const char *propName = property_getName(property);
-		if(propName)
+        objc_property_t property = properties[i];
+        const char *propName = property_getName(property);
+        if(propName)
         {
-			NSString *propertyName = [NSString stringWithCString:propName
-														encoding:[NSString defaultCStringEncoding]];
-			id value = [self valueForKey:propertyName];
-			[descriptionString appendFormat:@"%@", [NSString stringWithFormat:@"%@:%@\n",propertyName,value]];
-		}
-	}
-	free(properties);
-	return descriptionString;
+            NSString *propertyName = [NSString stringWithCString:propName
+                                                        encoding:[NSString defaultCStringEncoding]];
+            id value = [self valueForKey:propertyName];
+            [descriptionString appendFormat:@"%@", [NSString stringWithFormat:@"%@:%@\n",propertyName,value]];
+        }
+    }
+    free(properties);
+    return descriptionString;
 }
 #pragma mark ----- 获取配置
 
 -(id)copyWithZone:(NSZone *)zone
 {
-	FUAvatar * copyAvatar = [[FUAvatar alloc]init];
-	unsigned int outCount, i;
-	objc_property_t *properties = class_copyPropertyList([self class], &outCount);
-	for(i = 0; i < outCount; i++)
+    FUAvatar * copyAvatar = [[FUAvatar alloc]init];
+    unsigned int outCount, i;
+    objc_property_t *properties = class_copyPropertyList([self class], &outCount);
+    for(i = 0; i < outCount; i++)
     {
-		objc_property_t property = properties[i];
-		const char *propName = property_getName(property);
-		if(propName)
+        objc_property_t property = properties[i];
+        const char *propName = property_getName(property);
+        if(propName)
         {
-			NSString *propertyName = [NSString stringWithCString:propName encoding:[NSString defaultCStringEncoding]];
+            NSString *propertyName = [NSString stringWithCString:propName encoding:[NSString defaultCStringEncoding]];
             
             id value = [self valueForKey:propertyName];
-			
-			[copyAvatar setValue:value forKey:propertyName];
-		}
-	}
-	// 复制的对象  重新设置一些属性
-//	copyAvatar.defaultModel = NO;
-//	copyAvatar.imagePath = nil;
-	free(properties);
-	return copyAvatar;
+            
+            [copyAvatar setValue:value forKey:propertyName];
+        }
+    }
+    // 复制的对象  重新设置一些属性
+    //	copyAvatar.defaultModel = NO;
+    //	copyAvatar.imagePath = nil;
+    free(properties);
+    return copyAvatar;
 }
 
 
@@ -733,14 +810,11 @@
 - (void)configFacepupParamWithDict:(NSDictionary *)dict
 {
     [dict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop)
-    {
+     {
         key  = [NSString stringWithFormat:@"{\"name\":\"facepup\",\"param\":\"%@\"}", key];
-         [FURenderer itemSetParam:items[FUItemTypeController] withName:key value:@([obj doubleValue])];
+        [FURenderer itemSetParam:items[FUItemTypeController] withName:key value:@([obj doubleValue])];
     }];
 }
-
-
-
 
 /**
  加载ani_mg动画
@@ -757,6 +831,30 @@
 - (void)removeAnimation
 {
     [self reloadAnimationWithPath:nil];
+}
+
+
+
+/**
+ 换装后回到首页动画
+ */
+- (void)loadAfterEditAnimation
+{
+    if (!self.isQType) return;
+    
+    NSString *animationPath = [[NSBundle mainBundle] pathForResource:@"ani_ok_mid.bundle" ofType:nil];
+    
+    [self reloadAnimationWithPath:animationPath];
+    [self playOnceAnimation];
+}
+
+//换装界面动画
+- (void)loadChangeItemAnimation
+{
+    if (!self.isQType) return;
+    
+    NSString *animationPath = [[NSBundle mainBundle] pathForResource:@"ani_change_01.bundle" ofType:nil];
+    [self reloadAnimationWithPath:animationPath];
 }
 
 /**
@@ -823,7 +921,6 @@
 }
 
 #pragma mark --- 以下缩放位移
-
 /**
  设置缩放参数
  
@@ -884,8 +981,6 @@
  */
 - (void)resetScaleToShapeFaceFront
 {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(-15)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(-12)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(3)];
 }
@@ -895,8 +990,6 @@
  */
 - (void)resetScaleToShapeFaceSide
 {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(-15)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(-12)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0.125)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(3)];
 }
@@ -914,34 +1007,32 @@
 
 
 /**
- 缩放至半身
- */
-- (void)resetScaleToHalfBody
-{
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(-450)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(2)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
-}
-
-/**
  缩放至小比例的全身
  */
 - (void)resetScaleToSmallBody
 {
-    
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(-507)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(60)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
 }
 
+
+
+- (void)resetPosition
+{
+    double position[3] = {0,0,0};
+    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"target_position" value:position length:3];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(0)];
+}
+
 /// 缩小至全身并在屏幕左边显示
 - (void)resetScaleSmallBodyToLeft
 {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(-1000)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(60)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"translation_x" value:@(-1)];
+    double position[3] = {-100,0,-1000};
+    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"target_position" value:position length:3];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
 }
@@ -949,9 +1040,9 @@
 /// 缩小至全身并在屏幕左边显示
 - (void)resetScaleSmallBodyToRight
 {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(-1000)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(60)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"translation_x" value:@(1)];
+    double position[3] = {100,0,-1000};
+    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"target_position" value:position length:3];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0)];
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
 }
@@ -996,16 +1087,6 @@
     [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
 }
 
-/**
- 缩放至小比例的身体追踪
- */
-- (void)resetScaleToTrackBody
-{
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_scale" value:@(-800)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_trans" value:@(80)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"target_angle" value:@(0)];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
-}
 
 /**
  将Avatar的位置设置为初始状态
@@ -1014,13 +1095,117 @@
 {
     double position[3] = {0,0,0};
     [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"target_position" value:position length:3];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(0.1)];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(1)];
 }
 
 
+/**
+ 使用相机bundle缩放至脸部特写
+ */
+- (void)resetScaleToFace_UseCam
+{
+    [self resetPosition];
+    
+    // 获取当前相机动画bundle路径
+    NSString *camPath = [[NSBundle mainBundle].resourcePath stringByAppendingFormat:@"/Resource/page_cam/cam_texie.bundle"];
+    // 将相机动画绑定到controller上
+    [[FUManager shareInstance] reloadCamItemWithPath:camPath];
+}
+
+/**
+ 使用相机bundle缩放至小比例的全身
+ */
+- (void)resetScaleToSmallBody_UseCam
+{
+    [self resetPosition];
+    
+    // 获取当前相机动画bundle路径
+    NSString *camPath = [[NSBundle mainBundle].resourcePath stringByAppendingFormat:@"/Resource/page_cam/cam_35mm_full_80mm_3.bundle"];
+    // 将相机动画绑定到controller上
+    [[FUManager shareInstance] reloadCamItemWithPath:camPath];
+}
+
+/**
+ 使用相机bundle缩放至全身
+ */
+- (void)resetScaleToBody_UseCam
+{
+    [self resetPosition];
+    
+    // 获取当前相机动画bundle路径
+    NSString *camPath = [[NSBundle mainBundle].resourcePath stringByAppendingFormat:@"/Resource/page_cam/cam_35mm_full_80mm_jinjing.bundle"];
+    // 将相机动画绑定到controller上
+    [[FUManager shareInstance] reloadCamItemWithPath:camPath];
+}
+
+/**
+ 替换服饰时使用的cam
+ */
+- (void)resetScaleChange_UseCam
+{
+    [self resetPosition];
+    
+    // 获取当前相机动画bundle路径
+    NSString *camPath = [[NSBundle mainBundle].resourcePath stringByAppendingFormat:@"/Resource/page_cam/change_cam.bundle"];
+    // 将相机动画绑定到controller上
+    [[FUManager shareInstance] reloadCamItemWithPath:camPath];
+}
 
 
+/**
+ 缩放至全身追踪,驱动页未收起模型选择栏等工具栏的情况
 
+ */
+- (void)resetScaleToTrackBodyWithToolBar
+{
+    double position[3] = {0,75,-700};
+    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"target_position" value:position length:3];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
+}
+
+/**
+ 缩放至全身追踪,驱动页收起模型选择栏等工具栏的情况
+
+ */
+- (void)resetScaleToTrackBodyWithoutToolBar
+{
+    double position[3] = {0,55,-520};
+    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"target_position" value:position length:3];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
+}
+
+
+/**
+缩放至全身追踪
+使用场景：
+1.导入视频后生成的画面
+*/
+- (void)resetScaleToImportTrackBody
+{
+    double position[3] = {0,75,-700};
+    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"target_position" value:position length:3];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
+}
+
+/**
+ 缩放至半身
+ */
+- (void)resetScaleToHalfBodyWithToolBar
+{
+    double position[3] = {0,15,-300};
+    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"target_position" value:position length:3];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
+}
+
+/**
+ 缩放至半身
+ */
+- (void)resetScaleToHalfBodyInput
+{
+    double position[3] = {0,0,-700};
+    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"target_position" value:position length:3];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
+}
 
 
 /// 根据传入的形象模型重设形象的信息
@@ -1055,6 +1240,8 @@
     return bodyFilepath;
 }
 
+
+
 #pragma mark ------ 形象加载 ------
 /**
  加载 avatar 模型
@@ -1065,20 +1252,30 @@
  
  @return 返回 controller 所在句柄
  */
-- (int)loadAvatarToController {
-    
+- (int)loadAvatarToController
+{
     // load controller
     if (items[FUItemTypeController] == 0)
     {
         items[FUItemTypeController] = [FUManager shareInstance].defalutQController;
     }
     
+    [FUManager shareInstance].isStopRefreshBuffer = YES;
     // load Head
     NSString *headPath = [self.filePath stringByAppendingPathComponent:FU_HEAD_BUNDLE];
     [self bindItemWithType:FUItemTypeHead filePath:headPath];
-    
 
-    [FUManager shareInstance].isBindCloths = YES;
+    if (self.skinColorProgress == -1)
+    {
+        NSString * paramDicStr = [NSString stringWithFormat:@"skin_color_index"];
+        int index = fuItemGetParamd(items[FUItemTypeController],paramDicStr.UTF8String);
+        self.skinColorProgress = index/10.0;
+    }
+    
+    
+    [FUManager shareInstance].isStopRefreshBuffer = NO;
+    
+    [FUManager shareInstance].isStopRefreshBuffer = YES;
     // load Body
     NSString *bodyPath;
     if (self.clothType == FUAvataClothTypeSuit)
@@ -1091,10 +1288,18 @@
     }
     [self bindItemWithType:FUItemTypeBody filePath:bodyPath];
     
-    // load hair
-    NSString *hairPath = [self.filePath stringByAppendingPathComponent:self.hair.name];
-    [self bindItemWithType:FUItemTypeHair filePath:hairPath];
-        
+    if (self.hairType == FUAvataHairTypeHair)
+    {
+        // load hair
+        NSString *hairPath = [self.filePath stringByAppendingPathComponent:self.hair.name];
+        [self destroyItemWithType:FUItemTypeHairHat];
+        [self bindItemWithType:FUItemTypeHair filePath:hairPath];
+    }
+    else
+    {
+        [self bindHairHatWithItemModel:self.hairHat];
+    }
+    
     
     if (self.isQType)
     {
@@ -1109,8 +1314,8 @@
             [self bindLowerWithItemModel:self.lower];
         }
     }
-    [FUManager shareInstance].isBindCloths = NO;
     
+    [FUManager shareInstance].isStopRefreshBuffer = NO;
     
     [self bindShoesWithItemModel:self.shoes];
     [self bindDecorationWithItemModel:self.decorations];
@@ -1125,6 +1330,9 @@
     [self bindFaceMakeupWithItemModel:self.faceMakeup];
     [self bindLipGlossWithItemModel:self.lipGloss];
     [self bindGlassesWithItemModel:self.glasses];
+    
+    
+
     
     [self loadAvatarColor];
     return items[FUItemTypeController] ;
@@ -1147,17 +1355,26 @@
         
         if (i == FUFigureColorTypeSkinColor)
         {
-           color = [[FUManager shareInstance]getSkinColorWithProgress:self.skinColorProgress];
+            color = [[FUManager shareInstance]getSkinColorWithProgress:self.skinColorProgress];
         }
         
         [self facepupModeSetColor:color key:key];
     }
 }
 
+- (void)loadAvatarSkinColor
+{
+    NSString *key = @"skinColorIndex";
+    NSInteger index = [[self valueForKey:key] integerValue] -1;
+    FUP2AColor *color = [[FUManager shareInstance].colorDict[key] objectAtIndex:index];
+    color = [[FUManager shareInstance]getSkinColorWithProgress:self.skinColorProgress];
+    [self facepupModeSetColor:color key:@"skin_color"];
+}
+
 #pragma mark ------ 绑定道具 ------
 - (void)bindClothWithItemModel:(FUItemModel *)model
 {
-    NSString *filepath = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+    NSString *filepath = [model getBundlePath];
     
     NSString *bodyFilepath = [self getBodyFilePathWithModel:model];
     
@@ -1179,19 +1396,21 @@
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     if (![[NSFileManager defaultManager] fileExistsAtPath:filepath])
     {
-    
+        
         [[NSNotificationCenter defaultCenter] postNotificationName:FUCreatingHairBundleNot object:nil userInfo:@{@"show":@(1)}];
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             [[FUManager shareInstance]createAndCopyHairBundlesWithAvatar:self withHairModel:model];
             [[NSNotificationCenter defaultCenter] postNotificationName:FUCreatingHairBundleNot object:nil userInfo:@{@"show":@(0)}];
             
+            [self destroyItemWithType:FUItemTypeHairHat];
             [self bindItemWithType:FUItemTypeHair filePath:filepath];
             dispatch_semaphore_signal(self->signal);
         });
-       
+        
     }
     else
     {
+        [self destroyItemWithType:FUItemTypeHairHat];
         [self bindItemWithType:FUItemTypeHair filePath:filepath];
         dispatch_semaphore_signal(signal);
     }
@@ -1201,7 +1420,7 @@
 /// @param model 上衣数据
 - (void)bindUpperWithItemModel:(FUItemModel *)model
 {
-    NSString *filepath = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+    NSString *filepath = [model getBundlePath];
     
     NSString *bodyFilepath = [self getBodyFilePathWithModel:model];
     
@@ -1217,7 +1436,7 @@
 /// @param model 下衣数据
 - (void)bindLowerWithItemModel:(FUItemModel *)model
 {
-    NSString *filepath = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+    NSString *filepath = [model getBundlePath];
     
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     
@@ -1231,7 +1450,7 @@
 /// @param model 鞋子数据
 - (void)bindShoesWithItemModel:(FUItemModel *)model
 {
-    NSString *filepath = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+    NSString *filepath = [model getBundlePath];
     
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     [self bindItemWithType:FUItemTypeShoes filePath:filepath];
@@ -1242,7 +1461,7 @@
 /// @param model 帽子数据
 - (void)bindHatWithItemModel:(FUItemModel *)model
 {
-    NSString *filepath = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+    NSString *filepath = [model getBundlePath];
     
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     [self bindItemWithType:FUItemTypeHat filePath:filepath];
@@ -1253,10 +1472,11 @@
 /// @param model 睫毛数据
 - (void)bindEyeLashWithItemModel:(FUItemModel *)model
 {
-    NSString *filepath = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+    NSString *filepath = [model getBundlePath];
     
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     [self bindItemWithType:FUItemTypeEyeLash filePath:filepath];
+    [self facepupModeSetColor:[[FUManager shareInstance] getSelectedColorWithType:FUFigureColorTypeEyelashColor] key:@"eyelash_color"];
     dispatch_semaphore_signal(signal);
 }
 
@@ -1264,10 +1484,11 @@
 /// @param model 眉毛数据
 - (void)bindEyebrowWithItemModel:(FUItemModel *)model
 {
-    NSString *filepath = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+    NSString *filepath = [model getBundlePath];
     
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     [self bindItemWithType:FUItemTypeEyeBrow filePath:filepath];
+    [self facepupModeSetEyebrowColor:[[FUManager shareInstance] getSelectedColorWithType:FUFigureColorTypeEyebrowColor]];
     dispatch_semaphore_signal(signal);
 }
 
@@ -1275,7 +1496,7 @@
 /// @param model 胡子数据
 - (void)bindBeardWithItemModel:(FUItemModel *)model
 {
-    NSString *filepath = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+    NSString *filepath = [model getBundlePath];
     
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     [self bindItemWithType:FUItemTypeBeard filePath:filepath];
@@ -1286,7 +1507,7 @@
 /// @param model 眼镜数据
 - (void)bindGlassesWithItemModel:(FUItemModel *)model
 {
-    NSString *filepath = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+    NSString *filepath = [model getBundlePath];
     
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     [self bindItemWithType:FUItemTypeGlasses filePath:filepath];
@@ -1297,10 +1518,11 @@
 /// @param model 眼影数据
 - (void)bindEyeShadowWithItemModel:(FUItemModel *)model
 {
-    NSString *filepath = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+    NSString *filepath = [model getBundlePath];
     
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     [self bindItemWithType:FUItemTypeEyeShadow filePath:filepath];
+    [self facepupModeSetColor:[[FUManager shareInstance] getSelectedColorWithType:FUFigureColorTypeEyeshadowColor] key:@"eyeshadow_color"];
     dispatch_semaphore_signal(signal);
 }
 
@@ -1308,7 +1530,7 @@
 /// @param model 眼线数据
 - (void)bindEyeLinerWithItemModel:(FUItemModel *)model
 {
-    NSString *filepath = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+    NSString *filepath = [model getBundlePath];
     
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     [self bindItemWithType:FUItemTypeEyeLiner filePath:filepath];
@@ -1319,7 +1541,7 @@
 /// @param model 美瞳数据
 - (void)bindPupilWithItemModel:(FUItemModel *)model
 {
-    NSString *filepath = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+    NSString *filepath = [model getBundlePath];
     
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     [self bindItemWithType:FUItemTypePupil filePath:filepath];
@@ -1330,7 +1552,7 @@
 /// @param model 脸妆数据
 - (void)bindFaceMakeupWithItemModel:(FUItemModel *)model
 {
-    NSString *filepath = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+    NSString *filepath = [model getBundlePath];
     
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     [self bindItemWithType:FUItemTypeMakeFaceup filePath:filepath];
@@ -1341,10 +1563,11 @@
 /// @param model 唇妆数据
 - (void)bindLipGlossWithItemModel:(FUItemModel *)model
 {
-    NSString *filepath = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+    NSString *filepath = [model getBundlePath];
     
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     [self bindItemWithType:FUItemTypeLipGloss filePath:filepath];
+    [self facepupModeSetColor:[[FUManager shareInstance] getSelectedColorWithType:FUFigureColorTypeLipsColor] key:@"lip_color"];
     dispatch_semaphore_signal(signal);
 }
 
@@ -1352,12 +1575,36 @@
 /// @param model 饰品数据
 - (void)bindDecorationWithItemModel:(FUItemModel *)model
 {
-    NSString *filepath = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+    NSString *filepath = [model getBundlePath];
     
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     [self bindItemWithType:FUItemTypeDecorations filePath:filepath];
     dispatch_semaphore_signal(signal);
 }
+
+/// 加载发帽
+/// @param model 发帽数据
+- (void)bindHairHatWithItemModel:(FUItemModel *)model
+{
+    NSString *filepath = [model getBundlePath];
+    
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+    [self destroyItemWithType:FUItemTypeHair];
+    [self bindItemWithType:FUItemTypeHairHat filePath:filepath];
+    dispatch_semaphore_signal(signal);
+}
+
+/// 加载背景 FUItemModel
+/// @param model 背景数据
+- (void)bindBackgroundWithItemModel:(FUItemModel *)model
+{
+    NSString *filepath = [model getBundlePath];
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+    [self destroyItemWithType:FUItemTypeBackground];
+    [self bindItemWithType:FUItemTypeBackground filePath:filepath];
+    dispatch_semaphore_signal(signal);
+}
+
 
 
 #pragma mark ------ 绑定底层方法 ------

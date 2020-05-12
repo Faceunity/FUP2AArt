@@ -11,4 +11,6 @@
 @interface FUARFilterController : UIViewController
 @property (nonatomic, strong) FUARFilterView *filterView ;
 @property (nonatomic, assign) BOOL isShow;
+@property (nonatomic, strong) void (^ touchBlock)(void);
+-(void)hideOrShowFilterView;
 @end

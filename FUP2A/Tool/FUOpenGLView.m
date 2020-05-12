@@ -6,7 +6,7 @@
 //  Copyright © 2017年 刘洋. All rights reserved.
 //
 
-#import "FUOpenGLView.h"
+
 #import <CoreVideo/CoreVideo.h>
 #import <OpenGLES/ES2/gl.h>
 #import <OpenGLES/ES2/glext.h>
@@ -225,7 +225,7 @@ CGSize openGLBufferSize;
 		dispatch_sync(_contextQueue, ^{
 			[self destroyDisplayFramebuffer];
 			[self createDisplayFramebuffer];
-			[self updateVertices];
+			[self updateMAXVertices];
 		});
 	}
 }
@@ -406,7 +406,207 @@ static const SceneVertex vertices[] = {
 	[self displayPixelBuffer:pixelBuffer withLandmarks:NULL count:0 Mirr:NO];
 }
 
+// 画横屏   18 : 16
+- (void)display18R16PixelBuffer:(CVPixelBufferRef)pixelBuffer withLandmarks:(float *)landmarks count:(int)count Mirr:(BOOL) mirr
+{
+    if (pixelBuffer == NULL) return;
+    CVPixelBufferRetain(pixelBuffer);
+    dispatch_sync(_contextQueue, ^{
+        
+        self->frameWidth = (int)CVPixelBufferGetWidth(pixelBuffer);
+        self->frameHeight = (int)CVPixelBufferGetHeight(pixelBuffer);
+        
+        if ([EAGLContext currentContext] != self.glContext) {
+            if (![EAGLContext setCurrentContext:self.glContext]) {
+                NSLog(@"fail to setCurrentContext");
+            }
+        }
+        
+        [self setDisplayFramebuffer];
+        
+        OSType type = CVPixelBufferGetPixelFormatType(pixelBuffer);
+        if (type == kCVPixelFormatType_32BGRA)
+        {
+            [self prepareToDraw18R16BGRAPixelBuffer:pixelBuffer Mirr:mirr];
+            
+        }else{
+            [self prepareToDrawYUVPixelBuffer:pixelBuffer];
+        }
+        
+        CVPixelBufferRelease(pixelBuffer);
+        
+        if (landmarks) {
+            [self prepareToDrawLandmarks:landmarks count:count];
+        }
+        
+        [self presentFramebuffer];
+    });
+    
+}
+
+// 更新 18 ： 16 的顶点
+- (void)update18R16Vertices
+{
+    const float width   = frameHeight;
+    const float height  =   frameWidth;
+    
+    const float view_width = backingWidth;
+    const float view_height = view_width * 16 / 18.0;
+    // 以宽为主
+    const float h       = view_height / (float)backingHeight;
+    const float w       = 1;
+    
+    vertices[0] = - w;
+    vertices[1] = - h;
+    vertices[2] =   w;
+    vertices[3] = - h;
+    vertices[4] = - w;
+    vertices[5] =   h;
+    vertices[6] =   w;
+    vertices[7] =   h;
+}
+
+// 画横屏  18 : 16
+- (void)prepareToDraw18R16BGRAPixelBuffer:(CVPixelBufferRef)pixelBuffer Mirr:(BOOL)mirr
+{
+    if (!rgbaProgram) {
+        [self loadShadersRGBA];
+    }
+    
+    CVOpenGLESTextureRef rgbaTexture = NULL;
+    CVReturn err = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault, videoTextureCache, pixelBuffer, NULL, GL_TEXTURE_2D, GL_RGBA, frameWidth, frameHeight, GL_BGRA, GL_UNSIGNED_BYTE, 0, &rgbaTexture);
+    
+    if (!rgbaTexture || err) {
+        
+        NSLog(@"Camera CVOpenGLESTextureCacheCreateTextureFromImage failed (error: %d)", err);
+        return;
+    }
+    
+    glBindTexture(GL_TEXTURE_2D, CVOpenGLESTextureGetName(rgbaTexture));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+    glUseProgram(rgbaProgram);
+    
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, CVOpenGLESTextureGetName(rgbaTexture));
+    glUniform1i(displayInputTextureUniform, 4);
+    
+    [self update18R16Vertices];
+    
+    // 更新顶点数据
+    glVertexAttribPointer(furgbaPositionAttribute, 2, GL_FLOAT, 0, 0, vertices);
+    glEnableVertexAttribArray(furgbaPositionAttribute);
+    float w = frameWidth;
+    float h = w * 16 / 18.0;
+    float s = 1.0;
+    float t = (frameHeight - h) / frameHeight  / 2.0;
+    GLfloat quadTextureData[] =  {
+        0.0f,  1-t,
+        s,  1-t,
+        0.0f, t,
+        s,  t,
+    };
+    
+    if (mirr) {
+        quadTextureData[0] = s;
+        quadTextureData[1] = 1-t ;
+        quadTextureData[2] = 0.0 ;
+        quadTextureData[3] = 1-t ;
+        
+        quadTextureData[4] = s ;
+        quadTextureData[5] = t ;
+        quadTextureData[6] = 0.0 ;
+        quadTextureData[7] = t ;
+        
+        
+        
+    }
+    
+    glVertexAttribPointer(furgbaTextureCoordinateAttribute, 2, GL_FLOAT, 0, 0, quadTextureData);
+    glEnableVertexAttribArray(furgbaTextureCoordinateAttribute);
+    
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    
+    if (rgbaTexture) {
+        CFRelease(rgbaTexture);
+        rgbaTexture = NULL;
+    }
+}
+
+
+- (void)prepareToDrawLandmarks:(float *)landmarks count:(int)count {
+    if (!pointProgram) {
+        [self loadPointsShaders];
+    }
+    
+    glUseProgram(pointProgram);
+    
+    count = count/2;
+    
+    float sizeData[count];
+    
+    float colorData[count * 4];
+    
+    const float width   = frameWidth;
+    const float height  = frameHeight;
+    const float dH      = (float)backingHeight / height;
+    const float dW      = (float)backingWidth  / width;
+    const float dd      = MAX(dH, dW);
+    const float h       = (height * dd / (float)backingHeight);
+    const float w       = (width  * dd / (float)backingWidth );
+    
+    for (int i = 0; i < count; i++)
+    {
+        //点的大小
+        sizeData[i] = [UIScreen mainScreen].scale * 1.5;
+        
+        //点的颜色
+        colorData[4 * i] = 0.0;
+        colorData[4 * i + 1] = 1.0;
+        colorData[4 * i + 2] = 0.0;
+        colorData[4 * i + 3] = 1.0;
+        
+        //转化坐标
+        landmarks[2 * i] = (float)((2 * landmarks[2 * i] / frameWidth - 1))* +w;
+        landmarks[2 * i + 1] = (float)(1 - 2 * landmarks[2 * i + 1] / frameHeight)*h;
+    }
+    
+    glEnableVertexAttribArray(fuPointSize);
+    glVertexAttribPointer(fuPointSize, 1, GL_FLOAT, GL_FALSE, 0, sizeData);
+    
+    glEnableVertexAttribArray(GLKVertexAttribPosition);
+    glVertexAttribPointer(GLKVertexAttribPosition, 2, GL_FLOAT, GL_FALSE, 0, (GLfloat *)landmarks);
+    
+    glEnableVertexAttribArray(fuPointColor);
+    glVertexAttribPointer(fuPointColor, 4, GL_FLOAT, GL_FALSE, 0, colorData);
+    
+    glDrawArrays(GL_POINTS, 0, count);
+}
+
+
+/// 将buffer显示到屏幕上 默认buffer将会铺满整个屏幕
+/// @param pixelBuffer 输入源
+/// @param landmarks 脸部点位
+/// @param count 脸部点位数量
+/// @param mirr 是否镜像
 - (void)displayPixelBuffer:(CVPixelBufferRef)pixelBuffer withLandmarks:(float *)landmarks count:(int)count Mirr:(BOOL) mirr
+{
+	[self displayPixelBuffer:pixelBuffer withLandmarks:landmarks count:count bufferMirr:mirr landmarksMirr:mirr ShouldSpreadScreen:YES];
+}
+/// 将buffer显示到屏幕上
+/// @param pixelBuffer 输入源
+/// @param landmarks 脸部点位
+/// @param count 脸部点位数量
+/// @param spreadScreen 显示的texture是否铺满整个屏幕，YES为是，NO如果buffer不能刚好铺满屏幕，则会显示黑边
+/// @param bufferMirr 是否镜像buffer
+/// @param landmarksMirr 是否镜像脸部点位
+- (void)displayPixelBuffer:(CVPixelBufferRef)pixelBuffer withLandmarks:(float *)landmarks count:(int)count bufferMirr:(BOOL)bufferMirr landmarksMirr:(BOOL)landmarksMirr ShouldSpreadScreen:(BOOL)spreadScreen
 {
 	if (pixelBuffer == NULL) return;
 	CVPixelBufferRetain(pixelBuffer);
@@ -426,7 +626,7 @@ static const SceneVertex vertices[] = {
 		OSType type = CVPixelBufferGetPixelFormatType(pixelBuffer);
 		if (type == kCVPixelFormatType_32BGRA)
 		{
-			[self prepareToDrawBGRAPixelBuffer:pixelBuffer Mirr:mirr];
+			[self prepareToDrawBGRAPixelBuffer:pixelBuffer Mirr:bufferMirr ShouldSpreadScreen:spreadScreen];
 			
 		}else{
 			[self prepareToDrawYUVPixelBuffer:pixelBuffer];
@@ -435,7 +635,7 @@ static const SceneVertex vertices[] = {
 		CVPixelBufferRelease(pixelBuffer);
 		
 		if (landmarks) {
-			[self prepareToDrawLandmarks:landmarks count:count Mirr:mirr];
+			[self prepareToDrawLandmarks:landmarks count:count Mirr:landmarksMirr];
 		}
 		
 		[self presentFramebuffer];
@@ -480,43 +680,7 @@ static const SceneVertex vertices[] = {
 	
 }
 
-// 画竖屏的全屏，主要用于动画组
-- (void)displayFullPixelBuffer:(CVPixelBufferRef)pixelBuffer withLandmarks:(float *)landmarks count:(int)count Mirr:(BOOL) mirr
-{
-	if (pixelBuffer == NULL) return;
-	CVPixelBufferRetain(pixelBuffer);
-	dispatch_sync(_contextQueue, ^{
-		
-		self->frameWidth = (int)CVPixelBufferGetWidth(pixelBuffer);
-		self->frameHeight = (int)CVPixelBufferGetHeight(pixelBuffer);
-		
-		if ([EAGLContext currentContext] != self.glContext) {
-			if (![EAGLContext setCurrentContext:self.glContext]) {
-				NSLog(@"fail to setCurrentContext");
-			}
-		}
-		
-		[self setDisplayFramebuffer];
-		
-		OSType type = CVPixelBufferGetPixelFormatType(pixelBuffer);
-		if (type == kCVPixelFormatType_32BGRA)
-		{
-			[self prepareToDrawFullBGRAPixelBuffer:pixelBuffer Mirr:mirr];
-			
-		}else{
-			[self prepareToDrawYUVPixelBuffer:pixelBuffer];
-		}
-		
-		CVPixelBufferRelease(pixelBuffer);
-		
-		if (landmarks) {
-			[self prepareToDrawLandmarks:landmarks count:count Mirr:mirr];
-		}
-		
-		[self presentFramebuffer];
-	});
-	
-}
+
 
 
 - (void)convertMirrorPixelBuffer:(CVPixelBufferRef)pixelBuffer dstPixelBuffer:(CVPixelBufferRef*)dstPixelBuffer
@@ -544,7 +708,7 @@ static const SceneVertex vertices[] = {
 		OSType type = CVPixelBufferGetPixelFormatType(pixelBuffer);
 		if (type == kCVPixelFormatType_32BGRA)
 		{
-			[self prepareToDrawBGRAPixelBuffer:pixelBuffer Mirr:true];
+			[self prepareToDrawBGRAPixelBuffer:pixelBuffer Mirr:true ShouldSpreadScreen:YES];
 			
 		}else{
 			[self prepareToDrawYUVPixelBuffer:pixelBuffer];
@@ -605,7 +769,7 @@ CVOpenGLESTextureCacheRef videoTextureCache1 = NULL;
 		glBindTexture(GL_TEXTURE_2D, CVOpenGLESTextureGetName(rgbaTexture));
 		glUniform1i(displayInputTextureUniform, 4);
 		
-		[self updateVertices];
+		[self updateMAXVertices];
 		
 		// 更新顶点数据
 		glVertexAttribPointer(furgbaPositionAttribute, 2, GL_FLOAT, 0, 0, vertices);
@@ -730,7 +894,11 @@ CVOpenGLESTextureCacheRef videoTextureCache1 = NULL;
 	glDrawArrays(GL_POINTS, 0, count);
 }
 
-- (void)prepareToDrawBGRAPixelBuffer:(CVPixelBufferRef)pixelBuffer Mirr:(BOOL)mirr
+/// 将buffer转为texture，贴到view上
+/// @param pixelBuffer 输入源
+/// @param mirr 是否镜像
+/// @param spreadScreen 显示的texture是否铺满整个屏幕，YES为是，NO如果buffer不能刚好铺满屏幕，则会显示黑边
+- (void)prepareToDrawBGRAPixelBuffer:(CVPixelBufferRef)pixelBuffer Mirr:(BOOL)mirr ShouldSpreadScreen:(BOOL)spreadScreen
 {
 	if (!rgbaProgram) {
 		[self loadShadersRGBA];
@@ -759,8 +927,11 @@ CVOpenGLESTextureCacheRef videoTextureCache1 = NULL;
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, CVOpenGLESTextureGetName(rgbaTexture));
 	glUniform1i(displayInputTextureUniform, 4);
-	
-	[self updateVertices];
+	if (spreadScreen) {
+	[self updateMAXVertices];
+	}else{
+	[self updateMINVertices];
+	}
 	
 	// 更新顶点数据
 	glVertexAttribPointer(furgbaPositionAttribute, 2, GL_FLOAT, 0, 0, vertices);
@@ -855,68 +1026,6 @@ CVOpenGLESTextureCacheRef videoTextureCache1 = NULL;
 	}
 }
 
-// 画全屏，主要用于动画组
-- (void)prepareToDrawFullBGRAPixelBuffer:(CVPixelBufferRef)pixelBuffer Mirr:(BOOL)mirr
-{
-	if (!rgbaProgram) {
-		[self loadShadersRGBA];
-	}
-	
-	CVOpenGLESTextureRef rgbaTexture = NULL;
-	CVReturn err = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault, videoTextureCache, pixelBuffer, NULL, GL_TEXTURE_2D, GL_RGBA, frameWidth, frameHeight, GL_BGRA, GL_UNSIGNED_BYTE, 0, &rgbaTexture);
-	
-	if (!rgbaTexture || err) {
-		
-		NSLog(@"Camera CVOpenGLESTextureCacheCreateTextureFromImage failed (error: %d)", err);
-		return;
-	}
-	
-	glBindTexture(GL_TEXTURE_2D, CVOpenGLESTextureGetName(rgbaTexture));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	
-	glUseProgram(rgbaProgram);
-	
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, CVOpenGLESTextureGetName(rgbaTexture));
-	glUniform1i(displayInputTextureUniform, 4);
-	
-	[self updateFullVertices];
-	
-	// 更新顶点数据
-	glVertexAttribPointer(furgbaPositionAttribute, 2, GL_FLOAT, 0, 0, vertices);
-	glEnableVertexAttribArray(furgbaPositionAttribute);
-	
-	GLfloat quadTextureData[] =  {
-		0.0f, 1.0f,
-		1.0f, 1.0f,
-		0.0f,  0.0f,
-		1.0f,  0.0f,
-	};
-	
-	if (mirr) {
-		
-		quadTextureData[0] = 1.0 ;
-		quadTextureData[2] = 0.0 ;
-		quadTextureData[4] = 1.0 ;
-		quadTextureData[6] = 0.0 ;
-	}
-	
-	glVertexAttribPointer(furgbaTextureCoordinateAttribute, 2, GL_FLOAT, 0, 0, quadTextureData);
-	glEnableVertexAttribArray(furgbaTextureCoordinateAttribute);
-	
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	
-	if (rgbaTexture) {
-		CFRelease(rgbaTexture);
-		rgbaTexture = NULL;
-	}
-}
 
 - (void)prepareToDrawYUVPixelBuffer:(CVPixelBufferRef)pixelBuffer
 {
@@ -1001,7 +1110,7 @@ CVOpenGLESTextureCacheRef videoTextureCache1 = NULL;
 	glUniformMatrix3fv(yuvConversionMatrixUniform, 1, GL_FALSE, kColorConversion601FullRange);
 	
 	// 更新顶点数据
-	[self updateVertices];
+	[self updateMAXVertices];
 	
 	glVertexAttribPointer(fuyuvConversionPositionAttribute, 2, GL_FLOAT, 0, 0, vertices);
 	glEnableVertexAttribArray(fuyuvConversionPositionAttribute);
@@ -1030,13 +1139,34 @@ CVOpenGLESTextureCacheRef videoTextureCache1 = NULL;
 	
 }
 
-- (void)updateVertices
+/// 显示的buffer，会铺满整个界面
+- (void)updateMAXVertices
 {
 	const float width   = frameWidth;
 	const float height  = frameHeight;
 	const float dH      = (float)backingHeight / height;
 	const float dW      = (float)backingWidth      / width;
 	const float dd      = MAX(dH, dW);
+	const float h       = (height * dd / (float)backingHeight);
+	const float w       = (width  * dd / (float)backingWidth );
+	
+	vertices[0] = - w;
+	vertices[1] = - h;
+	vertices[2] =   w;
+	vertices[3] = - h;
+	vertices[4] = - w;
+	vertices[5] =   h;
+	vertices[6] =   w;
+	vertices[7] =   h;
+}
+/// 显示的buffer，如果不能刚好铺满整个界面，则会显示黑边
+- (void)updateMINVertices
+{
+	const float width   = frameWidth;
+	const float height  = frameHeight;
+	const float dH      = (float)backingHeight / height;
+	const float dW      = (float)backingWidth      / width;
+	const float dd      = MIN(dH, dW);
 	const float h       = (height * dd / (float)backingHeight);
 	const float w       = (width  * dd / (float)backingWidth );
 	
@@ -1060,27 +1190,6 @@ CVOpenGLESTextureCacheRef videoTextureCache1 = NULL;
 	vertices[5] =   1;
 	vertices[6] =   1;
 	vertices[7] =   1;
-}
-// 配置全屏显示的顶点
-- (void)updateFullVertices
-{
-
-	const float width   = frameWidth;
-	const float height  = frameHeight;
-	const float dH      = (float)backingHeight / height;
-	const float dW      = (float)backingWidth      / width;
-	const float dd      = MAX(dH, dW);
-	const float h       = (height * dd / (float)backingHeight);
-	const float w       = (width  * dd / (float)backingWidth );
-	
-	vertices[0] = - w;
-	vertices[1] = - h;
-	vertices[2] =   w;
-	vertices[3] = - h;
-	vertices[4] = - w;
-	vertices[5] =   h;
-	vertices[6] =   w;
-	vertices[7] =   h;
 }
 
 

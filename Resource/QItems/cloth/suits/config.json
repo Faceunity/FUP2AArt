@@ -61,6 +61,42 @@
             "body_match_level": 1
         },
         {
+            "bundle":"mid/taozhuang_10.bundle",
+            "icon":"mid/taozhuang_10",
+            "gender": 1,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/taozhuang_11.bundle",
+            "icon":"mid/taozhuang_11",
+            "gender": 1,
+            "body_match_level": 2
+        },
+        {
+            "bundle":"mid/taozhuang_12.bundle",
+            "icon":"mid/taozhuang_12",
+            "gender": 1,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/taozhuang_13.bundle",
+            "icon":"mid/taozhuang_13",
+            "gender": 1,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/taozhuang_14.bundle",
+            "icon":"mid/taozhuang_14",
+            "gender": 1,
+            "body_match_level": 4
+        },
+        {
+            "bundle":"mid/taozhuang_15.bundle",
+            "icon":"mid/taozhuang_15",
+            "gender": 1,
+            "body_match_level": 4
+        },
+        {
             "bundle":"mid/taozhuang_jiaju_1.bundle",
             "icon":"mid/taozhuang_jiaju_1",
             "gender": 1,

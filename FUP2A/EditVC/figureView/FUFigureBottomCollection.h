@@ -19,8 +19,6 @@
 
 @property (nonatomic, assign) id<FUFigureBottomCollectionDelegate>mDelegate;
 
-- (void)hiddenSelectedLine ;
-
 @end
 
 
@@ -31,6 +29,6 @@
 
 @interface FUFigureBottomCell : UICollectionViewCell
 
-@property (weak, nonatomic) IBOutlet UILabel *label;
+@property (weak, nonatomic) IBOutlet UIImageView *imageView;
 
 @end

@@ -7,7 +7,7 @@
 //
 
 #import "FUGroupImageController.h"
-
+#import <UIImage+GIF.h>
 
 @interface FUGroupImageController ()
 

@@ -9,8 +9,6 @@
 #import "FULoadingView.h"
 
 @interface FULoadingView ()
-
-
 @property (nonatomic, weak) NSTimer *loadingTimer ;
 @property (nonatomic, strong) NSString *loadingString;
 @end

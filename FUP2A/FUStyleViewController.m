@@ -8,9 +8,7 @@
 
 #import "FUStyleViewController.h"
 #import <Photos/Photos.h>
-#import <SVProgressHUD.h>
-#import "FUManager.h"
-#import "FUAvatar.h"
+#import "FUPhotoLoadingView.h"
 
 @interface FUStyleViewController ()<FULoadingViewDelegate>
 @property (weak, nonatomic) IBOutlet UIButton *QStyleButton;

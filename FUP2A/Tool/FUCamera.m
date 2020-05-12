@@ -6,7 +6,7 @@
 //  Copyright © 2016年 liuyang. All rights reserved.
 //
 
-#import "FUCamera.h"
+
 #import <UIKit/UIKit.h>
 #import <SVProgressHUD/SVProgressHUD.h>
 

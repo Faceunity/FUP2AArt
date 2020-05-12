@@ -8,10 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
-#import "FUP2ADefine.h"
 #import "FURenderer.h"
 #import "FUFigureDefine.h"
-#import "FUItemModel.h"
 
 @class FUAvatar, FUP2AColor;
 @interface FUManager : NSObject
@@ -23,10 +21,13 @@
     
     // ar模式下 render 句柄
     int arItems[2] ;
+    @public void * _human3dPtr;
     // 输出 buffer
     CVPixelBufferRef renderTarget;
     // 截图
     CVPixelBufferRef screenShotTarget;
+    // 截图
+    CVPixelBufferRef bodyTrackBuffer;
     // 图像宽高
     CGSize frameSize ;
     // 光线检测
@@ -39,6 +40,7 @@
     int q_controller_config_ptr;   // controller 配置文件道具句柄
     int q_controller_bg_ptr;   // 绑定在q_controller上的背景道具句柄
     int q_controller_cam;   // 绑定在q_controller上的_cam.bundle道具句柄
+    int light_ptr;   // 绑定在q_controller上的_cam.bundle道具句柄
 }
 
 @property void* faceCapture ;
@@ -46,7 +48,9 @@
 @property BOOL isFaceCaptureEnabled;
 @property (nonatomic, strong) FURotatedImage *rotatedImageManager;
 
-@property (nonatomic, assign) BOOL isBindCloths;
+@property (nonatomic, assign) CGSize outPutSize;  //输出图片尺寸
+
+@property (nonatomic, assign) BOOL isStopRefreshBuffer; //是否需要停止形象刷新，用于套装和上下衣、背景替换等情况，避免出现闪现中间动画
 
 @property (nonatomic, assign) int defalutQController;
 // version info
@@ -61,7 +65,13 @@
 @property (nonatomic, strong) NSMutableArray <FUAvatar *>*currentAvatars ;
 
 // 编辑页数据
-@property (nonatomic, assign) NSInteger itemTypeSelectIndex;  //选中的道具分类的序号
+@property (nonatomic, strong) NSMutableDictionary *typeInfoDict;  //选中的道具分类的序号
+@property (nonatomic, assign) BOOL isGlassesColor ; //是否是镜片颜色
+@property (nonatomic, copy) NSString *selectedEditType; //编辑大类
+@property (nonatomic, strong) NSMutableDictionary *subTypeSelectedDict; //子类别选择字典
+@property (nonatomic, assign) BOOL isHiddenDecView ; //是否隐藏了道具列表
+@property (nonatomic, assign) NSInteger iSelectedBgSubtypeIndex; //选择的背景子类别编号
+
 @property (nonatomic, strong) NSMutableArray *itemTypeArray; //道具类别列表
 @property (nonatomic, strong) NSMutableArray *itemNameArray; //道具中文名称列表
 @property (nonatomic, strong) NSMutableDictionary *itemsDict; //道具数组字典
@@ -72,13 +82,31 @@
 
 @property (nonatomic, strong) NSDictionary *qMeshPoints;
 
+@property (nonatomic, assign) BOOL isPlayingSpecialAni;  //是否正在进行特殊动画（出场动画，编辑页返回动画等仅播放一次的动画）
+@property (nonatomic, copy) NSString *nextSpecialAni;  //等待播放的特殊动画，在当前特殊动画执行完成后执行
+@property (nonatomic, assign) BOOL isEnterEditView;
+
+
+@property (nonatomic, strong) FUItemModel *backgroundModel;
 
 /// 获取实例
 + (instancetype)shareInstance;
-
+- (CVPixelBufferRef)renderBodyTrackWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode;
 /**
- 加载 client data
+ AR 滤镜处理接口
  
+ @param pixelBuffer 图像数据
+ @param human3dPtr  human3d.bundle 的句柄
+ @param renderMode  FURenderCommonMode 为预览模式，FURenderPreviewMode为人脸追踪模式
+ @param isLandscape 是否输出横屏视频
+ @param landmarks 脸部点位
+ @param landmarksLength 脸部点位数组的长度
+ @return            处理之后的图像数据
+ */
+- (CVPixelBufferRef)renderBodyTrackAdjustAssginOutputSizeWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength;
+/**
+ 加载 client date
+ b
  @param firstSetup 是否初次 setup
  */
 - (void)loadClientDataWithFirstSetup:(BOOL)firstSetup ;
@@ -103,14 +131,25 @@
  @return              图像数据
  */
 - (CVPixelBufferRef)trackFaceWithBuffer:(CMSampleBufferRef)sampleBuffer CurrentlLightingValue:(float *)currntLightingValue;
+//
+///**
+// AR 滤镜处理接口 同时返回捕捉到的脸部点位
+//
+// @param pixelBuffer 图像数据
+// @return            处理之后的图像数据
+// */
+//- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength;
+
 
 /**
- AR 滤镜处理接口 同时返回捕捉到的脸部点位
+ AR 滤镜处理接口
  
  @param pixelBuffer 图像数据
  @return            处理之后的图像数据
+ @param rotationMode 旋转模式
+ @param rotation_mode w.r.t to rotation the the camera view, 0=0^deg, 1=90^deg, 2=180^deg, 3=270^deg
  */
-- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength;
+- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer rotationMode:(int)rotationMode;
 
 /**
  Avatar 处理接口
@@ -142,8 +181,19 @@
 /// 是否识别到人脸
 - (int)faceCaptureGetResultIsFace;
 
-
-
+/// 复制CVPixelBufferRef，需要外部调用负责释放返回值
+/// @param pixelBuffer 输入的 CVPixelBufferRef
+- (CVPixelBufferRef)copyPixelBuffer:(CVPixelBufferRef)pixelBuffer;
+/**
+ AR 滤镜处理接口
+ 
+ @param pixelBuffer 图像数据
+ @param human3dPtr  human3d.bundle 的句柄
+ @param renderMode  FURenderCommonMode 为预览模式，FURenderPreviewMode为人脸追踪模式
+ @param isLandscape 是否输出横屏视频
+ @return            处理之后的图像数据
+ */
+- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode landscape:(BOOL)isLandscape view0ratio:(CGFloat)view0ratio resolution:(double)resolution;
 
 #pragma mark ------ 设置颜色 ------
 /// 设置颜色
@@ -159,12 +209,23 @@
 - (void)bindItemWithModel:(FUItemModel *)model;
 
 #pragma mark ------ 背景 ------
+
 /// 加载默认背景
 - (void)loadDefaultBackGroundToController;
+
+- (void)loadSelectedBackGroundToController;
+
+- (void)loadKetingBackGroundToController;
+
+- (void)loadYuanlinBackGroundToController;
+
+- (void)loadWuguanBackGroundToController;
 
 /// 绑定背景道具到controller
 /// @param filePath 新背景道具路径
 - (void)reloadBackGroundAndBindToController:(NSString *)filePath;
+
+
 
 #pragma mark ------ Cam ------
 /**
@@ -196,7 +257,18 @@
 //- (int)bindItemToControllerWithFilepath:(NSString *)filePath;
 
 
+/**
+ 设置手势动画
+ -- 会切换 controller 所在句柄
+ */
+- (void)loadPoseTrackAnim;
 
+/**
+* //AR模式下，为了支持旋转屏幕时，同时旋转头发遮罩
+* //0表示设备未旋转，1表示逆时针旋转90度，2表示逆时针旋转180度，3表示逆时针旋转270度
+@param orientation 当前设备的方向
+*/
+-(void)setScreenOrientation:(UIInterfaceOrientation)orientation;
 
 #pragma mark ------ 形象数据处理 ------
 /// 进入编辑模式
@@ -211,22 +283,6 @@
 /// 将形象信息恢复到编辑前
 - (void)reloadItemBeforeEdit;
 
-#pragma mark ------ 道具编辑相关 ------
-/// 获取当前选中的道具类别
-- (NSString *)getSelectedType;
-//
-/// 获取当前类别的捏脸model
-- (FUItemModel *)getNieLianModelOfSelectedType;
-
-/// 获取当前类别选中的道具编号
-- (NSInteger)getSelectedItemIndexOfSelectedType;
-//
-///// 设置选中道具编号
-///// @param index 道具编号
-//- (void)setSelectedItemIndex:(NSInteger)index;
-//
-/// 获取当前类别的道具数组
-- (NSArray *_Nullable)getItemArrayOfSelectedType;
 
 #pragma mark ------ 颜色 ------
 - (FUP2AColor *)getSkinColorWithProgress:(double)progress;
@@ -235,7 +291,7 @@
 - (NSInteger)getSelectedColorIndexWithType:(FUFigureColorType)type;
 //
 ///// 根据类别获取选中的颜色
-//- (FUP2AColor *)getSelectedColorWithType:(FUFigureColorType)type;
+- (FUP2AColor *)getSelectedColorWithType:(FUFigureColorType)type;
 //
 ///// 设置对应类别的选中颜色编号
 ///// @param index 选中的颜色编号
@@ -248,7 +304,7 @@
 //
 ///// 根据类别获取对应颜色数组
 ///// @param type 颜色类别
-//- (NSArray *)getColorArrayWithType:(FUFigureColorType)type;
+- (NSArray *)getColorArrayWithType:(FUFigureColorType)type;
 
 /// 根据颜色类别获取颜色类别关键字
 /// @param type 颜色类别
@@ -365,6 +421,55 @@
  */
 - (void)reloadFilterWithPath:(NSString *)filePath;
 
+#pragma mark - 特殊动画
+///  设置一个等待执行的特殊动画
+- (void)setNextSpecialAnimation;
 
+/// 清除正在等待执行的特殊动画
+- (void)removeNextSpecialAnimation;
+
+/// 播放在等待中的特殊动画
+- (void)playNextSpecialAnimation;
+
+/// 立即播放一个特殊动画
+- (void)playSpecialAnimation;
+
+-(CVPixelBufferRef)dealTheFrontCameraPixelBuffer:(CVPixelBufferRef) pixelBuffer returnNewBuffer:(BOOL)returnNewBuffer;
+/// 选择 CVPixelbuffer 的方法
+/// @param pixelBuffer 输入源
+/// @param rotationMode 旋转模式 FURotationMode0 FURotationMode90 FURotationMode180 FURotationMode270
+/// @param flipX 是否水平镜像
+/// @param flipY 是否垂直镜像
+/// @param returnNewBuffer 是否创建新的buffer，YES为创建，则需要外部销毁返回值，NO为 不创建，不需要外部销毁返回值
+-(CVPixelBufferRef)rotateImage:(CVPixelBufferRef) pixelBuffer rotationMode:(int)rotationMode flipX:(BOOL)flipX flipY:(BOOL)flipY returnNewBuffer:(BOOL)returnNewBuffer;
+#pragma mark ----- 编辑
+- (void)configEditInfo;
+- (NSInteger)getCurrentTypeArrayCount;
+- (NSArray *)getCurrentTypeArray;
+- (NSString *)getSubTypeNameWithIndex:(NSInteger)index;
+- (void)setSubTypeSelectedIndex:(NSInteger)index;
+- (NSInteger)getSubTypeSelectedIndex;
+- (NSString *)getSubTypeKeyWithIndex:(NSInteger)index;
+/// 获取当前类别的道具数组
+- (NSArray *)getItemArrayOfSelectedSubType;
+- (NSInteger)getSelectedItemIndexOfSelectedSubType;
+- (NSString *)getSubTypeImageOfSelectedTypeWithIndex:(NSInteger)index;
+- (BOOL)isChangeBackGround;
+/// 获取当前选中的道具类别
+- (NSString *)getSelectedType;
+//
+/// 获取当前类别的捏脸model
+- (FUItemModel *)getNieLianModelOfSelectedType;
+
+
+#pragma mark - Resolution
+/// 设置输出精度与相机输入一致，目前相机设置为720*1280
+- (void)setOutputResolutionAdjustCamera;
+/// 根据屏幕尺寸设置输出精度
+- (void)setOutputResolutionAdjustScreen;
+/// 设置指定输出尺寸
+/// @param width 指定图像宽
+/// @param height 指定图像高
+- (void)setOutputResolutionWithWidth:(CGFloat)width height:(CGFloat)height;
 
 @end

@@ -1,6 +1,6 @@
 
 #import "FUAVUtilities.h"
-#import <AVFoundation/AVFoundation.h>
+
 
 @implementation FUAVUtilities
 

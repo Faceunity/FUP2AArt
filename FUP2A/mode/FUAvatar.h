@@ -14,9 +14,13 @@ typedef enum : NSInteger {
     FUAvataClothTypeUpperAndLower,  // 上衣+裤子
 } FUAvataClothType;
 
+typedef enum : NSInteger {
+    FUAvataHairTypeHair,    // 正常头发
+    FUAvataHairTypeHairHat, // 发帽
+} FUAvataHairType;
+
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "FUP2ADefine.h"
 #import "FUItemModel.h"
 
 typedef enum : NSInteger {
@@ -40,9 +44,11 @@ typedef enum : NSInteger {
     FUItemTypeMakeFaceup,
     FUItemTypeLipGloss,
     FUItemTypeDecorations,  // 配饰
+    FUItemTypeHairHat,  // 发帽
     
     FUItemTypeAnimation,
     FUItemTypeCamera,
+    FUItemTypeBackground,     // 编辑页的背景选项
     FUItemTypeTmp,
     FUItemTypeARFilter,    // 用于编辑AR滤镜的句柄
     FUItemTypeEnd,   //用于定位枚举类型长度
@@ -75,6 +81,7 @@ static const int tmpItemsCount  = 100;
 @property (nonatomic, assign) BOOL wearFemaleClothes;
 // 当前是穿的衣服类型
 @property (nonatomic, assign) FUAvataClothType clothType;
+@property (nonatomic, assign) FUAvataHairType hairType;
 
 @property (nonatomic, strong) FUItemModel *hair;
 @property (nonatomic, strong) FUItemModel *clothes;   // 套装
@@ -98,6 +105,7 @@ static const int tmpItemsCount  = 100;
 @property (nonatomic, strong) FUItemModel *pupil;     //美瞳
 @property (nonatomic, strong) FUItemModel *faceMakeup;  //脸妆
 @property (nonatomic, strong) FUItemModel *lipGloss;   //唇妆
+@property (nonatomic, strong) FUItemModel *hairHat;   //发帽
 
 @property (nonatomic, assign) double hairLabel;
 @property (nonatomic, assign) double bearLabel;
@@ -112,8 +120,9 @@ static const int tmpItemsCount  = 100;
 @property (nonatomic, assign) NSInteger glassFrameColorIndex;
 @property (nonatomic, assign) NSInteger glassColorIndex;
 @property (nonatomic, assign) NSInteger hatColorIndex;
-
-
+@property (nonatomic, assign) NSInteger eyebrowColorIndex;
+@property (nonatomic, assign) NSInteger eyeshadowColorIndex;
+@property (nonatomic, assign) NSInteger eyelashColorIndex;
 @property (nonatomic, assign) int currentInstanceId;    // 当前avatar在nama底层的序号;
 
 /**
@@ -143,6 +152,12 @@ static const int tmpItemsCount  = 100;
 
 #pragma mark ----- 以下切换身体配饰
 - (void)loadItemWithtype:(FUItemType)itemType filePath:(NSString *)path;
+/**
+ 更新Cam道具
+
+ @param camPath 辅助道具路径
+ */
+- (void)reloadCamItemWithPath:(NSString * __nullable)camPath ;
 /**
  更换动画
 
@@ -324,7 +339,7 @@ static const int tmpItemsCount  = 100;
  */
 - (void)facepupModeSetColor:(FUP2AColor *)color key:(NSString *)key;
 
-
+- (void)facepupModeSetEyebrowColor:(FUP2AColor *)color;
 #pragma mark ----- 以下动画相关
 
 /**
@@ -373,6 +388,10 @@ static const int tmpItemsCount  = 100;
  循环相机动画
  */
 - (void)loopCameraAnimation;
+/**
+ 停止循环相机动画
+ */
+- (void)stopLoopCameraAnimation;
 
 - (void)setThePrefabricateColors;
 
@@ -384,7 +403,6 @@ static const int tmpItemsCount  = 100;
 #pragma mark ----- 获取配置
 
 
-
 #pragma mark  ------ 捏脸 ------
 - (NSArray *)getFacepupModeParamsWithLength:(int)length;
 
@@ -392,6 +410,17 @@ static const int tmpItemsCount  = 100;
 /// 设置捏脸参数
 /// @param dict 捏脸参数字典
 - (void)configFacepupParamWithDict:(NSDictionary *)dict;
+
+#pragma mark ------ 动画 ------
+
+/**
+ 换装后回到首页动画
+ */
+- (void)loadAfterEditAnimation;
+
+//换装界面动画
+- (void)loadChangeItemAnimation;
+
 
 /**
  加载ani_mg动画
@@ -429,7 +458,6 @@ static const int tmpItemsCount  = 100;
 - (void)resetScaleToOriginal;
 
 #pragma mark ----- 以下缩放位移
-
 - (void)resetScaleDelta:(float)delta;
 
 /**
@@ -496,11 +524,54 @@ static const int tmpItemsCount  = 100;
  */
 - (void)resetScaleToFollowBody;
 
-/**
- 缩放至小比例的身体追踪
- */
-- (void)resetScaleToTrackBody;
 
+/**
+ 使用相机bundle缩放至脸部特写
+ */
+- (void)resetScaleToFace_UseCam;
+
+/**
+ 使用相机bundle缩放至小比例的全身
+ */
+- (void)resetScaleToSmallBody_UseCam;
+
+/**
+ 使用相机bundle缩放至全身
+ */
+- (void)resetScaleToBody_UseCam;
+
+/**
+ 替换服饰时使用的cam
+ */
+- (void)resetScaleChange_UseCam;
+
+/**
+ 缩放至全身追踪,驱动页未收起模型选择栏等工具栏的情况
+
+ */
+- (void)resetScaleToTrackBodyWithToolBar;
+/**
+ 缩放至全身追踪,驱动页收起模型选择栏等工具栏的情况
+
+ */
+- (void)resetScaleToTrackBodyWithoutToolBar;
+
+/**
+缩放至全身追踪
+使用场景：
+1.导入视频后生成的画面
+*/
+- (void)resetScaleToImportTrackBody;
+
+/**
+ 缩放至半身
+ */
+- (void)resetScaleToHalfBodyWithToolBar;
+
+/**
+ 缩放至半身
+ */
+- (void)resetScaleToHalfBodyInput;
 
 
 #pragma mark ------ 形象加载 ------
@@ -586,9 +657,20 @@ static const int tmpItemsCount  = 100;
 /// @param model 饰品数据
 - (void)bindDecorationWithItemModel:(FUItemModel *)model;
 
-
-
+/// 加载发帽
+/// @param model 发帽数据
+- (void)bindHairHatWithItemModel:(FUItemModel *)model;
+/// 加载背景 FUItemModel
+/// @param model 背景数据
+- (void)bindBackgroundWithItemModel:(FUItemModel *)model;
 - (void)bindItemWithType:(FUItemType)itemType filePath:(NSString *)path;
+
+
+- (void)loadHalfAvatar ;
+- (void)loadFullAvatar;
+/// 在半身驱动时，身体追踪时，设置avatar向上的偏移量
+/// @param y_offset 偏移量
+- (void)human3dSetYOffset:(float)y_offset;
 
 @end
 

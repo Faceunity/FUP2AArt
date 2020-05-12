@@ -7,17 +7,10 @@
 //
 
 #import "FUTextTrackController.h"
-#import <SVProgressHUD.h>
-#import "FUP2ADefine.h"
-#import "FUCamera.h"
-#import "FUOpenGLView.h"
-#import "FUManager.h"
-#import "FUAvatar.h"
-#import "FUP2AColor.h"
-#import "FUTool.h"
+#import "FUMusicPlayer.h"
 #import "FUTakePhotoController.h"
 #import "FUEditViewController.h"
-#import "FURequestManager.h"
+
 // views
 #import "FUHomeBarView.h"
 #import "FUHistoryViewController.h"
@@ -25,7 +18,6 @@
 #import "FUTrackController.h"
 #import "Faceunity/FUSta/FUStaLiteRequestManager.h"
 #import "Faceunity/FUSta/FUAudioPlayer.h"
-#import "Faceunity/FUSta/FUMusicPlayer.h"
 
 @interface FUTextTrackController ()<
 FUCameraDelegate,
@@ -64,7 +56,7 @@ FUHistoryViewControllerDelegate,FUTextTrackViewDelegate,UIImagePickerControllerD
 @property (nonatomic, assign) NSString * currentToneName;   // 当前音色名称，默认是 "Sicheng"
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *faceTrackBtnBottom;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *preViewBottom;
-
+@property (nonatomic, strong) FUStaLiteRequestManager *staRequestMgr;
 @end
 static int expSize = 57;
 
@@ -86,7 +78,7 @@ static int expSize = 57;
 	self.commonAvatar = avatar;     // 记录进入后，普通模式的avatar，用于退出这个界面时，重新渲染这个avatar
 	self.currentAvatar = avatar;   // 记录进入后，当前的avatar
 	
-	
+	self.staRequestMgr = [[FUStaLiteRequestManager alloc]init];
 	//	NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"default_bg" ofType:@"bundle"];
 	[self.textTrackView selectedModeWith:self.currentAvatar];     // UI选择当前avatar
 	// 添加进入和退出后台的监听
@@ -141,13 +133,10 @@ static int expSize = 57;
 -(void)setIsShow:(BOOL)isShow{
 	_isShow = isShow;
 	if (isShow) {   // 显示当前界面
+        [[FUManager shareInstance]setOutputResolutionAdjustScreen];
 		[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:self.currentAvatar];
-		NSString *default_bg_Path = [[NSBundle mainBundle] pathForResource:@"default_bg" ofType:@"bundle"];
-		[[FUManager shareInstance] reloadBackGroundAndBindToController:default_bg_Path];
+        [self.currentAvatar loadIdleModePose];
 		[self.currentAvatar resetScaleToBody];
-		[self.currentAvatar removeAnimation];
-
-		
 		// 打开 avatar的口型系数驱动功能
 		[self.currentAvatar enableBlendshape];
 		// 设置口型系数的权重 expression_weight0、expression_weight1
@@ -163,14 +152,12 @@ static int expSize = 57;
 		}
 		[self.currentAvatar setExpression_wieght0:expression_weight0Expression];
 		[self.currentAvatar setExpression_wieght1:expression_weight1Expression];
-		[self.currentAvatar loadIdleModePose];
+		
 		if(self.trackBtn.isSelected)
 		{
-			[self.currentAvatar loadIdleModePose];
 			[self.currentAvatar enterTrackFaceMode];
 		}
 		[self.camera startCapture];           // 相机继续捕获
-		
 		
 		
 	}else{
@@ -200,7 +187,7 @@ static int expSize = 57;
 		[weakSelf.navigationController popViewControllerAnimated:NO];
 		[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:weakSelf.commonAvatar];     // 以不销毁controller的方式，重新加载avatar
 		[weakSelf.commonAvatar loadStandbyAnimation];
-		[weakSelf.commonAvatar resetScaleToSmallBody];
+		[weakSelf.commonAvatar resetScaleToSmallBody_UseCam];
 	});
 	
 }
@@ -231,20 +218,21 @@ static int expSize = 57;
 	CGFloat YY = CGRectGetMinY(self.textTrackView.mInputView.frame);
 	NSLog(@"YY----------%f",YY);
 	if ([self.textTrackView hideKeyboard]) {
-		if (self.textTrackView.superview.hidden) {
+		if (self.textTrackView.hidden) {
 			self.faceTrackBtnBottom.constant = 54;
 		}else{
 			self.faceTrackBtnBottom.constant = 167;
 		}
 		self.preViewBottom.constant = 180;
 	}else{
-		self.textTrackView.superview.hidden = !self.textTrackView.superview.hidden;
-		if (self.textTrackView.superview.hidden) {
+		self.textTrackView.hidden = !self.textTrackView.hidden;
+		if (self.textTrackView.hidden) {
 			self.faceTrackBtnBottom.constant = 54;
 		}else{
 			self.faceTrackBtnBottom.constant = 167;
 		}
 	}
+    self.touchBlock();
 	//self.textTrackView.mInputView.frame
 	
 }
@@ -260,7 +248,7 @@ static int expSize = 57;
 			self.preViewBottom.constant = h + 20;
 		}
 	}else{
-		if (self.textTrackView.superview.hidden) {
+		if (self.textTrackView.hidden) {
 			self.faceTrackBtnBottom.constant = 54;
 		}else{
 			self.faceTrackBtnBottom.constant = 167;
@@ -455,13 +443,21 @@ static int frameIndex = 0 ;
 - (void)TextTrackViewInput:(NSString *)text{
 	NSLog(@"键盘输入文字是-----%@",text);
 	self.staPlayState = StaOriginal;
-	[[FUStaLiteRequestManager shareManager] process:text
+	[self.staRequestMgr process:text
 										  voiceName:self.currentToneName
 										voiceFormat:@"mp3"
 										voiceVolume:@"0.1"
 										 voiceSpeed:@"1"
 									voiceSamplerate:nil
 											 result:^(NSError * _Nullable error, NSData * _Nonnull voiceData, NSData * _Nonnull expressionData,float timeStride) {
+        
+        if (error)
+        {
+            [SVProgressHUD showErrorWithStatus:@"网络访问失败"];
+            return ;
+        }
+        
+        
 		// ⚠️⚠️⚠️⚠️⚠️⚠️ 必须将返回的声音保存到位置
 		[FUP2AHelper shareInstance].saveAudioPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"FUStaAudio.mp3"];
 		[FUP2AHelper shareInstance].saveVideoPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"fup2a_video.mp4"];

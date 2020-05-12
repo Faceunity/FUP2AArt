@@ -8,8 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-
-@protocol FUFigureHorizCollectionDelegate <NSObject>
+@protocol FUFigureCollectionDelegate <NSObject>
 
 @optional
 - (void)didChangeGlassesWithHiddenColorViews:(BOOL)hidden;
@@ -20,7 +19,7 @@
 @property (nonatomic, copy) NSString *glasses ;
 @property (nonatomic, strong) NSArray *glassesArray ;
 
-@property (nonatomic, assign) id<FUFigureHorizCollectionDelegate>mDelegate ;
+@property (nonatomic, assign) id<FUFigureCollectionDelegate>mDelegate ;
 
 - (void)loadCollectionData ;
 - (void)scrollCurrentToCenterWithAnimation:(BOOL)animation;

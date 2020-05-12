@@ -7,17 +7,8 @@
 //
 
 #import "ViewController.h"
-#import <SVProgressHUD.h>
-#import "FUP2ADefine.h"
-#import "FUCamera.h"
-#import "FUOpenGLView.h"
-#import "FUManager.h"
-#import "FUAvatar.h"
-#import "FUP2AColor.h"
-#import "FUTool.h"
 #import "FUTakePhotoController.h"
 #import "FUEditViewController.h"
-#import "FURequestManager.h"
 // views
 #import "FUHomeBarView.h"
 #import "FUHistoryViewController.h"
@@ -29,12 +20,12 @@ FUHomeBarViewDelegate,
 FUHistoryViewControllerDelegate
 >
 {
-	CGFloat preScale; // 捏合比例
-	CGFloat _rotDelta;
-	FURenderMode renderMode;
-	BOOL loadingBundles;
-	// 同步信号量
-	dispatch_semaphore_t signal;
+    CGFloat preScale; // 捏合比例
+    CGFloat _rotDelta;
+    FURenderMode renderMode;
+    BOOL loadingBundles;
+    // 同步信号量
+    dispatch_semaphore_t signal;
 }
 
 @property (nonatomic, strong) FUCamera *camera;
@@ -44,12 +35,12 @@ FUHistoryViewControllerDelegate
 // views
 @property (nonatomic, strong) FUHomeBarView *homeBar;
 @property (weak, nonatomic) IBOutlet UIButton *trackBtn;
-
 @property (weak, nonatomic) IBOutlet UIView *loadingView;
 @property (weak, nonatomic) IBOutlet UIImageView *loadingImage;
 @property (weak, nonatomic) IBOutlet UILabel *pointLabel;
 @property (nonatomic, strong) NSTimer *labelTimer;
 @property (nonatomic, assign) FUVideoRecordState videoRecordState;   // 录制视频的状态
+@property (nonatomic, strong) FUAvatar *currentAvatar;
 
 // 版本号  view
 @property (weak, nonatomic) IBOutlet UILabel *appVersionLabel;
@@ -57,533 +48,599 @@ FUHistoryViewControllerDelegate
 
 @end
 
-
-
 @implementation ViewController
 {
-	BOOL firstLoad;// 首次进入页面
-	CRender * _viewRender;
-	CRender * _recordRender;
+    BOOL firstLoad;// 首次进入页面
+    CRender * _viewRender;
+    CRender * _recordRender;
 }
 
 - (BOOL)prefersStatusBarHidden
 {
-	return YES;
+    return YES;
 }
 
 - (void)viewDidLoad
 {
-	[super viewDidLoad];
-	signal = dispatch_semaphore_create(1);
-	_viewRender = [[CRender alloc]init];
-	_recordRender = [[CRender alloc]init];
-	_rotDelta = 1;
-	[self addObserver];
-	
-	firstLoad = YES;
-	
-	renderMode = FURenderCommonMode;
-	[self.camera startCapture];
+    [super viewDidLoad];
+    signal = dispatch_semaphore_create(1);
+    _viewRender = [[CRender alloc]init];
+    _recordRender = [[CRender alloc]init];
+    _rotDelta = 1;
+    [self addObserver];
+    
+    firstLoad = YES;
+    
+    renderMode = FURenderCommonMode;
+    [self.camera startCapture];
     
     [self showAppAndSDKVersion];
 }
 
--(void)viewWillAppear:(BOOL)animated
+- (void)viewWillAppear:(BOOL)animated
 {
-	[super viewWillAppear:animated];
-	[[FUManager shareInstance] reloadCamItemWithPath:nil];
-
-	FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
-	[avatar loadStandbyAnimation];
-	
-	if (firstLoad)
+    [super viewWillAppear:animated];
+    [[FUManager shareInstance] setOutputResolutionAdjustScreen];
+    [[FUManager shareInstance] reloadCamItemWithPath:nil];
+    
+    if ([FUManager shareInstance].currentAvatars.count == 0)
     {
-		firstLoad = NO;
-        [avatar resetScaleToBody];
-	}
+        [[FUManager shareInstance]reloadAvatarToControllerWithAvatar:self.currentAvatar];
+    }
+    
+    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+    [[FUManager shareInstance]loadSelectedBackGroundToController];
+    
+    if (firstLoad)
+    {
+        firstLoad = NO;
+        [avatar resetScaleToSmallBody_UseCam];
+    }
     else
     {
-        [[FUManager shareInstance]loadDefaultBackGroundToController];
+
+        
+        
+        [self.camera startCapture];
+        
+        
         if (self.homeBar.showTopView)
         {
-            [avatar resetScaleToBody];
+            [avatar resetScaleToBody_UseCam];
+            [avatar loadIdleModePose];
+            
         }
         else
         {
-            [avatar resetScaleToSmallBody];
+            [avatar resetScaleToSmallBody_UseCam];
+            [avatar loadStandbyAnimation];
         }
-    
-		[self.homeBar reloadModeData];
-		[self.camera startCapture];
-	}
+        if ([FUManager shareInstance].isEnterEditView)
+        {
+            frameIndex = 0;
+            [FUManager shareInstance].isEnterEditView = NO;
+          //  [avatar loadAfterEditAnimation];
+            //[[FUManager shareInstance] setNextSpecialAnimation];
+            [FUManager shareInstance].isPlayingSpecialAni = YES;
+        }
+        
+        [self.homeBar reloadModeData];
+    }
 }
 
--(void)viewWillDisappear:(BOOL)animated
+- (void)viewWillDisappear:(BOOL)animated
 {
-	[super viewWillDisappear:animated];
-	[self.camera stopCapture];
-	
-	if (!self.preView.hidden)
+    [super viewWillDisappear:animated];
+    [self.camera stopCapture];
+    [FUManager shareInstance].isPlayingSpecialAni = NO;
+    [[FUManager shareInstance] removeNextSpecialAnimation];
+    [[FUManager shareInstance] reloadCamItemWithPath:nil];
+    self.currentAvatar = [FUManager shareInstance].currentAvatars.firstObject;
+    if (!self.preView.hidden)
     {
         self.appVersionLabel.hidden = NO;
         self.sdkVersionLabel.hidden = NO;
-
-		self.trackBtn.selected = NO;
-		self.preView.hidden = YES;
         
-		FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
-		// 加载默认动画
-		[avatar loadStandbyAnimation];
-		renderMode = FURenderCommonMode;
-	}
+        self.trackBtn.selected = NO;
+        self.preView.hidden = YES;
+        
+        FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
+        // 加载默认动画
+        [avatar loadStandbyAnimation];
+        renderMode = FURenderCommonMode;
+    }
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
+    FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
+    [avatar openHairAnimation];
+    loadingBundles = NO;
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
-	NSString *identifier = segue.identifier;
-	if ([identifier isEqualToString:@"FUHomeBar"])
+    NSString *identifier = segue.identifier;
+    if ([identifier isEqualToString:@"FUHomeBar"])
     {
-		UIViewController *itemsViewc = segue.destinationViewController;
-		self.homeBar = (FUHomeBarView *)itemsViewc.view;
-		self.homeBar.delegate = self;
-	}
+        UIViewController *itemsViewc = segue.destinationViewController;
+        self.homeBar = (FUHomeBarView *)itemsViewc.view;
+        self.homeBar.delegate = self;
+    }
     else if ([identifier isEqualToString:@"PushToTakePicView"])
-    {//拍照生成页
-		[self.camera stopCapture];
-	}
+    {//拍照生成页tou
+        [self.camera stopCapture];
+    }
     else if ([identifier isEqualToString:@"PushToEditView"])
     {//形象编辑页
-		[self.camera stopCapture];
-	}
+        [self.camera stopCapture];
+        [FUManager shareInstance].isEnterEditView = YES;
+    }
     else if ([identifier isEqualToString:@"PushToTrackVC"])
     {//AR驱动页面
-		[self.camera stopCapture];
-	}
+        [self.camera stopCapture];
+    }
     else if ([identifier isEqualToString:@"PushToHistoryVC"])
     {//形象管理列表
-		FUHistoryViewController *historyView = segue.destinationViewController;
-		historyView.mDelegate = self;
-	}
+        FUHistoryViewController *historyView = segue.destinationViewController;
+        historyView.mDelegate = self;
+    }
 }
 
 - (void)loadDefaultAvatar
 {
-	loadingBundles = YES;
-	FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
-	[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:avatar];
-	[avatar loadStandbyAnimation];
-	loadingBundles = NO;
+    loadingBundles = YES;
+    FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
+    [[FUManager shareInstance] reloadAvatarToControllerWithAvatar:avatar];
+    [avatar loadStandbyAnimation];
+    loadingBundles = NO;
 }
 
 #pragma mark ------ Event ------
-// Avatar 旋转
--(void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
 {
-	[super touchesMoved:touches withEvent:event];
-	UITouch *touch = [touches anyObject];
-	
-	CGFloat locationX = [touch locationInView:self.displayView].x;
-	CGFloat preLocationX = [touch previousLocationInView:self.displayView].x;
-	
-	float dx = (locationX - preLocationX) / self.displayView.frame.size.width;
-	
-	CGFloat locationY = [touch locationInView:self.displayView].y;
-	CGFloat preLocationY = [touch previousLocationInView:self.displayView].y;
-	
-	float dy = (locationY - preLocationY) / self.displayView.frame.size.height;
-	
-	FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
-	[avatar resetRotDelta:dx];
-	_rotDelta += dx;
-	[avatar resetTranslateDelta:-dy];
+    if (self.homeBar.showTopView)
+    {
+        return;
+    }
+    
+    if ([FUManager shareInstance].isPlayingSpecialAni == NO)
+    {
+        [[FUManager shareInstance] playSpecialAnimation];
+    }
+    else
+    {
+        [[FUManager shareInstance] setNextSpecialAnimation];
+    }
+    
+}
+
+// Avatar 旋转
+- (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+
+    [super touchesMoved:touches withEvent:event];
+    UITouch *touch = [touches anyObject];
+    
+    CGFloat locationX = [touch locationInView:self.displayView].x;
+    CGFloat preLocationX = [touch previousLocationInView:self.displayView].x;
+    
+    float dx = (locationX - preLocationX) / self.displayView.frame.size.width;
+    
+    [avatar resetRotDelta:dx];
+    _rotDelta += dx;
 }
 
 - (IBAction)recordClick:(UIButton *)sender
 {
-	sender.selected = !sender.selected;
-	if (sender.selected)
+    sender.selected = !sender.selected;
+    if (sender.selected)
     {
-		self.videoRecordState = Recording;
-	}
+        self.videoRecordState = Recording;
+    }
     else
     {
-		self.videoRecordState = Completed;
-	}
+        self.videoRecordState = Completed;
+    }
 }
 
 // track face
 - (IBAction)trackAction:(UIButton *)sender
 {
-	sender.selected = !sender.selected;
-	self.preView.hidden = !sender.selected;
-	renderMode = sender.selected ? FURenderPreviewMode : FURenderCommonMode;
-	
-	FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
-	
-	if (sender.selected)
+    sender.selected = !sender.selected;
+    self.preView.hidden = !sender.selected;
+    renderMode = sender.selected ? FURenderPreviewMode : FURenderCommonMode;
+    
+    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+    
+    if (sender.selected)
     {
-		[avatar loadIdleModePose];
-		[avatar enterTrackFaceMode];
-	}
+        [avatar loadIdleModePose];
+        [avatar enterTrackFaceMode];
+    }
     else
     {
-		[avatar quitTrackFaceMode];
-		[avatar loadStandbyAnimation];
-	}
-	self.appVersionLabel.hidden = sender.selected;
-	self.sdkVersionLabel.hidden = sender.selected;
+        [avatar quitTrackFaceMode];
+        [avatar loadStandbyAnimation];
+    }
+    self.appVersionLabel.hidden = sender.selected;
+    self.sdkVersionLabel.hidden = sender.selected;
 }
 
 #pragma mark ------ SET/GET ------
--(FUCamera *)camera
+- (FUCamera *)camera
 {
-	if (!_camera)
+    if (!_camera)
     {
-		_camera = [[FUCamera alloc] init];
-		_camera.delegate = self;
-		_camera.shouldMirror = NO;
-		[_camera changeCameraInputDeviceisFront:YES];
-	}
-	return _camera;
+        _camera = [[FUCamera alloc] init];
+        _camera.delegate = self;
+        _camera.shouldMirror = NO;
+        [_camera changeCameraInputDeviceisFront:YES];
+    }
+    return _camera;
 }
 
 #pragma mark ---- FUCameraDelegate
 static int frameIndex = 0;
 CRender * viewRender;
--(void)didOutputVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer
+- (void)didOutputVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer
 {
+    if ([FUManager shareInstance].isStopRefreshBuffer)
+    {
+        return;
+    }
     
-    if ([FUManager shareInstance].isBindCloths)
+    if (loadingBundles)
     {
         return;
     }
     
 	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
-	if (loadingBundles)
+
+    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+    if (frameIndex == 0)
+    {//从其他页面返回，重置动画，避免在页面加载过程耗时导致ok动画不正常
+        [avatar restartAnimation];
+    }
+
+    //判断是否在执行特殊动画
+    if ([FUManager shareInstance].isPlayingSpecialAni == YES&&frameIndex > 1)
     {
-		return;
-	}
-
-	frameIndex ++;
-	
-	CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-
-	CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
+        float progress = [avatar getAnimateProgress];
+        if (progress > 1)
+        {//特殊动画执行完毕后
+            if ([FUManager shareInstance].nextSpecialAni != nil)
+            {//如果有下一个特殊动画,立即执行
+                [[FUManager shareInstance]playNextSpecialAnimation];
+            }
+            else
+            {//如果没有下一个特殊动画，执行默认动画
+                [avatar loadStandbyAnimation];
+                [FUManager shareInstance].isPlayingSpecialAni = NO;
+            }
+        }
+    }
+    
+    frameIndex ++;
+    
+    CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+    
+    CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
     const int landmarks_cnt = 314;
     float landmarks[landmarks_cnt] ;
-
+    
     CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemWithPixelBuffer:mirrored_pixel RenderMode:renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
     CGSize size = [UIScreen mainScreen].currentMode.size;
     
-	[self.displayView displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:NO];
-	switch (self.videoRecordState)
+    [self.displayView displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:NO];
+    switch (self.videoRecordState)
     {
-		case Original:
-
-			break;
-		case Recording:
-		{
-			CVPixelBufferRef mirrorYBuffer = [_recordRender cutoutPixelBuffer:buffer WithRect:CGRectMake(0, 0, size.width-200,size.height-200)];
-			[[FUP2AHelper shareInstance] recordBufferWithType:FUP2AHelperRecordTypeVoicedVideo buffer:mirrorYBuffer sampleBuffer:sampleBuffer Completion:^(CFAbsoluteTime duration) {
-				NSLog(@"当前帧返回时长-------------%f",duration);
-			}];
-		}
-			break;
-		case Completed:
-		{
-
-			[[FUP2AHelper shareInstance] stopRecordWithType:FUP2AHelperRecordTypeVoicedVideo TimeCompletion:^(NSString *retPath,CFAbsoluteTime duration) {
-				dispatch_async(dispatch_get_main_queue(), ^{
-					NSLog(@"视频位置是------------------------%@",retPath);
-					NSLog(@"录制时长是------------------%f",duration);
-					[self saveRecordedVideo:retPath];
-				});
-			}];
-
-
-			self.videoRecordState = Original;
-		}
-			break;
-
-		default:
-			break;
-	}
-	
-	if (renderMode == FURenderPreviewMode)
+        case Original:
+            
+            break;
+        case Recording:
+        {
+            CVPixelBufferRef mirrorYBuffer = [_recordRender cutoutPixelBuffer:buffer WithRect:CGRectMake(0, 0, size.width-200,size.height-200)];
+            [[FUP2AHelper shareInstance] recordBufferWithType:FUP2AHelperRecordTypeVoicedVideo buffer:mirrorYBuffer sampleBuffer:sampleBuffer Completion:^(CFAbsoluteTime duration) {
+                NSLog(@"当前帧返回时长-------------%f",duration);
+            }];
+        }
+            break;
+        case Completed:
+        {
+            
+            [[FUP2AHelper shareInstance] stopRecordWithType:FUP2AHelperRecordTypeVoicedVideo TimeCompletion:^(NSString *retPath,CFAbsoluteTime duration) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    NSLog(@"视频位置是------------------------%@",retPath);
+                    NSLog(@"录制时长是------------------%f",duration);
+                    [self saveRecordedVideo:retPath];
+                });
+            }];
+            
+            
+            self.videoRecordState = Original;
+        }
+            break;
+            
+        default:
+            break;
+    }
+    
+    if (renderMode == FURenderPreviewMode)
     {
-		[self.preView displayPixelBuffer:pixelBuffer withLandmarks:landmarks count:150 Mirr:YES];
-	}
-	CVPixelBufferRelease(mirrored_pixel);
-	dispatch_semaphore_signal(signal);
+        [self.preView displayPixelBuffer:pixelBuffer withLandmarks:landmarks count:150 Mirr:YES];
+    }
+    CVPixelBufferRelease(mirrored_pixel);
+    dispatch_semaphore_signal(signal);
 }
 
 
 - (void)saveRecordedVideo:(NSString *)videoPath
 {
-	[appManager checkSavePhotoAuth:^(PHAuthorizationStatus status){
-		if (status == PHAuthorizationStatusAuthorized)
+    [appManager checkSavePhotoAuth:^(PHAuthorizationStatus status){
+        if (status == PHAuthorizationStatusAuthorized)
         {
-			if (videoPath && [[NSFileManager defaultManager] fileExistsAtPath:videoPath])
+            if (videoPath && [[NSFileManager defaultManager] fileExistsAtPath:videoPath])
             {
-				[[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
-					[PHAssetCreationRequest creationRequestForAssetFromVideoAtFileURL:[NSURL URLWithString:videoPath]];
-				} completionHandler:^(BOOL success, NSError * _Nullable error) {
-					
-					if(success && error == nil)
+                [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+                    [PHAssetCreationRequest creationRequestForAssetFromVideoAtFileURL:[NSURL URLWithString:videoPath]];
+                } completionHandler:^(BOOL success, NSError * _Nullable error) {
+                    
+                    if(success && error == nil)
                     {
-						[SVProgressHUD showSuccessWithStatus:@"视频已保存到相册"];
-					}
+                        [SVProgressHUD showSuccessWithStatus:@"视频已保存到相册"];
+                    }
                     else
                     {
-						[SVProgressHUD showErrorWithStatus:@"保存视频失败"];
-					}
-				}];
-			}
-		}
-		
-		else if (status == PHAuthorizationStatusDenied)
+                        [SVProgressHUD showErrorWithStatus:@"保存视频失败"];
+                    }
+                }];
+            }
+        }
+        
+        else if (status == PHAuthorizationStatusDenied)
         {
-			UIAlertController * alertVC = [UIAlertController alertControllerWithTitle:nil message:@"请打开你的权限！" preferredStyle:UIAlertControllerStyleAlert];
-			UIAlertAction *certain = [UIAlertAction actionWithTitle:@"确认" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-				[appManager openAppSettingView];
-			}];
-			
-			[alertVC addAction:certain];
-			[self presentViewController:alertVC animated:YES completion:nil];
-			
-		}
-	}];
+            UIAlertController * alertVC = [UIAlertController alertControllerWithTitle:nil message:@"请打开你的权限！" preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction *certain = [UIAlertAction actionWithTitle:@"确认" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                [appManager openAppSettingView];
+            }];
+            
+            [alertVC addAction:certain];
+            [self presentViewController:alertVC animated:YES completion:nil];
+            
+        }
+    }];
 }
 
 - (void)didReceiveMemoryWarning
 {
-	[super didReceiveMemoryWarning];
+    [super didReceiveMemoryWarning];
 }
 
 #pragma mark ---- FUHomeBarViewDelegate
 - (void)homeBarViewShouldCreateAvatar
 {
-	[self performSegueWithIdentifier:@"PushToTakePicView" sender:nil];
+    [self performSegueWithIdentifier:@"PushToTakePicView" sender:nil];
 }
 
 - (void)homeBarViewShouldDeleteAvatar
 {
-   [self performSegueWithIdentifier:@"PushToHistoryVC" sender:nil];
+    [self performSegueWithIdentifier:@"PushToHistoryVC" sender:nil];
 }
 
 // 风格切换
 - (void)homeBarViewChangeAvatarStyle
 {
-//	if ([[FUManager shareInstance] isCreatingAvatar]) {
-//		[SVProgressHUD showInfoWithStatus:@"正在生成模型，不能切换风格~"];
-//		return;
-//	}
-//
-//	[self startLoadingAnimation];
-//	[self.camera stopCapture];
-//
-//	__weak typeof(self)weakSelf = self;
-//	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0) , ^{
-//
-//		// 销毁道具
-//		for (FUAvatar *avatar in [FUManager shareInstance].currentAvatars) {
-//			[avatar destroyAvatar];
-//		}
-//
-//		// 切换 client 和数据源
-//		int num = [FUManager shareInstance].avatarStyle;
-//		num ++;
-//		num = num % 2;
-//		[[FUManager shareInstance] setAvatarStyle:(FUAvatarStyle)num];
-//
-//		[[FUManager shareInstance] loadClientDataWithFirstSetup:NO];
-//
-//		dispatch_async(dispatch_get_main_queue(), ^{
-//			[weakSelf loadDefaultAvatar];
-//			[weakSelf.homeBar reloadModeData];
-//			[weakSelf stopLoadingAnimation];
-//			[weakSelf.camera startCapture];
-//			FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
-//			[avatar resetScaleToBody];
-//		});
-//	});
+    //	if ([[FUManager shareInstance] isCreatingAvatar]) {
+    //		[SVProgressHUD showInfoWithStatus:@"正在生成模型，不能切换风格~"];
+    //		return;
+    //	}
+    //
+    //	[self startLoadingAnimation];
+    //	[self.camera stopCapture];
+    //
+    //	__weak typeof(self)weakSelf = self;
+    //	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0) , ^{
+    //
+    //		// 销毁道具
+    //		for (FUAvatar *avatar in [FUManager shareInstance].currentAvatars) {
+    //			[avatar destroyAvatar];
+    //		}
+    //
+    //		// 切换 client 和数据源
+    //		int num = [FUManager shareInstance].avatarStyle;
+    //		num ++;
+    //		num = num % 2;
+    //		[[FUManager shareInstance] setAvatarStyle:(FUAvatarStyle)num];
+    //
+    //		[[FUManager shareInstance] loadClientDataWithFirstSetup:NO];
+    //
+    //		dispatch_async(dispatch_get_main_queue(), ^{
+    //			[weakSelf loadDefaultAvatar];
+    //			[weakSelf.homeBar reloadModeData];
+    //			[weakSelf stopLoadingAnimation];
+    //			[weakSelf.camera startCapture];
+    //			FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+    //			[avatar resetScaleToBody];
+    //		});
+    //	});
 }
 
 - (void)homeBarViewDidSelectedAvatar:(FUAvatar *)avatar
 {
-	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
-	
-	[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:avatar];
-	
-	switch (self->renderMode)
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+    
+    [[FUManager shareInstance] reloadAvatarToControllerWithAvatar:avatar];
+    
+    switch (self->renderMode)
     {
-		case FURenderCommonMode:
-			if ([avatar.name isEqualToString:@"Star"])
+        case FURenderCommonMode:
+            if ([avatar.name isEqualToString:@"Star"])
             {  // 如果是明星模型
-				[avatar load_ani_mg_Animation];
-			}else
+                [avatar load_ani_mg_Animation];
+            }else
             {
-				[avatar loadStandbyAnimation];
-			}
-			break;
-		case FURenderPreviewMode:
-			[avatar loadIdleModePose];
-			[avatar enterTrackFaceMode];
-			break;
-	}
-	dispatch_semaphore_signal(signal);
+                [avatar loadIdleModePose];
+            }
+            break;
+        case FURenderPreviewMode:
+            [avatar loadIdleModePose];
+            [avatar enterTrackFaceMode];
+            break;
+    }
+    dispatch_semaphore_signal(signal);
 }
 
--(void)homeBarViewShouldShowTopView:(BOOL)show
+- (void)homeBarViewShouldShowTopView:(BOOL)show
 {
-	FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
-	
-	if (show)
+    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+    
+    if (show)
     {
-		[avatar resetScaleToBody];
-		[UIView animateWithDuration:0.5 animations:^{
-			self.trackBtn.transform = CGAffineTransformMakeTranslation(0, -200);
-		}];
-	}
+        dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER) ;
+        [avatar resetScaleToBody_UseCam];
+        dispatch_semaphore_signal(signal) ;
+        [avatar loadIdleModePose];
+        [FUManager shareInstance].isPlayingSpecialAni = NO;
+        [UIView animateWithDuration:0.5 animations:^{
+            self.trackBtn.transform = CGAffineTransformMakeTranslation(0, -200);
+        }];
+    }
     else
     {
-		if (!CGAffineTransformEqualToTransform(self.trackBtn.transform, CGAffineTransformIdentity))
+        if (!CGAffineTransformEqualToTransform(self.trackBtn.transform, CGAffineTransformIdentity))
         {
-			[avatar resetScaleToSmallBody];
-			[UIView animateWithDuration:0.5 animations:^{
-				self.trackBtn.transform = CGAffineTransformIdentity;
-			}];
-		}
-	}
+            [avatar loadStandbyAnimation];
+            dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER) ;
+            [avatar resetScaleToSmallBody_UseCam];
+            dispatch_semaphore_signal(signal) ;
+            [UIView animateWithDuration:0.5 animations:^{
+                self.trackBtn.transform = CGAffineTransformIdentity;
+            }];
+        }
+    }
 }
 
 - (void)homeBarSelectedActionWithAR:(BOOL)isAR
 {
-    
-//    [[FUManager shareInstance] destory];
-//
-//    [self.navigationController popViewControllerAnimated:YES];
-//    return;
-    
-	FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
-	if (isAR)
+    FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
+    if (isAR)
     {     // AR 滤镜
-		[avatar quitTrackFaceMode];
-		//       [self performSegueWithIdentifier:@"PushToARView" sender:nil];
-		[self performSegueWithIdentifier:@"PushToTrackVC" sender:nil];
-	}
+        [avatar quitTrackFaceMode];
+        //       [self performSegueWithIdentifier:@"PushToARView" sender:nil];
+        [self performSegueWithIdentifier:@"PushToTrackVC" sender:nil];
+    }
     else
     {         // 形象
-		//      [self performSegueWithIdentifier:@"PushToEditView" sender:nil];
-		FUAvatar *currentAvatar = [FUManager shareInstance].currentAvatars.firstObject;
-		if ([currentAvatar.name isEqualToString:@"Star"])
+        //      [self performSegueWithIdentifier:@"PushToEditView" sender:nil];
+        loadingBundles = YES;
+        FUAvatar *currentAvatar = [FUManager shareInstance].currentAvatars.firstObject;
+        if ([currentAvatar.name isEqualToString:@"Star"])
         {
-			return;
-		}
-		FUEditViewController * editVC = [[FUEditViewController alloc]init];
-		[self.navigationController pushViewController:editVC animated:YES];
-	}
+            return;
+        }
+        FUEditViewController * editVC = [[FUEditViewController alloc]init];
+        [FUManager shareInstance].isEnterEditView = YES;
+        [self.navigationController pushViewController:editVC animated:YES];
+    }
 }
 
 // 合影
 - (void)homeBarSelectedGroupBtn
 {
-	[self performSegueWithIdentifier:@"showGroupPhotoController" sender:nil];
+    [self performSegueWithIdentifier:@"showGroupPhotoController" sender:nil];
 }
 
-// zoom
-- (void)homeBarViewReceiveZoom:(float)zoomScale
-{
-	FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
-	[avatar resetScaleDelta:zoomScale];
-}
 
 #pragma mark ---- FUHistoryViewControllerDelegate
--(void)historyViewDidDeleteCurrentItem
+- (void)historyViewDidDeleteCurrentItem
 {
-	[self loadDefaultAvatar];
-	[self.homeBar reloadModeData];
+    [self loadDefaultAvatar];
+    [self.homeBar reloadModeData];
 }
 
 #pragma mark ---- loading action ~
 - (void)startLoadingAnimation
 {
-	self.loadingView.hidden = NO;
-	[self.view bringSubviewToFront:self.loadingView];
-	NSMutableArray *images = [NSMutableArray arrayWithCapacity:1];
-	for (int i = 1; i < 33; i ++)
+    self.loadingView.hidden = NO;
+    [self.view bringSubviewToFront:self.loadingView];
+    NSMutableArray *images = [NSMutableArray arrayWithCapacity:1];
+    for (int i = 1; i < 33; i ++)
     {
-		NSString *imageName = [NSString stringWithFormat:@"loading%d.png", i];
-		NSString *imagePath = [[NSBundle mainBundle] pathForResource:imageName ofType:nil];
-		UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
-		[images addObject:image];
-	}
-	self.loadingImage.animationImages = images;
-	self.loadingImage.animationRepeatCount = 0;
-	self.loadingImage.animationDuration = 2.0;
-	[self.loadingImage startAnimating];
-	
-	self.labelTimer = [NSTimer timerWithTimeInterval:0.5 target:self selector:@selector(labelAnimation) userInfo:nil repeats:YES];
-	[[NSRunLoop currentRunLoop] addTimer:self.labelTimer forMode:NSRunLoopCommonModes];
+        NSString *imageName = [NSString stringWithFormat:@"loading%d.png", i];
+        NSString *imagePath = [[NSBundle mainBundle] pathForResource:imageName ofType:nil];
+        UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
+        [images addObject:image];
+    }
+    self.loadingImage.animationImages = images;
+    self.loadingImage.animationRepeatCount = 0;
+    self.loadingImage.animationDuration = 2.0;
+    [self.loadingImage startAnimating];
+    
+    self.labelTimer = [NSTimer timerWithTimeInterval:0.5 target:self selector:@selector(labelAnimation) userInfo:nil repeats:YES];
+    [[NSRunLoop currentRunLoop] addTimer:self.labelTimer forMode:NSRunLoopCommonModes];
 }
 
 - (void)labelAnimation
 {
-	self.pointLabel.hidden = NO;
-	static int count = 1;
-	count ++;
-	if (count == 4)
+    self.pointLabel.hidden = NO;
+    static int count = 1;
+    count ++;
+    if (count == 4)
     {
-		count = 1;
-	}
-	NSMutableString *str = [@"" mutableCopy];
-	for (int i = 0; i < count; i ++)
+        count = 1;
+    }
+    NSMutableString *str = [@"" mutableCopy];
+    for (int i = 0; i < count; i ++)
     {
-		[str appendString:@"."];
-	}
-	self.pointLabel.text = str;
-	
+        [str appendString:@"."];
+    }
+    self.pointLabel.text = str;
+    
 }
 
 - (void)stopLoadingAnimation
 {
-	self.loadingView.hidden = YES;
-	[self.view sendSubviewToBack:self.loadingView];
-	[self.labelTimer invalidate];
-	self.labelTimer = nil;
-	[self.loadingImage stopAnimating];
+    self.loadingView.hidden = YES;
+    [self.view sendSubviewToBack:self.loadingView];
+    [self.labelTimer invalidate];
+    self.labelTimer = nil;
+    [self.loadingImage stopAnimating];
 }
 
 #pragma mark --- Observer
 - (void)addObserver
 {
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willResignActive) name:UIApplicationWillResignActiveNotification object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willEnterForeground) name:UIApplicationWillEnterForegroundNotification object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didBecomeActive) name:UIApplicationDidBecomeActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willResignActive) name:UIApplicationWillResignActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willEnterForeground) name:UIApplicationWillEnterForegroundNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didBecomeActive) name:UIApplicationDidBecomeActiveNotification object:nil];
 }
 
 - (void)willResignActive
 {
-	if (self.navigationController.visibleViewController == self)
+    if (self.navigationController.visibleViewController == self)
     {
-		[self.camera stopCapture];
-	}
+        [self.camera stopCapture];
+    }
 }
 
 - (void)willEnterForeground
 {
-	if (self.navigationController.visibleViewController == self)
+    if (self.navigationController.visibleViewController == self)
     {
-		[self.camera startCapture];
-	}
+        [self.camera startCapture];
+    }
 }
 
 - (void)didBecomeActive
 {
-	if (self.navigationController.visibleViewController == self)
+    if (self.navigationController.visibleViewController == self)
     {
-		[self.camera startCapture];
-	}
+        [self.camera startCapture];
+    }
 }
 
 #pragma mark ------ info ------

@@ -49,14 +49,6 @@
 		}
 	}
 	
-	[[FUManager shareInstance] addRenderAvatar:self.currentAvatar];
-	[self.currentAvatar loadStandbyAnimation];
-	
-	if (![[FUManager shareInstance] isBackgroundItemExist]) {
-		NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"default_bg.bundle" ofType:nil];
-		[[FUManager shareInstance] reloadBackGroundAndBindToController:bgPath];
-	}
-	
 	[[FUManager shareInstance].currentAvatars.firstObject resetScaleToSmallBody];
 	UIViewController * lasTwoVC =  self.navigationController.viewControllers[1];
 	[self.navigationController popToViewController:lasTwoVC animated:true];

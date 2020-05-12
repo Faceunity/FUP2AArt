@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface FUItemModel : NSObject<NSCopying>
+@interface FUItemModel : NSObject<NSCopying,NSCoding>
 
 @property (nonatomic, strong) NSString *type; //道具类别
 @property (nonatomic, strong) NSString *path; //道具目录所在路径
@@ -22,7 +22,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSNumber *gender_match; //适合性别
 @property (nonatomic, strong) NSNumber *body_match_level; //所需身体登记
 @property (nonatomic, strong) NSMutableDictionary *shapeDict;  //脸部点位信息
- 
+
+- (NSString *)getBundlePath;
+- (NSString *)getIconPath;
+- (BOOL)isEqualToBGModel:(FUItemModel *)model;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -7,9 +7,15 @@
 //
 
 #import <UIKit/UIKit.h>
-//#import "FUFigureDefine.h"
+
+@protocol FUFigureHorizCollectionDelegate <NSObject>
+
+@optional
+- (void)didSelectedItem;
+@end
 
 @interface FUFigureDecorationCollection : UICollectionView
+@property (nonatomic, weak) id<FUFigureHorizCollectionDelegate> mDelegate;
 
 - (void)scrollCurrentToCenterWithAnimation:(BOOL)animation;
 

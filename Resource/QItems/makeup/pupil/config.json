@@ -20,6 +20,13 @@
             "label": [],
             "gender": 2,
             "gender_match": 2
+        },
+        {
+            "bundle": "mid/pupil_3.bundle",
+            "icon": "mid/pupil_3",
+            "label": [],
+            "gender": 2,
+            "gender_match": 2
         }
     ]
 }

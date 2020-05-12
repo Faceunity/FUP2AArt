@@ -475,6 +475,13 @@ typedef enum {
 + (int)isTracking;
 
 /**
+ 判断SDK是否已经初始化：
+ 
+ @return 返回1代表初始化，返回0代表未初始化
+ */
++ (int)isLibraryInit;
+
+/**
  开启多人检测模式：
      - 开启多人检测模式，最多可同时检测 8 张人脸
  

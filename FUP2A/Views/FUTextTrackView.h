@@ -7,6 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "FUKeyBoardInputView.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol FUTextTrackViewDelegate <NSObject>

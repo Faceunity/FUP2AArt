@@ -6,8 +6,8 @@
 //  Copyright © 2018年 liuyang. All rights reserved.
 //
 
-#import "CRender.h"
-#import "FUManager.h"
+
+
 #import <OpenGLES/ES2/gl.h>
 #import <OpenGLES/ES2/glext.h>
 #import <Accelerate/Accelerate.h>
@@ -78,15 +78,6 @@ static CRender *_shareRenderer = nil;
 	CGSize bgTextureSize ;
 	
 	dispatch_semaphore_t signal ;
-}
-
-+ (CRender *)shareRenderer
-{
-	static dispatch_once_t onceToken;
-	dispatch_once(&onceToken, ^{
-		_shareRenderer = [[CRender alloc] init];
-	});
-	return _shareRenderer;
 }
 
 - (instancetype)init
@@ -185,14 +176,37 @@ static CRender *_shareRenderer = nil;
 }
 
 #pragma mark - OpenGLES drawing
-
 - (void)dealloc
 {
-	[self cleanUpTextures];
-	
-	if(_videoTextureCache) {
-		CFRelease(_videoTextureCache);
-	}
+    [self cleanUpTextures];
+    
+    if (bgTextureInfo)
+    {
+        bgTextureInfo = nil;
+    }
+    
+    if (renderTarget) {
+        CFRelease(renderTarget);
+    }
+    
+    if (renderTexture)
+    {
+        CFRelease(renderTexture);
+    }
+    
+    if (pixel_buffer)
+    {
+        CFRelease(pixel_buffer);
+    }
+    
+    if (copyTarget)
+    {
+        CFRelease(copyTarget);
+    }
+
+    if(_videoTextureCache) {
+        CFRelease(_videoTextureCache);
+    }
 }
 
 - (void)cleanUpTextures

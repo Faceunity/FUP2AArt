@@ -8,7 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-
 @protocol FULoadingViewDelegate <NSObject>
 @optional
 - (void)shouldCreateAvatarWithGender:(FUGender)gender ;

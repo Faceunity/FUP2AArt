@@ -7,8 +7,6 @@
 //
 
 #import "FUShapeParamsMode.h"
-#import "FUAvatar.h"
-#import <objc/runtime.h>
 
 @interface FUShapeParamsMode ()
 @property (nonatomic, strong) NSArray *propertyNames ;
@@ -59,11 +57,13 @@ static FUShapeParamsMode *model = nil ;
 
 - (void)getOrignalParamsWithAvatar:(FUAvatar *)avatar
 {
+    NSArray *params = [avatar getFacepupModeParamsWithLength:(int)self.faecepupKeyArray.count];
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
-    for (NSString *proName in self.facepupDict.allKeys)
+    for (int i = 0; i < params.count; i++)
     {
-        double value = [avatar getFacepupModeParamWith:proName];
-        [dict setObject:@(value) forKey:proName];
+        NSString *key = self.faecepupKeyArray[i];
+        
+        [dict setValue:params[i] forKey:key];
     }
     self.orginalFaceup = [dict mutableCopy];
     self.editingFaceup = [dict mutableCopy];

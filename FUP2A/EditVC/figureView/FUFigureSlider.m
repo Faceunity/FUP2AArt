@@ -7,7 +7,6 @@
 //
 
 #import "FUFigureSlider.h"
-#import "UIColor+FU.h"
 
 @implementation FUFigureSlider
 {

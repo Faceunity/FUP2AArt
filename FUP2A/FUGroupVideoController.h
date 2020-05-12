@@ -7,6 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#include <AVFoundation/AVPlayer.h>
+#import "FUAVPlayerView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

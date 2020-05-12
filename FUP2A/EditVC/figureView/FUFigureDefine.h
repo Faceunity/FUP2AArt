@@ -30,8 +30,11 @@ typedef NS_ENUM(NSInteger, FUFigureColorType){
     FUFigureColorTypeLipsColor,
     FUFigureColorTypeBeardColor,
     FUFigureColorTypeHatColor,
+    FUFigureColorTypeEyebrowColor,
+    FUFigureColorTypeEyeshadowColor,
     FUFigureColorTypeGlassesColor,
     FUFigureColorTypeGlassesFrameColor,
+    FUFigureColorTypeEyelashColor,
     FUFigureColorTypeEnd,
 
 } ;
