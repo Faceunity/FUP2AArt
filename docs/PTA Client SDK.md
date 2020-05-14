@@ -626,52 +626,173 @@ static int frameid = 0 ;
 - 通过加载并绑定相关道具到 controller.bundle 道具上，可以对发型、胡子、眼镜、帽子、衣服的样式进行修改。详情请参考[道具加载与绑定](#道具加载与绑定)。
 
 在保存形象时，仅有美型功能需要使用 FUP2AClient SDK 的接口生成新的头道具，而其他参数值及道具（发型、胡子、眼镜、帽子、衣服）信息需要客户端缓存。
-## 文字驱动
-文字驱动是指，用文字驱动形象，将输入文字的文字通过FUStaLite.framework获取口型系数转换为表情系数来驱动形象。示例如下：
 
-(1)打开形象的口型系数驱动功能并设置口型系数的权重；
-```objective-c
-	    // 打开 avatar的口型系数驱动功能
-		[self.currentAvatar enableBlendshape];
-		// 设置口型系数的权重 expression_weight0、expression_weight1
-		NSData *jsonData = [[NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sta_bs_blend_weight" ofType:@"json"] encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
-		NSDictionary *jsonDic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:nil];
-		double expression_weight0Expression[57] = {0};
-		double expression_weight1Expression[57] = {0};
-		NSArray * expression_weight0Array = jsonDic[@"expression_weight0"];
-		NSArray * expression_weight1Array = jsonDic[@"expression_weight1"];
-		for (int i = 0; i < expSize; i++) {
-			expression_weight0Expression[i] = [expression_weight0Array[i] doubleValue];
-			expression_weight1Expression[i] = [expression_weight1Array[i] doubleValue];
-		}
-		[self.currentAvatar setExpression_wieght0:expression_weight0Expression];
-		[self.currentAvatar setExpression_wieght1:expression_weight1Expression];
- ```
-(2)通过FUStaLite.framework获取口型系数；
-```objective-c
-[[FUStaLiteRequestManager shareManager] process:text
-										  voiceName:self.currentToneName
-										voiceFormat:@"mp3"
-										voiceVolume:@"0.1"
-										 voiceSpeed:@"1"
-									voiceSamplerate:nil
-											 result:^(NSError * _Nullable error, NSData * _Nonnull voiceData, NSData * _Nonnull expressionData,float timeStride) {
+## 身体驱动
 
- }];
- ```
- (3)将获取的口型系数传至nama驱动形象表情；
- ```objective-c
-		double exp[57] = {0.0};
-		float *expression = &self.staTotalExpressions[expSize * staFrameIndex];
-		for (int i = 0; i < expSize; i++) {
-			exp[i] = (double)expression[i];
-		}
-		[self.currentAvatar setBlend_expression:exp];
- ```
+初始化身体驱动功能
+
+```objective-c
+NSData *human3dData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"human3d.bundle" ofType:nil]];
+_human3dPtr = [FURenderer create3DBodyTracker:(void*)human3dData.bytes size:(int)human3dData.length];
+```
+
+加载手指驱动，用于手指识别，全局只需要添加一次
+
+```objective-c
+    NSString * anim_fistPath = [[NSBundle mainBundle] pathForResource:@"anim_fist.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_fistPath];
+    NSString * anim_mergePath = [[NSBundle mainBundle] pathForResource:@"anim_merge.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_mergePath];
+    NSString * anim_palmPath = [[NSBundle mainBundle] pathForResource:@"anim_palm.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_palmPath];
+    NSString * anim_twoPath = [[NSBundle mainBundle] pathForResource:@"anim_two.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_twoPath];
+    NSString * anim_heartPath = [[NSBundle mainBundle] pathForResource:@"anim_heart.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_heartPath];
+    NSString * anim_onePath = [[NSBundle mainBundle] pathForResource:@"anim_one.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_onePath];
+    NSString * anim_sixPath = [[NSBundle mainBundle] pathForResource:@"anim_six.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_sixPath];
+    
+    NSString * anim_eightPath = [[NSBundle mainBundle] pathForResource:@"anim_eight.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_eightPath];
+    NSString * anim_okPath = [[NSBundle mainBundle] pathForResource:@"anim_ok.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_okPath];
+    NSString * anim_thumbPath = [[NSBundle mainBundle] pathForResource:@"anim_thumb.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_thumbPath];
+    NSString * anim_holdPath = [[NSBundle mainBundle] pathForResource:@"anim_hold.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_holdPath];
+    NSString * anim_korheartPath = [[NSBundle mainBundle] pathForResource:@"anim_korheart.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_korheartPath];
+    NSString * anim_rockPath = [[NSBundle mainBundle] pathForResource:@"anim_rock.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_rockPath];
+    
+    NSString * anim_greetPath = [[NSBundle mainBundle] pathForResource:@"anim_greet.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_greetPath];
+    NSString * anim_gunPath = [[NSBundle mainBundle] pathForResource:@"anim_gun.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_gunPath];
+```
+
+
+
+开启身体驱动方法（身体驱动分为半身驱动和全身驱动两种模式）,下列方法均在`FUAvatar`类中
+
+```objective-c
+/**
+ 进入身体追踪模式
+ */
+- (void)enterTrackBodyMode {
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"enter_human_pose_track_mode" value:@(1)];
+}
+
+```
+
+开启半身驱动
+
+```objective-c
+//半身驱动方法
+- (void)loadHalfAvatar 
+{
+    fuItemSetParamd(items[FUItemTypeController],"human_3d_track_set_scene",0);
+}
+/**
+ 缩放至半身
+ */
+- (void)resetScaleToHalfBodyWithToolBar
+{
+    double position[3] = {0,15,-300};
+    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"target_position" value:position length:3];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
+}
+```
+
+开启全身驱动
+
+```objective-c
+// 加载全身方法
+- (void)loadFullAvatar 
+{
+    fuItemSetParamd(items[FUItemTypeController],"human_3d_track_set_scene",1);
+}
+/**
+ 缩放至全身追踪,驱动页未收起模型选择栏等工具栏的情况
+
+ */
+- (void)resetScaleToTrackBodyWithToolBar
+{
+    double position[3] = {0,75,-700};
+    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"target_position" value:position length:3];
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
+}
+```
+
+关闭身体驱动
+
+```objective-c
+/**
+ 退出身体追踪模式
+ */
+- (void)quitTrackBodyMode 
+{
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"quit_human_pose_track_mode" value:@(1)];
+}
+```
+
+进入身体跟随模式
+
+```objective-c
+/**
+ 进入身体跟随模式
+ */
+- (void)enterFollowBodyMode {
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"human_3d_track_is_follow" value:@(1)];
+}
+```
+
+ 退出身体跟随模式
+ 
+```objective-c
+/**
+ 退出身体跟随模式
+ */
+- (void)quitFollowBodyMode {
+    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"human_3d_track_is_follow" value:@(0)];
+}
+```
+
+身体驱动图像处理方法
+```
+- (CVPixelBufferRef)renderBodyTrackWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode
+{
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+    
+    FUAvatarInfo* info=[self GetAvatarInfo:pixelBuffer renderMode:renderMode];
+    
+    int h = (int)CVPixelBufferGetHeight(pixelBuffer);
+    int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer);
+    int w = stride/4;
+    
+
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+    void* pod = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
+    
+    [FURenderer run3DBodyTracker:human3dPtr humanHandle:0 inPtr:pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:0];
+    
+    [[FURenderer shareRenderer]renderBundles:&info->info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
+    
+    [self rotateImage:pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
+    memcpy(pod, self.rotatedImageManager.mData, w*h*4);
+    
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+    dispatch_semaphore_signal(signal);
+    
+    return pixelBuffer;
+}
+```
 
  ## 本地视频驱动“身体驱动”功能
 
-使用本地视频驱动“身体驱动”功能 是指，在驱动界面里面的“身体追踪”子界面里面，通过视频作为输入源来驱动身体追踪功能，与之相对应的是通过相机作为输入源，上面已经介绍。
+使用本地视频驱动“身体驱动”功能 是指，在驱动界面里面的“身体驱动”子界面里面，通过视频作为输入源来驱动身体驱动功能，与之相对应的是通过相机作为输入源，上面已经介绍。
 
 1.加载本地视频作为输入源
  ```objective-c
@@ -861,6 +982,51 @@ static int frameIndex = 0 ;
 }
 
 ```
+
+## 文字驱动
+文字驱动是指，用文字驱动形象，将输入文字的文字通过FUStaLite.framework获取口型系数转换为表情系数来驱动形象。示例如下：
+
+(1)打开形象的口型系数驱动功能并设置口型系数的权重；
+```objective-c
+	    // 打开 avatar的口型系数驱动功能
+		[self.currentAvatar enableBlendshape];
+		// 设置口型系数的权重 expression_weight0、expression_weight1
+		NSData *jsonData = [[NSString stringWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"sta_bs_blend_weight" ofType:@"json"] encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
+		NSDictionary *jsonDic = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:nil];
+		double expression_weight0Expression[57] = {0};
+		double expression_weight1Expression[57] = {0};
+		NSArray * expression_weight0Array = jsonDic[@"expression_weight0"];
+		NSArray * expression_weight1Array = jsonDic[@"expression_weight1"];
+		for (int i = 0; i < expSize; i++) {
+			expression_weight0Expression[i] = [expression_weight0Array[i] doubleValue];
+			expression_weight1Expression[i] = [expression_weight1Array[i] doubleValue];
+		}
+		[self.currentAvatar setExpression_wieght0:expression_weight0Expression];
+		[self.currentAvatar setExpression_wieght1:expression_weight1Expression];
+ ```
+(2)通过FUStaLite.framework获取口型系数；
+```objective-c
+[[FUStaLiteRequestManager shareManager] process:text
+										  voiceName:self.currentToneName
+										voiceFormat:@"mp3"
+										voiceVolume:@"0.1"
+										 voiceSpeed:@"1"
+									voiceSamplerate:nil
+											 result:^(NSError * _Nullable error, NSData * _Nonnull voiceData, NSData * _Nonnull expressionData,float timeStride) {
+
+ }];
+ ```
+ (3)将获取的口型系数传至nama驱动形象表情；
+ ```objective-c
+		double exp[57] = {0.0};
+		float *expression = &self.staTotalExpressions[expSize * staFrameIndex];
+		for (int i = 0; i < expSize; i++) {
+			exp[i] = (double)expression[i];
+		}
+		[self.currentAvatar setBlend_expression:exp];
+ ```
+
+
 ## AR驱动
 
 AR驱动是指，在AR环境下，使用 Nama SDK 进行人脸检测，再使用检测到人脸信息驱动风格化形象。同时我们在AR环境下，支持丰富多彩的滤镜效果。
@@ -989,228 +1155,6 @@ static int frameid = 0 ;
  ```
 
 
-## 身体驱动
 
-初始化身体驱动功能
-
-```objective-c
-NSData *human3dData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"human3d.bundle" ofType:nil]];
-_human3dPtr = [FURenderer create3DBodyTracker:(void*)human3dData.bytes size:(int)human3dData.length];
-```
-
-加载手指驱动，用于手指识别，全局只需要添加一次
-
-```objective-c
-    NSString * anim_fistPath = [[NSBundle mainBundle] pathForResource:@"anim_fist.bundle" ofType:nil];
-    [self bindItemToControllerWithFilepath:anim_fistPath];
-    NSString * anim_mergePath = [[NSBundle mainBundle] pathForResource:@"anim_merge.bundle" ofType:nil];
-    [self bindItemToControllerWithFilepath:anim_mergePath];
-    NSString * anim_palmPath = [[NSBundle mainBundle] pathForResource:@"anim_palm.bundle" ofType:nil];
-    [self bindItemToControllerWithFilepath:anim_palmPath];
-    NSString * anim_twoPath = [[NSBundle mainBundle] pathForResource:@"anim_two.bundle" ofType:nil];
-    [self bindItemToControllerWithFilepath:anim_twoPath];
-    NSString * anim_heartPath = [[NSBundle mainBundle] pathForResource:@"anim_heart.bundle" ofType:nil];
-    [self bindItemToControllerWithFilepath:anim_heartPath];
-    NSString * anim_onePath = [[NSBundle mainBundle] pathForResource:@"anim_one.bundle" ofType:nil];
-    [self bindItemToControllerWithFilepath:anim_onePath];
-    NSString * anim_sixPath = [[NSBundle mainBundle] pathForResource:@"anim_six.bundle" ofType:nil];
-    [self bindItemToControllerWithFilepath:anim_sixPath];
-    
-    NSString * anim_eightPath = [[NSBundle mainBundle] pathForResource:@"anim_eight.bundle" ofType:nil];
-    [self bindItemToControllerWithFilepath:anim_eightPath];
-    NSString * anim_okPath = [[NSBundle mainBundle] pathForResource:@"anim_ok.bundle" ofType:nil];
-    [self bindItemToControllerWithFilepath:anim_okPath];
-    NSString * anim_thumbPath = [[NSBundle mainBundle] pathForResource:@"anim_thumb.bundle" ofType:nil];
-    [self bindItemToControllerWithFilepath:anim_thumbPath];
-    NSString * anim_holdPath = [[NSBundle mainBundle] pathForResource:@"anim_hold.bundle" ofType:nil];
-    [self bindItemToControllerWithFilepath:anim_holdPath];
-    NSString * anim_korheartPath = [[NSBundle mainBundle] pathForResource:@"anim_korheart.bundle" ofType:nil];
-    [self bindItemToControllerWithFilepath:anim_korheartPath];
-    NSString * anim_rockPath = [[NSBundle mainBundle] pathForResource:@"anim_rock.bundle" ofType:nil];
-    [self bindItemToControllerWithFilepath:anim_rockPath];
-    
-    NSString * anim_greetPath = [[NSBundle mainBundle] pathForResource:@"anim_greet.bundle" ofType:nil];
-    [self bindItemToControllerWithFilepath:anim_greetPath];
-    NSString * anim_gunPath = [[NSBundle mainBundle] pathForResource:@"anim_gun.bundle" ofType:nil];
-    [self bindItemToControllerWithFilepath:anim_gunPath];
-```
-
-
-
-开启身体驱动方法（身体驱动分为半身驱动和全身驱动两种模式）,下列方法均在`FUAvatar`类中
-
-```objective-c
-/**
- 进入身体追踪模式
- */
-- (void)enterTrackBodyMode {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"enter_human_pose_track_mode" value:@(1)];
-}
-
-```
-
-开启半身驱动
-
-```objective-c
-//半身驱动方法
-- (void)loadHalfAvatar 
-{
-    fuItemSetParamd(items[FUItemTypeController],"human_3d_track_set_scene",0);
-}
-/**
- 缩放至半身
- */
-- (void)resetScaleToHalfBodyWithToolBar
-{
-    double position[3] = {0,15,-300};
-    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"target_position" value:position length:3];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
-}
-```
-
-开启全身驱动
-
-```objective-c
-// 加载全身方法
-- (void)loadFullAvatar 
-{
-    fuItemSetParamd(items[FUItemTypeController],"human_3d_track_set_scene",1);
-}
-/**
- 缩放至全身追踪,驱动页未收起模型选择栏等工具栏的情况
-
- */
-- (void)resetScaleToTrackBodyWithToolBar
-{
-    double position[3] = {0,75,-700};
-    [FURenderer itemSetParamdv:items[FUItemTypeController] withName:@"target_position" value:position length:3];
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"reset_all" value:@(6)];
-}
-```
-
-关闭身体驱动
-
-```objective-c
-/**
- 退出身体追踪模式
- */
-- (void)quitTrackBodyMode 
-{
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"quit_human_pose_track_mode" value:@(1)];
-}
-```
-
-进入身体跟随模式
-
-```objective-c
-/**
- 进入身体跟随模式
- */
-- (void)enterFollowBodyMode {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"human_3d_track_is_follow" value:@(1)];
-}
-```
-
- 退出身体跟随模式
- 
-```objective-c
-/**
- 退出身体跟随模式
- */
-- (void)quitFollowBodyMode {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"human_3d_track_is_follow" value:@(0)];
-}
-```
-
-身体驱动图像处理方法
-```
-- (CVPixelBufferRef)renderBodyTrackWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode
-{
-    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
-    
-    FUAvatarInfo* info=[self GetAvatarInfo:pixelBuffer renderMode:renderMode];
-    
-    int h = (int)CVPixelBufferGetHeight(pixelBuffer);
-    int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer);
-    int w = stride/4;
-    
-
-    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
-    void* pod = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
-    
-    [FURenderer run3DBodyTracker:human3dPtr humanHandle:0 inPtr:pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:0];
-    
-    [[FURenderer shareRenderer]renderBundles:&info->info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
-    
-    [self rotateImage:pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
-    memcpy(pod, self.rotatedImageManager.mData, w*h*4);
-    
-    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
-    dispatch_semaphore_signal(signal);
-    
-    return pixelBuffer;
-}
-```
-
-导入视频图像处理方法
-```
-- (CVPixelBufferRef)renderBodyTrackAdjustAssginOutputSizeWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength
-{
-    
-    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
-    
-    FUAvatarInfo* info=[self GetAvatarInfo:pixelBuffer renderMode:renderMode];
-    if(self.useFaceCapure)
-    {
-        info = [[FUAvatarInfo alloc] init];
-        [self enableFaceCapture:(FURenderPreviewMode==renderMode?YES:NO)];
-        if(FURenderPreviewMode == renderMode)
-        {
-            [self trackFace:pixelBuffer];
-            if(landmarks)
-            {
-                [self GetLandmarks:landmarks length:landmarksLength faceIdx:0];
-            }
-        }
-    }
-    else
-    {
-        info = [self GetAvatarInfo:pixelBuffer renderMode:renderMode];
-        if(FURenderPreviewMode == renderMode)
-        {
-            if(landmarks)
-            {
-                memcpy(landmarks, info->landmarks, sizeof(info->landmarks));
-            }
-        }
-    }
-    int h = (int)CVPixelBufferGetHeight(pixelBuffer);
-    int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer);
-    int w = stride/4;
-    
-    if (!bodyTrackBuffer)
-    {
-        bodyTrackBuffer = [self createEmptyPixelBuffer:CGSizeMake(self.outPutSize.width, self.outPutSize.height)];
-    }
-    
-    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
-    void* pod1 = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
-    CVPixelBufferLockBaseAddress(bodyTrackBuffer, 0);
-    void* pod0 = (void *)CVPixelBufferGetBaseAddress(bodyTrackBuffer);
-    
-    [FURenderer run3DBodyTracker:human3dPtr humanHandle:0 inPtr:pod1 inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:0];
-    
-    [[FURenderer shareRenderer]renderBundles:&info->info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod0 outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
-    
-    [self rotateImage:pod0 inFormat:FU_FORMAT_BGRA_BUFFER w:self.outPutSize.width h:self.outPutSize.height rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
-    memcpy(pod0, self.rotatedImageManager.mData, self.outPutSize.width*self.outPutSize.height*4);
-    
-    CVPixelBufferUnlockBaseAddress(bodyTrackBuffer, 0);
-    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
-    dispatch_semaphore_signal(signal);
-    
-    return bodyTrackBuffer;
-}
-```
 
 **更多详情，请参考Demo代码!**
