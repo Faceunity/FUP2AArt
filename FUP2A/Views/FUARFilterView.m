@@ -7,9 +7,6 @@
 //
 
 #import "FUARFilterView.h"
-#import "FUAvatar.h"
-#import "FUP2ADefine.h"
-#import "FUManager.h"
 
 typedef enum : NSInteger {
     FUARCollectionTypeModel,

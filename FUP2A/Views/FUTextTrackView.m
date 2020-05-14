@@ -7,10 +7,6 @@
 //
 
 #import "FUTextTrackView.h"
-#import "FUAvatar.h"
-#import "FUP2ADefine.h"
-#import "FUManager.h"
-
 
 typedef enum : NSInteger {
 	FUTextTrackCollectionTypeModel,

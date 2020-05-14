@@ -14,7 +14,7 @@ typedef NS_ENUM(NSInteger, FUAvatarStyle){
 typedef NS_ENUM(NSInteger, FUGender){
     FUGenderMale           = 0,
     FUGenderFemale         = 1,
-    FUGenderUnKnow         = -1,
+    FUGenderUnKnow         = 2,
 };
 
 typedef NS_ENUM(NSInteger, FURenderMode){
@@ -33,9 +33,10 @@ typedef NS_ENUM(NSInteger, FUStaPlayState){
 	StaCompleted            = 2,
 };
 typedef NS_ENUM(NSInteger, FUSceneryMode) {
-    FUSceneryModeSingle             = 0,
-    FUSceneryModeMultiple           = 1,
-    FUSceneryModeAnimation          = 2,
+    FUSceneryModeAll             = 0,
+    FUSceneryModeSingle             = 1,
+    FUSceneryModeMultiple           = 2,
+    FUSceneryModeAnimation          = 3,
 };
 
 typedef NS_ENUM(NSInteger, FUMeshPiontDirection) {
@@ -117,26 +118,6 @@ static int const FUAppVersionInvalid = 3001;
 
 #pragma mark ------ itemKey ------
 
-//#define TAG_FU_ITEM_HAIR  @"发型"
-//#define TAG_FU_ITEM_FACE  @"脸型"
-//#define TAG_FU_ITEM_MOUTH  @"嘴型"
-//#define TAG_FU_ITEM_EYE  @"眼型"
-//#define TAG_FU_ITEM_NOSE  @"鼻型"
-//#define TAG_FU_ITEM_CLOTH  @"套装"
-//#define TAG_FU_ITEM_UPPER  @"上衣"
-//#define TAG_FU_ITEM_LOWER  @"下衣"
-//#define TAG_FU_ITEM_SHOES  @"鞋子"
-//#define TAG_FU_ITEM_HAT  @"帽子"
-//#define TAG_FU_ITEM_EYELASH  @"睫毛"
-//#define TAG_FU_ITEM_EYEBROW  @"眉毛"
-//#define TAG_FU_ITEM_BEARD  @"胡子"
-//#define TAG_FU_ITEM_GLASSES  @"眼镜"
-//#define TAG_FU_ITEM_EYESHADOW  @"眼影"
-//#define TAG_FU_ITEM_EYELINER  @"眼线"
-//#define TAG_FU_ITEM_PUPIL  @"美瞳"
-//#define TAG_FU_ITEM_FACEMAKEUP  @"脸妆"
-//#define TAG_FU_ITEM_LIPGLOSS  @"唇妆"
-//#define TAG_FU_ITEM_DECORATION  @"饰品"
 #define TAG_FU_ITEM_HAIR  @"hair"
 #define TAG_FU_ITEM_FACE  @"face"
 #define TAG_FU_ITEM_MOUTH  @"mouth"
@@ -157,6 +138,14 @@ static int const FUAppVersionInvalid = 3001;
 #define TAG_FU_ITEM_FACEMAKEUP  @"faceMakeup"
 #define TAG_FU_ITEM_LIPGLOSS  @"lipGloss"
 #define TAG_FU_ITEM_DECORATION  @"decorations"
+#define TAG_FU_ITEM_HAIRHAT  @"hairHat"
 
+#define TAG_FU_ITEM_BACKGROUND_2D  @"2d"
+#define TAG_FU_ITEM_BACKGROUND_3D  @"3d"
+#define TAG_FU_ITEM_BACKGROUND_ANIMATION  @"animation"
 
 #define TAG_FU_SKIN_COLOR_PROGRESS  @"skin_color_progress"
+
+
+
+#define TAG_UD_BACKGROUND_MODEL @"selectedBackGroundModel"

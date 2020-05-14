@@ -7,91 +7,106 @@
 //
 
 #import "FUFigureBottomCollection.h"
-#import "UIColor+FU.h"
 
 @interface FUFigureBottomCollection ()<UICollectionViewDataSource, UICollectionViewDelegate>
 {
     NSInteger selectedIndex ;
 }
-@property (nonatomic, strong) UIView *line ;
-
+@property (nonatomic, strong) NSArray *bgSubTypeNameArray;
+@property (nonatomic, strong) NSArray *bgSubTypeKeyArray;
+@property (nonatomic, assign) NSInteger count;
 @end
 
 @implementation FUFigureBottomCollection
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    
     self.dataSource = self ;
     self.delegate = self ;
-    
-    self.line = [[UIView alloc] init];
-    self.line.backgroundColor = [UIColor colorWithHexColorString:@"4C96FF"];
-    self.line.layer.masksToBounds = YES ;
-    self.line.layer.cornerRadius = 1.0 ;
-    self.line.frame = CGRectMake(34.0, self.frame.size.height - 2.0, 34, 2.0) ;
-    [self addSubview:self.line];
     [self registerNib:[UINib nibWithNibName:@"FUFigureBottomCell" bundle:nil] forCellWithReuseIdentifier:@"FUFigureBottomCell"];
 }
 
-- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return [FUManager shareInstance].itemTypeArray.count ;
+- (void)reloadData
+{
+    
+    self.count =  [[FUManager shareInstance] getCurrentTypeArrayCount];
+    [super reloadData];
 }
+
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
+{
+    return self.count;
+}
+
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     
     FUFigureBottomCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"FUFigureBottomCell" forIndexPath:indexPath];
-    NSString *type = [FUManager shareInstance].itemNameArray[indexPath.row];
-    cell.label.text = type;
-    cell.label.textColor = [FUManager shareInstance].itemTypeSelectIndex == indexPath.row ? [UIColor colorWithHexColorString:@"4C96FF"] : [UIColor colorWithHexColorString:@"000000"] ;
+
+    cell.imageView.image = [UIImage imageNamed:[[FUManager shareInstance]getSubTypeImageOfSelectedTypeWithIndex:indexPath.row]];
     return cell ;
 }
 
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (indexPath.row == [FUManager shareInstance].itemTypeSelectIndex)
+    [self reloadData];
+    if (indexPath.row == [[FUManager shareInstance] getSubTypeSelectedIndex]&&[FUManager shareInstance].isHiddenDecView == NO)
     {
         if ([self.mDelegate respondsToSelector:@selector(bottomCollectionDidSelectedIndex:show:animation:)])
         {
             [self.mDelegate bottomCollectionDidSelectedIndex:indexPath.row show:NO animation:YES];
-            
-            [self hiddenSelectedLine];
+            [FUManager shareInstance].isHiddenDecView = YES;
         }
         return ;
     }
     
-    BOOL animation = [FUManager shareInstance].itemTypeSelectIndex  == -1;
-    [FUManager shareInstance].itemTypeSelectIndex = indexPath.row;
+    [FUManager shareInstance].isHiddenDecView = NO;
+    [[FUManager shareInstance]setSubTypeSelectedIndex:indexPath.row];
+    [self reloadCam];
     
-    FUFigureBottomCell *cell = (FUFigureBottomCell *)[collectionView cellForItemAtIndexPath:indexPath];
-    
-    self.line.hidden = NO;
-    CGFloat centerX = cell.center.x ;
-    CGPoint center = self.line.center ;
-    center.x = centerX ;
-    
-    [UIView animateWithDuration:0.35 animations:^{
-        self.line.center = center ;
-    }];
-    
-    [collectionView reloadData];
-    [collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:YES];
-    
+    [self reloadData];
+
     if ([self.mDelegate respondsToSelector:@selector(bottomCollectionDidSelectedIndex:show:animation:)])
     {
-        [self.mDelegate bottomCollectionDidSelectedIndex:indexPath.row show:YES animation:animation];
+        [self.mDelegate bottomCollectionDidSelectedIndex:indexPath.row show:YES animation:YES];
     }
 }
 
-- (void)hiddenSelectedLine
+- (void)reloadCam
 {
-    if (!self.line.hidden)
+    FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
+    if ([[FUManager shareInstance].selectedEditType isEqualToString:@"face"]||[[FUManager shareInstance].selectedEditType isEqualToString:@"makeup"])
     {
-        self.line.hidden = YES ;
-        [FUManager shareInstance].itemTypeSelectIndex = -1;
-        [self reloadData];
+        [avatar resetScaleToBody_UseCam];
+    }
+    else if ([[FUManager shareInstance].selectedEditType isEqualToString:@"dress"]||[[FUManager shareInstance].selectedEditType isEqualToString:@"background"])
+    {
+        NSString *subType = [[FUManager shareInstance]getSubTypeKeyWithIndex:[[FUManager shareInstance]getSubTypeSelectedIndex]];
+        if ([subType isEqualToString:TAG_FU_ITEM_HAIRHAT]||[subType isEqualToString:TAG_FU_ITEM_GLASSES])
+        {
+            [avatar resetScaleToBody_UseCam];
+        }
+        else
+        {
+            [avatar resetScaleChange_UseCam];
+        }
     }
 }
+
+
+- (NSString *)getBackgroundTypeImageWithIndex:(NSInteger)index
+{
+    
+    NSString *imageName = [NSString stringWithFormat:@"icon_background_%@",self.bgSubTypeKeyArray[index]];
+    
+    if (index == [FUManager shareInstance].iSelectedBgSubtypeIndex&&[FUManager shareInstance].isHiddenDecView != YES)
+    {
+        imageName = [imageName stringByAppendingString:@"_selected"];
+    }
+    return imageName;
+}
+
 
 @end
 

@@ -6,9 +6,9 @@
 //  Copyright © 2018年 L. All rights reserved.
 //
 
-#import "FURequestManager.h"
+
 #import <AFNetworking.h>
-#import "FUManager.h"
+
 NSString * TOKENURL;      // 获取token地址，现在是从json文件获取
 NSString * UPLOADURL;    // 上传图片地址，现在是从json文件获取
 NSString * DOWNLOADURL; // 下载avatar地址，现在是从json文件获取

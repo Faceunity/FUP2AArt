@@ -29,6 +29,7 @@
 @property (nonatomic, strong) CALayer *maxTrackImageLayer;
 @property (nonatomic, strong, readonly) CALayer *thumbIconLayer;
 @property (nonatomic, strong) UIColor *balloonColor;
+@property (nonatomic, strong) UILabel *lblValue;
 
 @end
 
@@ -169,6 +170,7 @@
 		[CATransaction setValue:@YES forKey: kCATransactionDisableActions];
 		_thumbLayer.position = CGPointMake(left + (trackWidth * perc), halfHeight);
 		_balloonLayer.position = CGPointMake(left + (trackWidth * perc),_balloonLayer.position.y);
+        _lblValue.center = CGPointMake(left + (trackWidth * perc), _balloonLayer.position.y);
         UIColor *newColor = [[[FUManager shareInstance] getSkinColorWithProgress:self.value] valueForKey:@"color"];
 		[self setThumbColor:newColor];
 		//		[self setBalloonColor:newColor];
@@ -183,6 +185,7 @@
 		self.balloonLayer.fillColor = newColor.CGColor;
 		_thumbLayer.position = CGPointMake(left + (trackWidth * perc), halfHeight);
 		_balloonLayer.position = CGPointMake(left + (trackWidth * perc),_balloonLayer.position.y);
+        _lblValue.center = CGPointMake(left + (trackWidth * perc), _balloonLayer.position.y);
 	}
 }
 
@@ -194,6 +197,8 @@
 	
 	//  self.balloonLayer.hidden = NO;
 	[self.layer addSublayer:self.balloonLayer];
+    [self addSubview:self.lblValue];
+//     [self bringSubviewToFront:self.lblValue];
 	CGPoint center = _thumbLayer.position;
 	CGFloat diameter = fmax(_thumbSize,44.0);
 	CGRect r = CGRectMake(center.x - diameter/2.0, center.y - diameter/2.0, diameter,  diameter);
@@ -219,6 +224,7 @@
 			self.actionBlock(self,newValue, NO);
 		}
 	}
+    self.lblValue.text = [NSString stringWithFormat:@"%0.0f",round(newValue*100)];
 	return YES;
 }
 
@@ -226,6 +232,8 @@
 {
 	//   self.balloonLayer.hidden = YES;
 	[self.balloonLayer removeFromSuperlayer];
+    [self.lblValue removeFromSuperview];
+   
 	if(touch)
     {
 		CGPoint pt = [touch locationInView:self];
@@ -258,6 +266,7 @@
 
 -(void)setValue:(CGFloat) value animated:(BOOL) animated {
 	currentValue = fmax(fmin(value,self.maxValue),self.minValue);
+    self.lblValue.text = [NSString stringWithFormat:@"%0.0f",round(currentValue*100)];
 	[self updateThumbPosition:YES];
 	//  [self layoutSubviews];
 }
@@ -510,6 +519,22 @@
         _balloonLayer.path = [self drawBalloonPath:CGPointMake(balloonLayerCenterX, balloonLayerCenterY)].CGPath;
     }
     return _balloonLayer;
+}
+
+- (UILabel *)lblValue
+{
+    if (!_lblValue)
+    {
+        _lblValue = ({
+            UILabel *object = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, 44, 52)];
+            object.text = @"1";
+            object.font = [UIFont systemFontOfSize:17];
+            object.textColor = [UIColor whiteColor];
+            object.textAlignment = NSTextAlignmentCenter;
+            object;
+        });
+    }
+    return _lblValue;
 }
 
 @end

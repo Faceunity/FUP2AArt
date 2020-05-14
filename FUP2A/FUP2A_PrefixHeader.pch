@@ -1,83 +1,17 @@
 #import <Foundation/Foundation.h>
-#import "objc/runtime.h"
 #import "FUP2ADefine.h"
-#import "FULoadingView.h"
-#import "AGLKVertexAttribArrayBuffer.h"
-#import "AGLKContext.h"
-#import "Tool/FUOpenGLView.h"
-#import "mode/FUManager.h"
-#import "FUStack.h"
-#import "funama.h"
-#import "FURenderer.h"
-#import "FUAvatarEditedDoModel.h"
-#import "FUNielianEditManager.h"
-#import "FUAvatarEditManager.h"
-#import "FUPhotoLoadingView.h"
-#import "FUHomeBarViewController.h"
-#import "FUCamera.h"
-#import "FUOpenGLView.h"
-#import "FUManager.h"
-#import "FUAvatar.h"
-#import <SVProgressHUD.h>
-#import "FUTool.h"
-#import "FUAVUtilities.h"
-#import "Chat/FUKeyBoardInputView.h"
-#import "FUTrackController.h"
-#import "FUPoseTrackView.h"
-#import "FUTextTrackView.h"
-#import "FUARFilterView.h"
-#import "FUTextTrackController.h"
-
-#import "FUARFilterController.h"
-
-
-#import "FUP2AColor.h"
-#import "FUFigureView.h"
-#import "FUMeshPoint.h"
-#import "FUShapeParamsMode.h"
-#import "UIColor+FU.h"
-#import "Faceunity/P2A/fuPTAClient.h"
-
-#import <SVProgressHUD.h>
-#import "FUManager.h"
-#import "FUAvatar.h"
-#import <Photos/Photos.h>
-#import <SVProgressHUD.h>
-#import <UIImage+GIF.h>
-#import "FUAVPlayerView.h"
-
-#import <SVProgressHUD.h>
-#import "FUP2ADefine.h"
-#import "FUCamera.h"
-#import "FUOpenGLView.h"
-#import "FUGradientSlider.h"
-#import "FUManager.h"
-#import "FUAvatar.h"
-#import "FUP2AColor.h"
-#import "FUTool.h"
-#import "FUTakePhotoController.h"
-#import "FUEditViewController.h"
-#import "FURequestManager.h"
-#import "FUGroupVideoController.h"
-
-#import "FUOpenGLView.h"
-#import "FUCamera.h"
 #import "FUAvatar.h"
 #import "FUManager.h"
-#import "FUP2ADefine.h"
-#import "UIColor+FU.h"
-#import "FUSceneryModel.h"
-#import <SVProgressHUD.h>
-#import "FUGroupImageController.h"
-#import "CRender.h"
+#import "AppManager.h"
 #import <FUP2AHelper/FUP2AHelper.h>
-#import "Manager/AppManager.h"
-// views
-#import "FUHomeBarView.h"
-#import "FUHistoryViewController.h"
-
-
-
+#import "CRender.h"
+#import "FUCamera.h"
+#import "FUOpenGLView.h"
+#import <SVProgressHUD.h>
+#import "FUP2AColor.h"
+#import "FURequestManager.h"
+#import <objc/runtime.h>
+#import "UIColor+FU.h"
 
 #define appManager [AppManager sharedInstance]
 #define HairsWriteToLocalSuccessNot @"FUHairsWriteToLocalSuccessNot"

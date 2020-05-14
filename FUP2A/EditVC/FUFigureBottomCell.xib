@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina6_1" orientation="portrait">
-        <adaptation id="fullscreen"/>
-    </device>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15704"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -19,24 +17,24 @@
                 <rect key="frame" x="0.0" y="0.0" width="68" height="48"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9A5-qi-Y7C">
-                        <rect key="frame" x="0.0" y="0.0" width="68" height="48"/>
-                        <fontDescription key="fontDescription" type="system" weight="medium" pointSize="14"/>
-                        <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                        <nil key="highlightedColor"/>
-                    </label>
+                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Mdz-N6-Tw4">
+                        <rect key="frame" x="19" y="9" width="32" height="32"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="32" id="NYu-iW-3Yb"/>
+                            <constraint firstAttribute="width" constant="32" id="rO0-NK-Cxw"/>
+                        </constraints>
+                    </imageView>
                 </subviews>
             </view>
             <constraints>
-                <constraint firstAttribute="trailing" secondItem="9A5-qi-Y7C" secondAttribute="trailing" id="Pkf-Hc-c0t"/>
-                <constraint firstItem="9A5-qi-Y7C" firstAttribute="leading" secondItem="j2q-vY-295" secondAttribute="leading" id="hCs-36-jun"/>
-                <constraint firstAttribute="bottom" secondItem="9A5-qi-Y7C" secondAttribute="bottom" id="iVH-99-7A9"/>
-                <constraint firstItem="9A5-qi-Y7C" firstAttribute="top" secondItem="j2q-vY-295" secondAttribute="top" id="sci-YH-3DA"/>
+                <constraint firstItem="Mdz-N6-Tw4" firstAttribute="centerY" secondItem="j2q-vY-295" secondAttribute="centerY" constant="1" id="Otg-il-gu0"/>
+                <constraint firstItem="Mdz-N6-Tw4" firstAttribute="centerX" secondItem="j2q-vY-295" secondAttribute="centerX" constant="1" id="o0A-1r-aQP"/>
             </constraints>
             <viewLayoutGuide key="safeArea" id="kTv-gb-vKN"/>
             <connections>
-                <outlet property="label" destination="9A5-qi-Y7C" id="wgP-yL-fXa"/>
+                <outlet property="imageView" destination="Mdz-N6-Tw4" id="tyo-Xg-bL9"/>
             </connections>
+            <point key="canvasLocation" x="133" y="131"/>
         </collectionViewCell>
     </objects>
 </document>

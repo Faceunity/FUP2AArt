@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import <AVFoundation/AVFoundation.h>
+
 #import "FUPlaceholderTextView.h"
 
 typedef NS_ENUM(NSInteger,FUInputType) {

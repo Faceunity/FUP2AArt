@@ -132,6 +132,7 @@ typedef struct{
 	int is_image_first;
 	int rotation_mode_before_crop;
 	float crop_ratio_top;
+	int use_black_edge;
 }TSplitViewInfo;
 
 #define FU_FORMAT_VOID 13
@@ -256,6 +257,24 @@ FUNAMA_API void fuDestroyLibData();
 \return a new GLES texture containing the rendered image in the texture mode
 */
 FUNAMA_API int fuRenderItems(int texid,int* img,int w,int h,int frame_id, int* p_items,int n_items);
+/**
+\brief set crop state.
+\param state is the Cropped switch
+\return zero for closed, one for open 
+*/
+
+FUNAMA_API int fuSetCropState(int state);
+/**
+\brief Set the coordinates of the crop.
+\param (x0,y0) is the coordinates of the starting point after cropping. (x0,y0) is (0,0) befor cropping
+\param (x1,y1) is the coordinate of the end point after cropping. (x1,y1) is (imageWideth, imageHeight) before cropping
+\return zero for failure, one for success 
+*/
+FUNAMA_API int fuSetCropFreePixel(int x0, int y0, int x1, int y1);
+
+
+FUNAMA_API void fuSetFaceProcessorFov(float fov);
+FUNAMA_API float fuGetFaceProcessorFov();
 
 /**
 \brief Generalized interface for rendering a list of items.
@@ -482,6 +501,11 @@ FUNAMA_API int fuItemGetParamdv(int item,char* name,double* buf,int n);
 \return The number of valid faces currently being tracked
 */
 FUNAMA_API int fuIsTracking();
+/**
+\brief Get library init status
+\return 1 inited, 0 not init.
+*/
+FUNAMA_API int fuIsLibraryInit();
 /**
 \brief Set the default orientation for face detection. The correct orientation would make the initial detection much faster.
 \param rmode is the default orientation to be set to, one of 0..3 should work.
@@ -1096,6 +1120,8 @@ float* fuFaceCaptureGetResultTongueExp(void*  manager_ptr_addr,
 									int face_n,
 									int* size_n);
 
+void fuHexagonInitWithPath(const char* lib_directory_path);
+void fuHexagonTearDown();
 
 #ifdef __cplusplus
 }

@@ -7,8 +7,6 @@
 //
 
 #import "FUFigureHorizCollection.h"
-#import "UIColor+FU.h"
-#import "FUItemModel.h"
 
 @interface FUFigureHorizCollection ()<UICollectionViewDataSource, UICollectionViewDelegate>
 {
@@ -30,7 +28,7 @@
 }
 
 - (void)scrollCurrentToCenterWithAnimation:(BOOL)animation {
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:[[FUManager shareInstance] getSelectedItemIndexOfSelectedType] inSection:0];
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
     [self scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionCenteredVertically animated:NO];
 }
 
@@ -43,21 +41,21 @@
 //}
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return [[FUManager shareInstance]getItemArrayOfSelectedType].count ;
+    return 0;
 }
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     
     FUFigureHorizCollectionCell *cell = (FUFigureHorizCollectionCell *)[collectionView dequeueReusableCellWithReuseIdentifier:@"FUFigureHorizCollectionCell" forIndexPath:indexPath];
     
-    FUItemModel *model = [[[FUManager shareInstance]getItemArrayOfSelectedType] objectAtIndex:indexPath.row];
+    FUItemModel *model = nil;
     NSString *imagePath;
     
-    imagePath = [NSString stringWithFormat:@"%@/%@",model.path,model.icon];
+    imagePath = [model getIconPath];
     UIImage * image = [UIImage imageNamed:imagePath];
     cell.imageView.image = image;
     
-    NSInteger selectedIndex = [[FUManager shareInstance] getSelectedItemIndexOfSelectedType];
+    NSInteger selectedIndex = 0;
     cell.layer.borderWidth = selectedIndex == indexPath.row ? 2.0 : 0.0 ;
     cell.layer.borderColor = selectedIndex == indexPath.row ? [UIColor colorWithHexColorString:@"4C96FF"].CGColor : [UIColor clearColor].CGColor ;
     
@@ -66,7 +64,7 @@
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    FUItemModel *model = [[[FUManager shareInstance]getItemArrayOfSelectedType] objectAtIndex:indexPath.row];
+    FUItemModel *model = nil;
     [[FUManager shareInstance] bindItemWithModel:model];
     
     if ([self.mDelegate respondsToSelector:@selector(didChangeGlassesWithHiddenColorViews:)])

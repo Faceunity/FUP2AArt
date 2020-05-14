@@ -7,7 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "FUP2ADefine.h"
 
 @class FUSingleModel, FUMultipleModel, FUAvatar;
 @interface FUGroupSelectedController : UIViewController

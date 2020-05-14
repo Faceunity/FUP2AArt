@@ -8,10 +8,8 @@
 
 #import "FUHomeBarView.h"
 #import "FUHomeBarBtn.h"
-#import "UIColor+FU.h"
-#import "FUManager.h"
 #import "FUTool.h"
-#import "FUAvatar.h"
+
 
 @interface FUHomeBarView ()<UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout,UIGestureRecognizerDelegate>
 {
@@ -99,6 +97,7 @@
 
 - (void)showModeCollection:(BOOL)show {
     self.showTopView = show;
+    
     if (show) {
         if ([self.delegate respondsToSelector:@selector(homeBarViewShouldShowTopView:)]) {
             [self.delegate homeBarViewShouldShowTopView:YES];
@@ -115,7 +114,6 @@
             }
         }];
     }else {
-        
         if ([self.delegate respondsToSelector:@selector(homeBarViewShouldShowTopView:)]) {
             [self.delegate homeBarViewShouldShowTopView:NO];
         }
@@ -217,41 +215,7 @@
         }
     });
 }
-//
-//- (void)collectionView:(UICollectionView *)collectionView didHighlightItemAtIndexPath:(NSIndexPath *)indexPath {
-//
-//    switch (indexPath.row) {
-//        case 0:{
-//            FUHomeBarCell *cell = (FUHomeBarCell *)[collectionView cellForItemAtIndexPath:indexPath];
-//            cell.imageView.image = [UIImage imageNamed:@"homeBar-add-pressed"];
-//        }
-//            break;
-//        case 1:{
-//            FUHomeBarCell *cell = (FUHomeBarCell *)[collectionView cellForItemAtIndexPath:indexPath];
-//            cell.imageView.image = [UIImage imageNamed:@"homeBar-delete-pressed"];
-//        }
-//
-//        default:
-//            break;
-//    }
-//}
-//- (void)collectionView:(UICollectionView *)collectionView didUnhighlightItemAtIndexPath:(NSIndexPath *)indexPath {
-//
-//    switch (indexPath.row) {
-//        case 0:{
-//            FUHomeBarCell *cell = (FUHomeBarCell *)[collectionView cellForItemAtIndexPath:indexPath];
-//            cell.imageView.image = [UIImage imageNamed:@"homeBar-add"];
-//        }
-//            break;
-//        case 1:{
-//            FUHomeBarCell *cell = (FUHomeBarCell *)[collectionView cellForItemAtIndexPath:indexPath];
-//            cell.imageView.image = [UIImage imageNamed:@"homeBar-delete"];
-//        }
-//
-//        default:
-//            break;
-//    }
-//}
+
 @end
 
 @implementation FUHomeBarCell

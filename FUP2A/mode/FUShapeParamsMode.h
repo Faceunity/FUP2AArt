@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FUMeshPoint.h"
 
 @class FUAvatar ;
 @interface FUShapeParamsMode : NSObject /* ⚠️⚠️ 此类所有属性都是和捏脸点位相关的，禁止增加属性和改变属性相对位置*/
@@ -39,9 +40,9 @@
 
 /// 捏脸参数是否发生过改变
 - (BOOL)propertiesIsChanged;
-
-/// 进入捏脸模式前记录脸部参数
-- (void)recordFacepupBeforeNieLian;
+//
+///// 进入捏脸模式前记录脸部参数
+//- (void)recordFacepupBeforeNieLian;
 
 //是否需要重新生成头发
 - (BOOL)shouldDeformHair;

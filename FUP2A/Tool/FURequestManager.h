@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "FUP2ADefine.h"
+
 typedef void(^FURequestResultDicBlock)(BOOL createAvatarSuccess ,NSDictionary *resultDic, NSError *error);   /*createAvatarSuccess 当前avatar有没有生成成功 */
 @interface FURequestManager : NSObject
 

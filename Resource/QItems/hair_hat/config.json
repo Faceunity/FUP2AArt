@@ -1,0 +1,59 @@
+{
+    "list": [
+        {
+            "bundle": "",
+            "icon": "none",
+            "gender": 0
+        },
+        {
+            "bundle": "mid/hair_hat_1.bundle",
+            "icon": "mid/hair_hat_1",
+            "gender": 0
+        },
+        {
+            "bundle": "mid/hair_hat_2.bundle",
+            "icon": "mid/hair_hat_2",
+            "gender": 0
+        },
+        {
+            "bundle": "mid/hair_hat_3.bundle",
+            "icon": "mid/hair_hat_3",
+            "gender": 0
+        },
+        {
+            "bundle": "mid/hair_hat_4.bundle",
+            "icon": "mid/hair_hat_4",
+            "gender": 0
+        },
+        {
+            "bundle": "mid/hair_hat_5.bundle",
+            "icon": "mid/hair_hat_5",
+            "gender": 0
+        },
+         {
+            "bundle": "mid/hair_hat_6.bundle",
+            "icon": "mid/hair_hat_6",
+            "gender": 0
+        },
+         {
+            "bundle": "mid/hair_hat_7.bundle",
+            "icon": "mid/hair_hat_7",
+            "gender": 0
+        },
+         {
+            "bundle": "mid/hair_hat_8.bundle",
+            "icon": "mid/hair_hat_8",
+            "gender": 0
+        },
+         {
+            "bundle": "mid/hair_hat_9.bundle",
+            "icon": "mid/hair_hat_9",
+            "gender": 0
+        },
+         {
+            "bundle": "mid/hair_hat_10.bundle",
+            "icon": "mid/hair_hat_10",
+            "gender": 0
+        }
+    ]
+}

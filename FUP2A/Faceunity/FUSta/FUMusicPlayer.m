@@ -7,7 +7,7 @@
 //
 
 #import "FUMusicPlayer.h"
-#import <AVFoundation/AVFoundation.h>
+
 
 @interface FUMusicPlayer ()<AVAudioPlayerDelegate>
 

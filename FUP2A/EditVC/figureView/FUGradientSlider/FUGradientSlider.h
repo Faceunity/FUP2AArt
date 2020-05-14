@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+
 @protocol FUGradientSliderDelegate <NSObject>
 
 - (void)gradientSliderValueChangeFinished:(float)value;

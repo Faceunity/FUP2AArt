@@ -1,6 +1,6 @@
 ## PTA 技术对接综述
 
-&emsp;&emsp;PTA 技术对接文档分为：《[PTA Server API](docs/PTA%20Server%20API.pdf)》，《[PTA Client SDK](docs/PTA%20Client%20SDK.md)》，以及《[Controller 说明文档](docs/Controller%20%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3.md)》3大部分。
+&emsp;&emsp;PTA 技术对接文档分为：《[PTA Server API](docs/PTA%20Server%20API.pdf)》，《[PTA Client SDK](docs/PTA%20Client%20SDK.md)》，以及《[Controller 说明文档](docs/Contorller 说明文档.md)》3大部分。
 
 ### 1. 内容说明
 
@@ -8,7 +8,7 @@
 
 &emsp;&emsp;《[PTA Client SDK](docs/PTA%20Client%20SDK.md))》：描述了客户端SDK，如何创建和编辑风格化形象，以及通过Nama SDK绘制风格化形象的文档。
 
-&emsp;&emsp;《[Controller 说明文档](docs/Controller%20%E8%AF%B4%E6%98%8E%E6%96%87%E6%A1%A3.md)》：封装了客户端SDK在创建，编辑风格化形象，以及AR 模式，面部追踪过程中，涉及到的接口列表文档。	
+&emsp;&emsp;《[Controller 说明文档](docs/Contorller 说明文档.md)》：封装了客户端SDK在创建，编辑风格化形象，以及AR 模式，面部追踪过程中，涉及到的接口列表文档。	
 
 ### 2.对接流程
 

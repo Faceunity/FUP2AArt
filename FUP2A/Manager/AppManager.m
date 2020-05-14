@@ -6,7 +6,6 @@
 //  Copyright © 2019 L. All rights reserved.
 //
 
-#import "AppManager.h"
 #import "../AppDelegate.h"
 @interface AppManager()
 {

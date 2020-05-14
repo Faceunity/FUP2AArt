@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "FUStack.h"
 
 NS_ASSUME_NONNULL_BEGIN
 typedef void (^PopCompleteBlock)(NSDictionary * config,BOOL isEmpty);

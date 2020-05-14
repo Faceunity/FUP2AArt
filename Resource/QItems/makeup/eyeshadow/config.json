@@ -15,13 +15,6 @@
             "gender_match": 2
         },
         {
-            "bundle": "mid/Eyeshadow_2.bundle",
-            "icon": "mid/Eyeshadow_2",
-            "label": [],
-            "gender": 2,
-            "gender_match": 2
-        },
-        {
             "bundle": "mid/Eyeshadow_3.bundle",
             "icon": "mid/Eyeshadow_3",
             "label": [],

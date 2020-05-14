@@ -7,12 +7,7 @@
 //
 
 #import "FUHistoryViewController.h"
-#import "FUAvatar.h"
-#import "FUP2ADefine.h"
-#import "FUManager.h"
 #import "FUTool.h"
-#import "UIColor+FU.h"
-
 
 @interface FUHistoryViewController ()<UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout>
 
@@ -64,8 +59,8 @@
     
     self.selectedItems = [NSMutableArray arrayWithCapacity:1];
     
-    if ([[FUTool getPlatformType] isEqualToString:@"iPhone X"]) {
-        _deleteBottom.constant = 34 ;
+    if (appManager.isXFamily) {
+        _deleteBottom.constant = -34 ;
         [self.view layoutIfNeeded];
     }
 }

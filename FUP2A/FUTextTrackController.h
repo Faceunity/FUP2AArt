@@ -7,13 +7,15 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "Views/FUTextTrackView.h"
+#import "FUTextTrackView.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface FUTextTrackController : UIViewController
 @property (nonatomic, strong)FUTextTrackView  *textTrackView ;
 @property (nonatomic, assign) BOOL isShow;
 @property (nonatomic, strong) void (^ backBlock)(void);
+@property (nonatomic, strong) void (^ touchBlock)(void);
 - (IBAction)backAction:(id)sender;
 @end
 

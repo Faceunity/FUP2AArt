@@ -7,7 +7,7 @@
             "gender": 2,
             "gender_match": 2
         },
-		{
+        {
             "bundle": "mid/male_hair_1.bundle",
             "icon": "mid/male_hair_1",
             "label": [1, -1],

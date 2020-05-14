@@ -10,8 +10,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-
-
 @protocol FUPoseTrackBttomViewDelegate <NSObject>
 
 @optional

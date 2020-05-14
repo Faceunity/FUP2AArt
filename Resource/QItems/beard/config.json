@@ -10,42 +10,42 @@
         {
             "bundle": "mid/beard_1.bundle",
             "icon": "mid/beard_1",
-            "label": [],
+            "label": [7, 8, 9, 10, 11, 12],
             "gender": 2,
             "gender_match": 0
         },
         {
             "bundle": "mid/beard_2.bundle",
             "icon": "mid/beard_2",
-            "label": [],
+            "label": [13, 14, 15, 16, 17, 18],
             "gender": 2,
             "gender_match": 0
         },
         {
             "bundle": "mid/beard_3.bundle",
             "icon": "mid/beard_3",
-            "label": [],
+            "label": [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36],
             "gender": 2,
             "gender_match": 0
         },
         {
             "bundle": "mid/beard_4.bundle",
             "icon": "mid/beard_4",
-            "label": [],
+            "label": [1, 2],
             "gender": 2,
             "gender_match": 0
         },
         {
             "bundle": "mid/beard_5.bundle",
             "icon": "mid/beard_5",
-            "label": [],
+            "label": [3, 4],
             "gender": 2,
             "gender_match": 0
         },
         {
             "bundle": "mid/beard_6.bundle",
             "icon": "mid/beard_6",
-            "label": [],
+            "label": [5, 6],
             "gender": 2,
             "gender_match": 0
         },

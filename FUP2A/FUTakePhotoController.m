@@ -8,15 +8,8 @@
 
 #import "FUTakePhotoController.h"
 #import <UIKit/UIKit.h>
-#import <AVFoundation/AVFoundation.h>
 #import <SVProgressHUD/SVProgressHUD.h>
-#import "FUAvatar.h"
-#import "FUManager.h"
-#import "FUCamera.h"
-#import "FUOpenGLView.h"
-#import "FUTool.h"
-#import "FURequestManager.h"
-#import "CRender.h"
+#import "FUPhotoLoadingView.h"
 
 
 typedef enum : NSInteger {
@@ -54,6 +47,7 @@ FULoadingViewDelegate
 @property (nonatomic, assign)  FUCurrentViewType currentType ;
 @property (nonatomic, strong)  UIImage *selectedImage ;
 @property (nonatomic, strong)  UIImage *iconImage ;
+@property (nonatomic, strong) CRender *viewRender;
 @end
 
 @implementation FUTakePhotoController
@@ -66,7 +60,7 @@ FULoadingViewDelegate
 	[super viewDidLoad];
 	
 	[self addObserver];
-	
+    self.viewRender = [[CRender alloc]init];
 	if (appManager.isXFamily) {
 		self.imageView.image = [UIImage imageNamed:@"camera-mask-iphoneX"];
 		self.imageView.backgroundColor = [UIColor clearColor];
@@ -235,7 +229,7 @@ static int frameID = 0;
 	int h = (int)CVPixelBufferGetHeight(buffer);
 	int w = (int)CVPixelBufferGetWidth(buffer);
 	if (self.camera.isFrontCamera) {
-		CVPixelBufferRef mirrorBuffer = [[CRender shareRenderer] cutoutPixelBufferInXMirror:buffer WithRect:CGRectMake(0, 0, w, h)];
+        CVPixelBufferRef mirrorBuffer = [self.viewRender cutoutPixelBufferInXMirror:buffer WithRect:CGRectMake(0, 0, w, h)];
 		[self.displayView displayPixelBuffer:mirrorBuffer withLandmarks:nil count:0 Mirr:NO];
 		
 	}else{
@@ -270,11 +264,11 @@ static int frameID = 0;
 		
 		
 		if (self.camera.isFrontCamera) {
-			imageBuffer = [[CRender shareRenderer] cutoutPixelBufferInXMirror:buffer WithRect:faceRect];
+			imageBuffer = [self.viewRender cutoutPixelBufferInXMirror:buffer WithRect:faceRect];
 			self.iconImage = [self.camera getSquareImageFromBuffer:imageBuffer];
 			self.selectedImage = [[FUP2AHelper shareInstance] createImageWithBuffer:buffer mirr:YES];
 		}else{
-			imageBuffer = [[CRender shareRenderer] cutoutPixelBuffer:buffer WithRect:faceRect];
+			imageBuffer = [self.viewRender cutoutPixelBuffer:buffer WithRect:faceRect];
 			self.iconImage = [self.camera getSquareImageFromBuffer:imageBuffer];
 			self.selectedImage = [[FUP2AHelper shareInstance] createImageWithBuffer:buffer mirr:NO];
 		}
@@ -426,7 +420,7 @@ static int frameID = 0;
 				}
 			}else{   // 这里是nama服务器返回的nama相关错误
 				int errorCode = [resultDic[@"data"][@"err_code"] intValue];
-				message = [self getErrorMessageWithIndex:errorCode];
+				message = [weakSelf getErrorMessageWithIndex:errorCode];
 			}
 			
 			weakSelf.currentType = FUCurrentViewTypeNone ;

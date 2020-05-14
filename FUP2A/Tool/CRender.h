@@ -24,8 +24,6 @@ struct FUCutoutOption_{
 };
 @interface CRender : NSObject
 
-+ (CRender *)shareRenderer;
-
 /**     按照给定的尺寸 剪裁 pixelBuffer     */
 - (CVPixelBufferRef)cutoutPixelBuffer:(CVPixelBufferRef)pixelBuffer WithSize:(CGSize)size;
 

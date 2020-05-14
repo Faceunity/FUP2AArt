@@ -7,8 +7,6 @@
 //
 
 #import "AppDelegate.h"
-#import <SVProgressHUD.h>
-#import "FUManager.h"
 
 @interface AppDelegate ()
 @property (nonatomic,strong) NSTimer *timer;
@@ -45,7 +43,9 @@ static UIBackgroundTaskIdentifier _backIden ;
 {
     [self beginTask];
 }
--(void)applicationWillEnterForeground:(UIApplication *)application{
+
+-(void)applicationWillEnterForeground:(UIApplication *)application
+{
    [self endBack];
 }
 @end

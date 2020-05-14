@@ -7,11 +7,9 @@
 //
 
 #import "FUPoseTrackBttomView.h"
-#import "FUAvatar.h"
-#import "FUP2ADefine.h"
-#import "FUManager.h"
 #import "FUPoseTrackView.h"
-#include "FUARFilterView.h"
+#import "FUARFilterView.h"
+
 typedef enum : NSInteger {
     FUARCollectionTypeModel,
     FUARCollectionTypeFilter,
@@ -69,6 +67,7 @@ typedef enum : NSInteger {
         [self.collection scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:self->modelIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:NO];
     });
 }
+
 
 - (void)reloadData {
 

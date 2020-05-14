@@ -8,7 +8,6 @@
 
 #import "FUSceneryModel.h"
 
-
 @implementation FUSingleModel
 
 + (instancetype)modelWithDict:(NSDictionary *)dict {
@@ -19,7 +18,7 @@
 	model.camera = dict[@"camera"] ;
     model.animationName = dict[@"animation"] ;
     model.otherAnimations = dict[@"otherAnimations"];
-    
+    model.animationBG = dict[@"bg"];
     return model ;
 }
 -(NSString *)description{

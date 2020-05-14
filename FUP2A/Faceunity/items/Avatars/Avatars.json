@@ -42,7 +42,7 @@
 			"index" : 2
 		},
         "hairColorIndex": 1,
-        "skin_color_progress" : 0.3,
+        "skin_color_progress" : -1,
 		"eyeliner" : "Eyeliner_1.bundle",
 		"name" : "3",
 		"upper" : "shangyi_chushi.bundle",
@@ -50,6 +50,10 @@
 		"shoes" : "xiezi_tuoxie_3.bundle",
 		"wearFemaleClothes" : 0,
 		"clothType" : 1,
+        "hairType" : 0,
+        "hairHat" : "noitem.bundle",
+        "lipGloss" :"lipgloss_1.bundle",
+        "lipColorIndex" :7,
 	},
 	{
 		"gender" : 1,
@@ -67,7 +71,7 @@
 			"intensity" : 0,
 			"index" : 2
 		},
-		"skin_color_progress" : 0.3,
+		"skin_color_progress" : -1,
 		"eyeliner" : "Eyeliner_1.bundle",
 		"name" : "4",
 		"upper" : "shangyi_chenshan_6.bundle",
@@ -75,5 +79,9 @@
 		"shoes" : "xiezi_tuoxie_3.bundle",
 		"wearFemaleClothes" : 1,
 		"clothType" : 1,
+        "hairType" : 0,
+        "hairHat" : "noitem.bundle",
+        "lipGloss" :"lipgloss_1.bundle",
+        "lipColorIndex" :2,
 	},
 ]

@@ -41,7 +41,7 @@
 	if (self.hasText){
 		return;
 	}
-	CGFloat wRectW = 120;
+	CGFloat wRectW = 200;
 	CGFloat wRectX = 15;
 	CGFloat wRectY = 9;
 	CGFloat wRectH = 30;

@@ -22,11 +22,11 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FUPoseTrackView : UIView
-@property (nonatomic,assign)NSInteger inputIndex;
 @property (nonatomic, assign) id<FUPoseTrackViewDelegate>delegate ;
 - (void)selectedModeWith:(FUAvatar *)avatar ;
 - (void)showCollection:(BOOL)show ;
-- (void) reloadCollection;
+- (void)reloadCollection;
+- (void)freshInputIndex:(int)index;
 @end
 
 @interface FUPoseTrackCell: UICollectionViewCell

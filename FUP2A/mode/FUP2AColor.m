@@ -5,9 +5,6 @@
 //  Created by L on 2018/12/15.
 //  Copyright © 2018年 L. All rights reserved.
 //
-
-#import "FUP2AColor.h"
-
 @implementation FUP2AColor
 
 -(UIColor *)color {

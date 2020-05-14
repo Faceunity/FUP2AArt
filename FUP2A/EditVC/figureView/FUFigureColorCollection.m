@@ -7,11 +7,12 @@
 //
 
 #import "FUFigureColorCollection.h"
-#import "FUP2AColor.h"
+#import "FUFIgureColorCollectionLayout.h"
 
 @interface FUFigureColorCollection ()<UICollectionViewDataSource, UICollectionViewDelegate>
 @property (nonatomic, strong) NSMutableDictionary *selectedDic ;
-@end
+@property (nonatomic, strong) NSArray *arrayColor;
+@end    
 
 @implementation FUFigureColorCollection
 
@@ -19,65 +20,68 @@
 {
 	[super awakeFromNib];
     [self registerNib:[UINib nibWithNibName:@"FUFigureColorCollectionCell" bundle:nil] forCellWithReuseIdentifier:@"FUFigureColorCollectionCell"];
-
 	self.dataSource = self ;
 	self.delegate = self ;
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(FUAvatarEditedDoNotMethod:) name:FUAvatarEditedDoNot object:nil];
+    
+    FUFIgureColorCollectionLayout *layout = [[FUFIgureColorCollectionLayout alloc]init];
+    UICollectionViewFlowLayout *oldLayout = (UICollectionViewFlowLayout *)self.collectionViewLayout;
+    layout.estimatedItemSize = oldLayout.estimatedItemSize;
+    layout.footerReferenceSize = oldLayout.footerReferenceSize;
+    layout.headerReferenceSize = oldLayout.headerReferenceSize;
+    layout.itemSize = oldLayout.itemSize;
+    layout.minimumInteritemSpacing = oldLayout.minimumInteritemSpacing;
+    layout.minimumLineSpacing = oldLayout.minimumLineSpacing;
+    layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+    layout.sectionFootersPinToVisibleBounds = oldLayout.sectionFootersPinToVisibleBounds;
+    layout.sectionHeadersPinToVisibleBounds = oldLayout.sectionHeadersPinToVisibleBounds;
+    layout.sectionInset = oldLayout.sectionInset;
+
+  
+    self.collectionViewLayout = layout;
 	
 }
 
 -(void)setCurrentType:(FUFigureColorType)currentType
 {
-	_currentType = currentType ;
-	[self reloadData];
+	_currentType = currentType;
+    self.arrayColor = [[FUManager shareInstance]getColorArrayWithType:self.currentType];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self reloadData];
+        [self scrollCurrentToCenterWithAnimation:NO];
+    });
     
-    [self scrollCurrentToCenterWithAnimation:NO];
 }
 
 - (void)scrollCurrentToCenterWithAnimation:(BOOL)animation
 {
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:[[FUManager shareInstance] getSelectedColorIndexWithType:self.currentType] inSection:0];
+    
+    NSInteger index = MIN([[FUManager shareInstance] getSelectedColorIndexWithType:self.currentType],  [self numberOfItemsInSection:0]);
+    
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:index inSection:0];
+    
     [self scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:NO];
 }
 
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-    NSInteger count = [[FUManager shareInstance]getColorArrayCountWithType:self.currentType];
-    
-    return count;
-//	switch (_currentType)
-//    {
-//		case FUFigureColorTypeSkinColor:
-//		case FUFigureColorTypeirisColor:
-//		case FUFigureColorTypeLipsColor:
-//			return count - 1 ;
-//			break ;
-//		default:
-//			return count ;
-//			break ;
-//	}
+    return self.arrayColor.count;
 }
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-	
+    if (indexPath.row >= self.arrayColor.count)
+    {
+        return (FUFigureColorCollectionCell *)[collectionView dequeueReusableCellWithReuseIdentifier:@"FUFigureColorCollectionCell" forIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
+    }
+    
 	FUFigureColorCollectionCell *cell = (FUFigureColorCollectionCell *)[collectionView dequeueReusableCellWithReuseIdentifier:@"FUFigureColorCollectionCell" forIndexPath:indexPath];
-//	NSInteger selectedIndex = [[self.selectedDic objectForKey:@(self.currentType)] integerValue] ;
-//	switch (_currentType) {
-//		case FUFigureColorTypeGlassesColor:
-//			selectedIndex = self.glassColorIndex;
-//			break ;
-//		case FUFigureColorTypeGlassesFrameColor:
-//			selectedIndex = self.glassFrameColorIndex;
-//			break;
-//		default:
-//			break ;
-//	}
-	FUP2AColor *color = [[FUManager shareInstance]getColorWithType:self.currentType andIndex:indexPath.row];
-	cell.backgroundColor = color.color ;
+	FUP2AColor *color = self.arrayColor[indexPath.row];
+	cell.backgroundColor = color.color;
 	
 	cell.selectedImage.hidden = [[FUManager shareInstance]getSelectedColorIndexWithType:self.currentType] != indexPath.row ;
+
 	return cell ;
 }
 
@@ -98,97 +102,6 @@
     [self scrollCurrentToCenterWithAnimation:YES];
     
 }
-
-// ==============================================根据指定名称滚动到相应图标==================================
-//- (void)FUAvatarEditedDoNotMethod:(NSNotification *)not{
-//	FUAvatarEditedDoModel * model = [not object];
-//	switch (model.type) {
-//		case HairColor:
-//		{
-//			int index = [(NSNumber*)model.obj intValue];
-//			[self.selectedDic setObject:@(index) forKey:@(FUFigureColorTypeHairColor)];
-//			FUP2AColor *color = [self.hairColorArray objectAtIndex:index];
-//			if (color == nil) {
-//				return;
-//			}
-//			if ([self.mDelegate respondsToSelector:@selector(didSelectedColor:index:tyep:)]) {
-//				[self.mDelegate didSelectedColor:color index:index tyep:FUFigureColorTypeHairColor];
-//			}
-//			if (self.currentType == FUFigureColorTypeHairColor){
-//				[self reloadData];
-//			}
-//		}
-//			break;
-//		case IrisLevel:
-//		{
-//			int index = [(NSNumber*)model.obj intValue];
-//			[self.selectedDic setObject:@(index) forKey:@(FUFigureColorTypeirisColor)];
-//			FUP2AColor *color = [self.irisColorArray objectAtIndex:index];
-//			if (color == nil) {
-//				return;
-//			}
-//			if ([self.mDelegate respondsToSelector:@selector(didSelectedColor:index:tyep:)]) {
-//				[self.mDelegate didSelectedColor:color index:index tyep:FUFigureColorTypeirisColor];
-//			}
-//			if (self.currentType == FUFigureColorTypeirisColor){
-//				[self reloadData];
-//			}
-//		}
-//			break;
-//		case LipsLevel:
-//		{
-//			int index = [(NSNumber*)model.obj intValue];
-//			[self.selectedDic setObject:@(index) forKey:@(FUFigureColorTypeLipsColor)];
-//			FUP2AColor *color = [self.lipsColorArray objectAtIndex:index];
-//			if (color == nil) {
-//				return;
-//			}
-//			if ([self.mDelegate respondsToSelector:@selector(didSelectedColor:index:tyep:)]) {
-//				[self.mDelegate didSelectedColor:color index:index tyep:FUFigureColorTypeLipsColor];
-//			}
-//			if (self.currentType == FUFigureColorTypeLipsColor){
-//				[self reloadData];
-//			}
-//		}
-//			break;
-//		case GlassColorIndex:
-//		{
-//			int index = [(NSNumber*)model.obj intValue];
-//			self.glassColorIndex = index;
-//			FUP2AColor *color = [self.glassesColorArray objectAtIndex:index];
-//			if (color == nil) {
-//				return;
-//			}
-//			if ([self.mDelegate respondsToSelector:@selector(didSelectedColor:index:tyep:)]) {
-//				[self.mDelegate didSelectedColor:color index:index tyep:FUFigureColorTypeGlassesColor];
-//			}
-//			if (self.currentType == FUFigureColorTypeGlassesColor){
-//				[self reloadData];
-//			}
-//		}
-//			break;
-//		case GlassFrameColorIndex:
-//		{
-//			int index = [(NSNumber*)model.obj intValue];
-//			 self.glassFrameColorIndex = index;
-//			FUP2AColor *color = [self.glassesFrameColorArray objectAtIndex:index];
-//			if (color == nil) {
-//				return;
-//			}
-//			if ([self.mDelegate respondsToSelector:@selector(didSelectedColor:index:tyep:)]) {
-//				[self.mDelegate didSelectedColor:color index:index tyep:FUFigureColorTypeGlassesFrameColor];
-//			}
-//			if (self.currentType == FUFigureColorTypeGlassesFrameColor){
-//				[self reloadData];
-//			}
-//		}
-//			break;
-//
-//
-//		default:
-//			break;
-//	}
-//}
 
 - (void)dealloc
 {

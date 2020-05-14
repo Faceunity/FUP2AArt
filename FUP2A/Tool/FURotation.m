@@ -91,6 +91,9 @@
 + (CVPixelBufferRef)correctBufferOrientation:(CMSampleBufferRef)sampleBuffer withRotationConstant:(int)rotationConstant
 {
 	CVImageBufferRef imageBuffer        = CMSampleBufferGetImageBuffer(sampleBuffer);
+	if (rotationConstant == 0) {
+		return imageBuffer;
+	}
 	CVPixelBufferLockBaseAddress(imageBuffer, 0);
 	
 	size_t bytesPerRow                  = CVPixelBufferGetBytesPerRow(imageBuffer);

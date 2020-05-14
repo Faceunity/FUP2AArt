@@ -7,7 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "FUP2ADefine.h"
 
 @interface FUMeshPoint : UIImageView<NSCopying>
 

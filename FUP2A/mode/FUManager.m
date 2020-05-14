@@ -6,14 +6,17 @@
 //  Copyright © 2018年 L. All rights reserved.
 //
 
-#import "FUManager.h"
-#import "authpack.h"
-#import "FURequestManager.h"
-#import "FUAvatar.h"
-#import "FUP2AColor.h"
 
+#import "authpack.h"
+#import "FUAvatarEditManager.h"
+#import "FUShapeParamsMode.h"
+#import "fuPTAClient.h"
+#import "FUEditTypeModel.h"
 
 @interface FUManager ()
+{
+       
+}
 @end
 
 @implementation FUManager
@@ -49,6 +52,10 @@ static FUManager *fuManager = nil;
         
         // 关闭nama的打印
         [FURenderer itemSetParam:self.defalutQController withName:@"FUAI_VLogSetLevel" value:@(0)];
+        // 绑定全局的 human3d.bundle
+        NSData *human3dData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"human3d.bundle" ofType:nil]];
+        _human3dPtr = [FURenderer create3DBodyTracker:(void*)human3dData.bytes size:(int)human3dData.length];
+        
     }
     return self;
 }
@@ -60,6 +67,12 @@ static FUManager *fuManager = nil;
     frameSize = CGSizeZero;
     signal = dispatch_semaphore_create(1);
     isCreatingAvatar = NO;
+    NSData *data = [[NSUserDefaults standardUserDefaults] valueForKey:TAG_UD_BACKGROUND_MODEL];
+    
+    if (data)
+    {
+        self.backgroundModel = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+    }
 }
 
 - (void)initLibrary
@@ -100,7 +113,8 @@ static FUManager *fuManager = nil;
     NSString *controller_config_path = [[NSBundle mainBundle] pathForResource:@"controller_config" ofType:@"bundle"];
     [self rebindItemToControllerWithFilepath:controller_config_path withPtr:&q_controller_config_ptr];
     
-    [self loadDefaultBackGroundToController];
+    NSString *lighting_Path = [[NSBundle mainBundle] pathForResource:@"light" ofType:@"bundle"];
+    [self rebindItemToControllerWithFilepath:lighting_Path withPtr:&light_ptr];
 }
 
 //初始化P2AClient库
@@ -138,6 +152,28 @@ static FUManager *fuManager = nil;
 }
 
 #pragma mark ------ 图像 ------
+/// 复制CVPixelBufferRef，需要外部调用负责释放返回值
+/// @param pixelBuffer 输入的 CVPixelBufferRef
+- (CVPixelBufferRef)copyPixelBuffer:(CVPixelBufferRef)pixelBuffer
+{
+    
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+    int bufferWidth = (int)CVPixelBufferGetWidth(pixelBuffer);
+    int bufferHeight = (int)CVPixelBufferGetHeight(pixelBuffer);
+    size_t bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer);
+    uint8_t *baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer);
+    
+    // Copy the pixel buffer
+    CVPixelBufferRef pixelBufferCopy = [self createEmptyPixelBuffer:CGSizeMake(bufferWidth, bufferHeight)];
+    //CVReturn status = CVPixelBufferCreate(kCFAllocatorDefault, bufferWidth, bufferHeight, kCVPixelFormatType_32BGRA, NULL, &pixelBufferCopy);
+    CVPixelBufferLockBaseAddress(pixelBufferCopy, 0);
+    uint8_t *copyBaseAddress = CVPixelBufferGetBaseAddress(pixelBufferCopy);
+    memcpy(copyBaseAddress, baseAddress, bufferHeight * bytesPerRow);
+    CVPixelBufferUnlockBaseAddress(pixelBufferCopy, 0);
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+    return pixelBufferCopy;
+}
+
 /// 初始化空白buffer
 - (void)initPixelBuffer
 {
@@ -291,23 +327,19 @@ static int frameId = 0 ;
 
 static int ARFilterID = 0 ;
 /**
- AR 滤镜处理接口 同时返回捕捉到的脸部点位
+ AR 滤镜处理接口
  
  @param pixelBuffer 图像数据
  @return            处理之后的图像数据
+ @param rotationMode 旋转模式
+ @param rotation_mode w.r.t to rotation the the camera view, 0=0^deg, 1=90^deg, 2=180^deg, 3=270^deg
  */
-- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength
+- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer rotationMode:(int)rotationMode
 {
-    
     dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     
-    if(self.useFaceCapure)
-    {
-        [self trackFace:pixelBuffer];
-        if(landmarks)
-        {
-            [self GetLandmarks:landmarks length:landmarksLength faceIdx:0];
-        }
+    if(self.useFaceCapure){
+        [self trackFace:pixelBuffer rotationMode:rotationMode];
         [self enableFaceCapture:YES];
     }
     
@@ -328,6 +360,159 @@ static int ARFilterID = 0 ;
     return pixelBuffer;
 }
 
+/// 捕获人脸接口
+/// @param pixelBuffer 输入源
+/// @param rotationMode 旋转模式
+//@param rotation_mode w.r.t to rotation the the camera view, 0=0^deg, 1=90^deg, 2=180^deg, 3=270^deg
+- (void)trackFace:(CVPixelBufferRef)pixelBuffer rotationMode:(int)rotationMode
+{
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0) ;
+    void *baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) ;
+    int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
+    int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer) ;
+    if(YES == self.useFaceCapure){
+        [self runFaceCapture:baseAddress imageFormat:FU_FORMAT_BGRA_BUFFER width:stride/4 height:height rotateMode:rotationMode];
+    } else {
+        [FURenderer trackFaceWithTongue:FU_FORMAT_BGRA_BUFFER inputData:baseAddress width:stride/4 height:height];
+    }
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0) ;
+}
+
+///**
+// AR 滤镜处理接口 同时返回捕捉到的脸部点位
+//
+// @param pixelBuffer 图像数据
+// @return            处理之后的图像数据
+// */
+//- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength
+//{
+//
+//    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+//
+//    if(self.useFaceCapure)
+//    {
+//        [self trackFace:pixelBuffer];
+//        if(landmarks)
+//        {
+//            [self GetLandmarks:landmarks length:landmarksLength faceIdx:0];
+//        }
+//        [self enableFaceCapture:YES];
+//    }
+//
+//    int h = (int)CVPixelBufferGetHeight(pixelBuffer);
+//    int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer);
+//    int w = stride/4;
+//    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+//    void* pod0 = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
+//    [[FURenderer shareRenderer] renderBundles:pod0 inFormat:FU_FORMAT_BGRA_BUFFER outPtr:pod0 outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:ARFilterID++ items:arItems itemCount:2];
+//
+//    [self rotateImage:pod0 inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
+//    memcpy(pod0, self.rotatedImageManager.mData, w*h*4);
+//
+//    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+//
+//    dispatch_semaphore_signal(signal);
+//
+//    return pixelBuffer;
+//}
+
+
+
+/**
+ AR 滤镜处理接口
+ 
+ @param pixelBuffer 图像数据
+ @param human3dPtr  human3d.bundle 的句柄
+ @param renderMode  FURenderCommonMode 为预览模式，FURenderPreviewMode为人脸追踪模式
+ @param isLandscape 是否输出横屏视频
+ @param landmarks 脸部点位
+ @param landmarksLength 脸部点位数组的长度
+ @return            处理之后的图像数据
+ */
+- (CVPixelBufferRef)renderBodyTrackAdjustAssginOutputSizeWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength
+{
+    
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+    
+    FUAvatarInfo* info=[self GetAvatarInfo:pixelBuffer renderMode:renderMode];
+    if(self.useFaceCapure)
+    {
+        info = [[FUAvatarInfo alloc] init];
+        [self enableFaceCapture:(FURenderPreviewMode==renderMode?YES:NO)];
+        if(FURenderPreviewMode == renderMode)
+        {
+            [self trackFace:pixelBuffer];
+            if(landmarks)
+            {
+                [self GetLandmarks:landmarks length:landmarksLength faceIdx:0];
+            }
+        }
+    }
+    else
+    {
+        info = [self GetAvatarInfo:pixelBuffer renderMode:renderMode];
+        if(FURenderPreviewMode == renderMode)
+        {
+            if(landmarks)
+            {
+                memcpy(landmarks, info->landmarks, sizeof(info->landmarks));
+            }
+        }
+    }
+    int h = (int)CVPixelBufferGetHeight(pixelBuffer);
+    int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer);
+    int w = stride/4;
+    
+    if (!bodyTrackBuffer)
+    {
+        bodyTrackBuffer = [self createEmptyPixelBuffer:CGSizeMake(self.outPutSize.width, self.outPutSize.height)];
+    }
+    
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+    void* pod1 = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
+    CVPixelBufferLockBaseAddress(bodyTrackBuffer, 0);
+    void* pod0 = (void *)CVPixelBufferGetBaseAddress(bodyTrackBuffer);
+    
+    [FURenderer run3DBodyTracker:human3dPtr humanHandle:0 inPtr:pod1 inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:0];
+    
+    [[FURenderer shareRenderer]renderBundles:&info->info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod0 outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
+    
+    [self rotateImage:pod0 inFormat:FU_FORMAT_BGRA_BUFFER w:self.outPutSize.width h:self.outPutSize.height rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
+    memcpy(pod0, self.rotatedImageManager.mData, self.outPutSize.width*self.outPutSize.height*4);
+    
+    CVPixelBufferUnlockBaseAddress(bodyTrackBuffer, 0);
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+    dispatch_semaphore_signal(signal);
+    
+    return bodyTrackBuffer;
+}
+
+- (CVPixelBufferRef)renderBodyTrackWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode
+{
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
+    
+    FUAvatarInfo* info=[self GetAvatarInfo:pixelBuffer renderMode:renderMode];
+    
+    int h = (int)CVPixelBufferGetHeight(pixelBuffer);
+    int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer);
+    int w = stride/4;
+    
+
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+    void* pod = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
+    
+    [FURenderer run3DBodyTracker:human3dPtr humanHandle:0 inPtr:pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:0];
+    
+    [[FURenderer shareRenderer]renderBundles:&info->info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
+    
+    [self rotateImage:pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
+    memcpy(pod, self.rotatedImageManager.mData, w*h*4);
+    
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+    dispatch_semaphore_signal(signal);
+    
+    return pixelBuffer;
+}
 
 -(CVPixelBufferRef)dealTheFrontCameraPixelBuffer:(CVPixelBufferRef) pixelBuffer
 {
@@ -371,7 +556,7 @@ static int ARFilterID = 0 ;
 /// 初始化脸部识别
 - (void)initFaceCapture
 {
-    NSData *data = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"face_capture.bundle" ofType:nil]];
+    NSData *data = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"face_processor_capture.bundle" ofType:nil]];
     self.faceCapture = [FURenderer faceCaptureCreate:data.bytes size:(int)data.length];
 }
 
@@ -575,59 +760,70 @@ static int ARFilterID = 0 ;
 /// 加载Q版道具数据
 - (void)loadQtypeAvatarData
 {
-    NSMutableArray *itemInfoArray = [NSMutableArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"FUQItems.plist" ofType:nil]];
+    self.typeInfoDict = [[NSMutableDictionary alloc]init];
+    
+    NSMutableArray *typeInfoArray = [NSMutableArray arrayWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"FUQItems.plist" ofType:nil]];
+    
     
     self.itemNameArray = [[NSMutableArray alloc]init];
     self.itemTypeArray = [[NSMutableArray alloc]init];
     self.itemsDict = [[NSMutableDictionary alloc]initWithCapacity:1];
     
-    for (int i = 0; i < itemInfoArray.count; i++)
+    
+    for (int i = 0; i < typeInfoArray.count; i++)
     {
-        NSMutableArray *itemArray = [[NSMutableArray alloc]init];
+        FUEditTypeModel *model = [[FUEditTypeModel alloc]init];
         
-        NSDictionary *dictItem = itemInfoArray[i];
-        NSString *type = dictItem[@"type"];
-        NSArray *paths = dictItem[@"path"];
+        [model setValuesForKeysWithDictionary:typeInfoArray[i]];
+        [self.typeInfoDict setValue:model forKey:model.type];
         
-        [self.itemTypeArray addObject:type];
-        [self.itemNameArray addObject:dictItem[@"name"]];
-        
-        if (paths.count == 0)
+        for (int j = 0; j < model.subTypeArray.count; j++)
         {
-            continue;
-        }
-        
-        for (int n = 0; n < paths.count; n++)
-        {
-            NSString *path = paths[n];
-            NSString *configPath = [[NSBundle mainBundle].resourcePath stringByAppendingFormat:@"/Resource/%@/config.json",path];
-            
-            NSData *tmpData = [[NSString stringWithContentsOfFile:configPath encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
-            
-            NSMutableDictionary *dic = [NSJSONSerialization JSONObjectWithData:tmpData options:NSJSONReadingMutableContainers error:nil];
-            NSArray *itemList = dic[@"list"];
-            for (int j = 0; j < itemList.count; j++)
+            NSMutableArray *itemArray = [[NSMutableArray alloc]init];
+
+            NSDictionary *dictItem = model.subTypeArray[j];
+            NSString *type = dictItem[@"type"];
+            NSArray *paths = dictItem[@"path"];
+
+            [self.itemTypeArray addObject:type];
+            [self.itemNameArray addObject:dictItem[@"name"]];
+
+            if (paths.count == 0)
             {
-                NSDictionary *item = itemList[j];
-                
-                if (itemArray.count > 0 && [item[@"icon"] isEqualToString:@"none"])
-                {
-                    continue;
-                }
-                
-                FUItemModel *itemModel = [[FUItemModel alloc]init];
-                itemModel.type = type;
-                itemModel.path = [[NSBundle mainBundle].resourcePath stringByAppendingFormat:@"/Resource/%@",path];
-                
-                [item enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-                    [itemModel setValue:obj forKey:key];
-                }];
-                
-                [itemArray addObject:itemModel];
+                continue;
             }
+
+            for (int n = 0; n < paths.count; n++)
+            {
+                NSString *path = paths[n];
+                NSString *configPath = [[NSBundle mainBundle].resourcePath stringByAppendingFormat:@"/Resource/%@/config.json",path];
+
+                NSData *tmpData = [[NSString stringWithContentsOfFile:configPath encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
+
+                NSMutableDictionary *dic = [NSJSONSerialization JSONObjectWithData:tmpData options:NSJSONReadingMutableContainers error:nil];
+                NSArray *itemList = dic[@"list"];
+                for (int m = 0; m < itemList.count; m++)
+                {
+                    NSDictionary *item = itemList[m];
+
+                    if (itemArray.count > 0 && [item[@"icon"] isEqualToString:@"none"])
+                    {
+                        continue;
+                    }
+
+                    FUItemModel *itemModel = [[FUItemModel alloc]init];
+                    itemModel.type = type;
+                    itemModel.path = path;
+
+                    [item enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+                        [itemModel setValue:obj forKey:key];
+                    }];
+
+                    [itemArray addObject:itemModel];
+                }
+            }
+            [self.itemsDict setObject:itemArray forKey:type];
         }
-        
-        [self.itemsDict setObject:itemArray forKey:type];
     }
     
     [self loadColorList];
@@ -786,8 +982,15 @@ static int ARFilterID = 0 ;
     
     [FUAvatarEditManager sharedInstance].undo = NO;
     [FUAvatarEditManager sharedInstance].redo = NO;
+    if (type == FUFigureColorTypeEyebrowColor)
+    {
+        [avatar facepupModeSetEyebrowColor:color];
+    }
+    else
+    {
+        [avatar facepupModeSetColor:color key:key];
+    }
     
-    [avatar facepupModeSetColor:color key:key];
     
     NSInteger index = [self.colorDict[key] indexOfObject:color];
     [self setSelectColorIndex:index ofType:type];
@@ -838,7 +1041,54 @@ static int ARFilterID = 0 ;
     
     if ([model.type isEqualToString:TAG_FU_ITEM_HAIR])
     {
+        self.isStopRefreshBuffer = YES;
+        
         [avatar bindHairWithItemModel:model];
+        [self.selectedItemIndexDict setObject:@(0) forKey:TAG_FU_ITEM_HAIRHAT];
+        
+        if (!undoOrRedo)
+        {
+            NSMutableDictionary *editDict = [[NSMutableDictionary alloc]init];
+            editDict[@"currentConfig"] = model;
+            if (avatar.hairType == FUAvataHairTypeHairHat)
+            {
+                editDict[@"oldConfig"] = avatar.hairHat;
+            }
+            else
+            {
+                editDict[@"oldConfig"] = avatar.hair;
+            }
+            [[FUAvatarEditManager sharedInstance]push:editDict];
+        }
+        avatar.hairType = FUAvataHairTypeHair;
+        
+        self.isStopRefreshBuffer = NO;
+        
+    }
+    else if ([model.type isEqualToString:TAG_FU_ITEM_HAIRHAT])
+    {
+        self.isStopRefreshBuffer = YES;
+        
+        [avatar bindHairHatWithItemModel:model];
+        [self.selectedItemIndexDict setObject:@(0) forKey:TAG_FU_ITEM_HAIR];
+        
+        if (!undoOrRedo)
+        {
+            NSMutableDictionary *editDict = [[NSMutableDictionary alloc]init];
+            editDict[@"currentConfig"] = model;
+            if (avatar.hairType == FUAvataHairTypeHair)
+            {
+                editDict[@"oldConfig"] = avatar.hair;
+            }
+            else
+            {
+                editDict[@"oldConfig"] = avatar.hairHat;
+            }
+            [[FUAvatarEditManager sharedInstance]push:editDict];
+        }
+        avatar.hairType = FUAvataHairTypeHairHat;
+        
+        self.isStopRefreshBuffer = NO;
     }
     else if ([model.type isEqualToString:TAG_FU_ITEM_FACE])
     {
@@ -850,6 +1100,7 @@ static int ARFilterID = 0 ;
         }
         else
         {
+            [[FUShapeParamsMode shareInstance]getOrignalParamsWithAvatar:self.currentAvatars.firstObject];
             [avatar configFacepupParamWithDict:model.shapeDict];
         }
     }
@@ -863,6 +1114,7 @@ static int ARFilterID = 0 ;
         }
         else
         {
+            [[FUShapeParamsMode shareInstance]getOrignalParamsWithAvatar:self.currentAvatars.firstObject];
             [avatar configFacepupParamWithDict:model.shapeDict];
         }
     }
@@ -876,6 +1128,7 @@ static int ARFilterID = 0 ;
         }
         else
         {
+            [[FUShapeParamsMode shareInstance]getOrignalParamsWithAvatar:self.currentAvatars.firstObject];
             [avatar configFacepupParamWithDict:model.shapeDict];
         }
     }
@@ -889,44 +1142,78 @@ static int ARFilterID = 0 ;
         }
         else
         {
+            [[FUShapeParamsMode shareInstance]getOrignalParamsWithAvatar:self.currentAvatars.firstObject];
             [avatar configFacepupParamWithDict:model.shapeDict];
         }
     }
     else if ([model.type isEqualToString:TAG_FU_ITEM_CLOTH])
     {
-        self.isBindCloths = YES;
-        [avatar bindClothWithItemModel:model];
-        
-        [self.selectedItemIndexDict setObject:@(0) forKey:TAG_FU_ITEM_UPPER];
-        [self.selectedItemIndexDict setObject:@(0) forKey:TAG_FU_ITEM_LOWER];
-        
-        self.isBindCloths = NO;
+        self.isStopRefreshBuffer = YES;
+        if (undoOrRedo&&[model.bundle isEqualToString:@""])
+        {//撤销或恢复时，如果恢复到裸体，说明之前穿的是上下衣，恢复到之前的上下衣
+            [avatar bindLowerWithItemModel:avatar.lower];
+            [avatar bindUpperWithItemModel:avatar.upper];
+            
+            [self setItemIndexWithModel:avatar.lower];
+            [self setItemIndexWithModel:avatar.upper];
+        }
+        else
+        {
+            [avatar bindClothWithItemModel:model];
+            
+            [self.selectedItemIndexDict setObject:@(0) forKey:TAG_FU_ITEM_UPPER];
+            [self.selectedItemIndexDict setObject:@(0) forKey:TAG_FU_ITEM_LOWER];
+        }
+        self.isStopRefreshBuffer = NO;
     }
     else if ([model.type isEqualToString:TAG_FU_ITEM_UPPER])
     {
-        self.isBindCloths = YES;
-        if (avatar.clothType == FUAvataClothTypeSuit)
-        {
-            FUItemModel *lowerModel = [FUManager shareInstance].itemsDict[TAG_FU_ITEM_LOWER][1];
-            [avatar bindLowerWithItemModel:lowerModel];
-            [self.selectedItemIndexDict setObject:@(0) forKey:TAG_FU_ITEM_CLOTH];
-            [self.selectedItemIndexDict setObject:@(1) forKey:TAG_FU_ITEM_LOWER];
+        self.isStopRefreshBuffer = YES;
+        
+        if (undoOrRedo&&[model.bundle isEqualToString:@""])
+        {//撤销或恢复时，如果恢复到裸体，说明之前穿的是套装，恢复到之前的套装
+            [avatar bindClothWithItemModel:avatar.clothes];
+            
+            [self.selectedItemIndexDict setObject:@(0) forKey:TAG_FU_ITEM_LOWER];
+            [self setItemIndexWithModel:avatar.clothes];
         }
-        [avatar bindUpperWithItemModel:model];
-        self.isBindCloths = NO;
+        else
+        {
+            if (avatar.clothType == FUAvataClothTypeSuit)
+            {
+                FUItemModel *lowerModel = [FUManager shareInstance].itemsDict[TAG_FU_ITEM_LOWER][1];
+                [avatar bindLowerWithItemModel:lowerModel];
+                [self.selectedItemIndexDict setObject:@(0) forKey:TAG_FU_ITEM_CLOTH];
+                [self.selectedItemIndexDict setObject:@(1) forKey:TAG_FU_ITEM_LOWER];
+            }
+            [avatar bindUpperWithItemModel:model];
+        }
+        
+        self.isStopRefreshBuffer = NO;
     }
     else if ([model.type isEqualToString:TAG_FU_ITEM_LOWER])
     {
-        self.isBindCloths = YES;
-        if (avatar.clothType == FUAvataClothTypeSuit)
-        {
-            FUItemModel *upperModel = [FUManager shareInstance].itemsDict[TAG_FU_ITEM_UPPER][1];
-            [avatar bindUpperWithItemModel:upperModel];
-            [self.selectedItemIndexDict setObject:@(0) forKey:TAG_FU_ITEM_CLOTH];
-            [self.selectedItemIndexDict setObject:@(1) forKey:TAG_FU_ITEM_UPPER];
+        self.isStopRefreshBuffer = YES;
+        if (undoOrRedo&&[model.bundle isEqualToString:@""])
+        {//撤销或恢复时，如果恢复到裸体，说明之前穿的是套装，恢复到之前的套装
+            [avatar bindClothWithItemModel:avatar.clothes];
+            
+            [self.selectedItemIndexDict setObject:@(0) forKey:TAG_FU_ITEM_LOWER];
+            [self setItemIndexWithModel:avatar.clothes];
         }
-        [avatar bindLowerWithItemModel:model];
-        self.isBindCloths = NO;
+        else
+        {
+            if (avatar.clothType == FUAvataClothTypeSuit)
+            {
+                FUItemModel *upperModel = [FUManager shareInstance].itemsDict[TAG_FU_ITEM_UPPER][1];
+                [avatar bindUpperWithItemModel:upperModel];
+                [self.selectedItemIndexDict setObject:@(0) forKey:TAG_FU_ITEM_CLOTH];
+                [self.selectedItemIndexDict setObject:@(1) forKey:TAG_FU_ITEM_UPPER];
+            }
+            [avatar bindLowerWithItemModel:model];
+        }
+        
+        self.isStopRefreshBuffer = NO;
     }
     else if ([model.type isEqualToString:TAG_FU_ITEM_SHOES])
     {
@@ -976,21 +1263,41 @@ static int ARFilterID = 0 ;
     {
         [avatar bindDecorationWithItemModel:model];
     }
+    else if ([model.type isEqualToString:TAG_FU_ITEM_BACKGROUND_2D])
+    {
+        [self reloadBackGroundAndBindToController:[model getBundlePath]];
+        
+        if (!undoOrRedo)
+        {
+            NSMutableDictionary *editDict = [[NSMutableDictionary alloc]init];
+            editDict[@"oldConfig"] = self.backgroundModel;
+            editDict[@"currentConfig"] = model;
+            [[FUAvatarEditManager sharedInstance]push:editDict];
+        }
+        
+        [FUAvatarEditManager sharedInstance].undo = NO;
+        [FUAvatarEditManager sharedInstance].redo = NO;
+
+        //设置选中索引
+        [self setItemIndexWithModel:model];
+        
+        return;
+    }
+    
     
     //设置undo堆栈
-    if (!undoOrRedo)
+    if (!undoOrRedo&&![model.type isEqualToString:TAG_FU_ITEM_HAIR]&&![model.type isEqualToString:TAG_FU_ITEM_HAIRHAT])
     {
         NSMutableDictionary *editDict = [[NSMutableDictionary alloc]init];
         
         FUItemModel *oldModel = [avatar valueForKey:model.type];
         if ([oldModel.name isEqualToString:@"捏脸"]&&!oldModel.shapeDict)
         {
-            [[FUShapeParamsMode shareInstance]getOrignalParamsWithAvatar:self.currentAvatars.firstObject];
             oldModel.shapeDict = [FUShapeParamsMode shareInstance].orginalFaceup;
         }
         editDict[@"oldConfig"] = oldModel;
         editDict[@"currentConfig"] = model;
-        
+
         [[FUAvatarEditManager sharedInstance]push:editDict];
     }
     
@@ -998,29 +1305,59 @@ static int ARFilterID = 0 ;
     [FUAvatarEditManager sharedInstance].redo = NO;
 
     //设置选中索引
-    NSArray *array = self.itemsDict[model.type];
-    NSInteger index = [array containsObject:model]?[array indexOfObject:model]:0;
-
-    [self.selectedItemIndexDict setObject:@(index) forKey:model.type];
+    [self setItemIndexWithModel:model];
     
     //修改模型信息的参数
     [avatar setValue:model forKey:model.type];
 }
 
 
+- (void)setItemIndexWithModel:(FUItemModel *)model
+{
+    //设置选中索引
+    NSArray *array = self.itemsDict[model.type];
+    NSInteger index = [array containsObject:model]?[array indexOfObject:model]:0;
+
+    [self.selectedItemIndexDict setObject:@(index) forKey:model.type];
+}
+
 #pragma mark ------ 背景 ------
 /// 加载默认背景
 - (void)loadDefaultBackGroundToController
 {
+    
     NSString *default_bg_Path = [[NSBundle mainBundle] pathForResource:@"default_bg" ofType:@"bundle"];
-    [self rebindItemToControllerWithFilepath:default_bg_Path withPtr:&q_controller_bg_ptr];
+    [self reloadBackGroundAndBindToController:default_bg_Path];
+}
+
+- (void)loadSelectedBackGroundToController
+{
+    if (self.backgroundModel)
+    {
+        [self reloadBackGroundAndBindToController:[self.backgroundModel getBundlePath]];
+    }
+    else
+    {
+        self.backgroundModel = self.itemsDict[TAG_FU_ITEM_BACKGROUND_2D][1];
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self.itemsDict[TAG_FU_ITEM_BACKGROUND_2D][1]];
+        [[NSUserDefaults standardUserDefaults] setValue:data forKey:TAG_UD_BACKGROUND_MODEL];
+        [self loadSelectedBackGroundToController];
+    }
+}
+
+- (void)loadKetingBackGroundToController
+{
+    NSString *default_bg_Path = [[NSBundle mainBundle] pathForResource:@"ketingB" ofType:@"bundle"];
+    [self reloadBackGroundAndBindToController:default_bg_Path];
 }
 
 /// 绑定背景道具到controller
 /// @param filePath 新背景道具路径
 - (void)reloadBackGroundAndBindToController:(NSString *)filePath
 {
+    self.isStopRefreshBuffer = YES;
     [self rebindItemToControllerWithFilepath:filePath withPtr:&q_controller_bg_ptr];
+    self.isStopRefreshBuffer = NO;
 }
 
 #pragma mark ------ hair_mask ------
@@ -1044,7 +1381,88 @@ static int ARFilterID = 0 ;
         [FURenderer unBindItems:self.defalutQController items:&hair_mask_ptr itemsCount:1];
         // 销毁
         [FURenderer destroyItem:hair_mask_ptr];
+        hair_mask_ptr = 0;
     }
+}
+
+/**
+ 设置手势动画
+ -- 会切换 controller 所在句柄
+ */
+- (void)loadPoseTrackAnim {
+    
+    NSString * anim_fistPath = [[NSBundle mainBundle] pathForResource:@"anim_fist.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_fistPath];
+    NSString * anim_mergePath = [[NSBundle mainBundle] pathForResource:@"anim_merge.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_mergePath];
+    NSString * anim_palmPath = [[NSBundle mainBundle] pathForResource:@"anim_palm.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_palmPath];
+    NSString * anim_twoPath = [[NSBundle mainBundle] pathForResource:@"anim_two.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_twoPath];
+    NSString * anim_heartPath = [[NSBundle mainBundle] pathForResource:@"anim_heart.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_heartPath];
+    NSString * anim_onePath = [[NSBundle mainBundle] pathForResource:@"anim_one.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_onePath];
+    NSString * anim_sixPath = [[NSBundle mainBundle] pathForResource:@"anim_six.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_sixPath];
+    
+    NSString * anim_eightPath = [[NSBundle mainBundle] pathForResource:@"anim_eight.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_eightPath];
+    NSString * anim_okPath = [[NSBundle mainBundle] pathForResource:@"anim_ok.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_okPath];
+    NSString * anim_thumbPath = [[NSBundle mainBundle] pathForResource:@"anim_thumb.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_thumbPath];
+    NSString * anim_holdPath = [[NSBundle mainBundle] pathForResource:@"anim_hold.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_holdPath];
+    NSString * anim_korheartPath = [[NSBundle mainBundle] pathForResource:@"anim_korheart.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_korheartPath];
+    NSString * anim_rockPath = [[NSBundle mainBundle] pathForResource:@"anim_rock.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_rockPath];
+    
+    NSString * anim_greetPath = [[NSBundle mainBundle] pathForResource:@"anim_greet.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_greetPath];
+    NSString * anim_gunPath = [[NSBundle mainBundle] pathForResource:@"anim_gun.bundle" ofType:nil];
+    [self bindItemToControllerWithFilepath:anim_gunPath];
+    //    NSString * anim_unknownPath = [[NSBundle mainBundle] pathForResource:@"anim_unknown.bundle" ofType:nil];
+    //    [self bindItemWithToController:anim_unknownPath];
+}
+
+/**
+ * //AR模式下，为了支持旋转屏幕时，同时旋转头发遮罩
+ * //0表示设备未旋转，1表示逆时针旋转90度，2表示逆时针旋转180度，3表示逆时针旋转270度
+ @param orientation 当前设备的方向
+ */
+-(void)setScreenOrientation:(UIInterfaceOrientation)orientation
+{
+    /*
+     UIInterfaceOrientationUnknown            = UIDeviceOrientationUnknown,
+     UIInterfaceOrientationPortrait           = UIDeviceOrientationPortrait,
+     UIInterfaceOrientationPortraitUpsideDown = UIDeviceOrientationPortraitUpsideDown,
+     UIInterfaceOrientationLandscapeLeft      = UIDeviceOrientationLandscapeRight,
+     UIInterfaceOrientationLandscapeRight     = UIDeviceOrientationLandscapeLeft
+     */
+    int or = 0;
+    switch (orientation) {
+        case UIInterfaceOrientationUnknown:
+            
+            break;
+        case UIInterfaceOrientationPortrait:
+            or = 0;
+            break;
+        case UIInterfaceOrientationPortraitUpsideDown:
+            or = 2;
+            break;
+        case UIInterfaceOrientationLandscapeRight:
+            or = 1;
+            break;
+            
+        case UIInterfaceOrientationLandscapeLeft:
+            or = 3;
+            break;
+        default:
+            break;
+    }
+    fuItemSetParamd(self.defalutQController, "screen_orientation",or);
 }
 
 #pragma mark ------ Cam ------
@@ -1055,7 +1473,9 @@ static int ARFilterID = 0 ;
  */
 - (void)reloadCamItemWithPath:(NSString *)camPath
 {
+    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     [self rebindItemToControllerWithFilepath:camPath withPtr:&q_controller_cam];
+    dispatch_semaphore_signal(signal);
 }
 
 #pragma mark ------ 绑定底层方法 ------
@@ -1089,7 +1509,6 @@ static int ARFilterID = 0 ;
 /// 进入编辑模式
 - (void)enterEditMode
 {
-    self.itemTypeSelectIndex = 0;
     [self getSelectedInfo];
     [self recordItemBeforeEdit];
 }
@@ -1110,6 +1529,8 @@ static int ARFilterID = 0 ;
 /// 将形象信息恢复到编辑前
 - (void)reloadItemBeforeEdit
 {
+    [self loadSelectedBackGroundToController];
+    //还原形象
     [self.currentAvatars.firstObject resetValueFromBeforeEditAvatar:self.beforeEditAvatar];
     [self.currentAvatars.firstObject loadAvatarToController];
 }
@@ -1125,7 +1546,15 @@ static int ARFilterID = 0 ;
         
         FUItemModel *selectedModel = [self.itemsDict[key] objectAtIndex:[obj integerValue]];
         
-        if (![selectedModel isEqual:[avatar valueForKey:key]])
+        if ([self checkIsBgKey:key])
+        {
+            if (![selectedModel isEqual:self.backgroundModel])
+            {
+                hasChanged = YES;
+                *stop = YES;
+            }
+        }
+        else if (![selectedModel isEqual:[avatar valueForKey:key]])
         {
             hasChanged = YES;
             *stop = YES;
@@ -1244,19 +1673,28 @@ static int ARFilterID = 0 ;
     [avatarDict setValue:@(0) forKey:@"default"];
     [avatarDict setValue:@(1) forKey:@"q_type"];
     [avatarDict setValue:@(currentAvatar.clothType) forKey:@"clothType"];
+    [avatarDict setValue:@(currentAvatar.hairType) forKey:@"hairType"];
     [avatarDict setValue:@(currentAvatar.skinColorProgress) forKey:TAG_FU_SKIN_COLOR_PROGRESS];
 
     [self.selectedItemIndexDict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
 
-        NSArray *itemArray = self.itemsDict[key];
-        FUItemModel *model = [itemArray objectAtIndex:[obj integerValue]];
-
-        if (!currentAvatar.defaultModel)
+        if ([[FUManager shareInstance] checkIsBgKey:key])
         {
-            [currentAvatar setValue:model forKey:key];
+            NSArray *itemArray = self.itemsDict[key];
+            self.backgroundModel = [itemArray objectAtIndex:[obj integerValue]];
         }
+        else
+        {
+            NSArray *itemArray = self.itemsDict[key];
+            FUItemModel *model = [itemArray objectAtIndex:[obj integerValue]];
 
-        [avatarDict setValue:model.name forKey:key];
+            if (!currentAvatar.defaultModel)
+            {
+                [currentAvatar setValue:model forKey:key];
+            }
+
+            [avatarDict setValue:model.name forKey:key];
+        }
     }];
 
     [self.selectedColorDict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
@@ -1295,7 +1733,7 @@ static int ARFilterID = 0 ;
                     continue ;
                 }
 
-                NSString *hairSource = [NSString stringWithFormat:@"%@/%@",model.path,model.bundle];
+                NSString *hairSource = [model getBundlePath];
                 if ([fileManager fileExistsAtPath:hairSource])
                 {
                     [fileManager copyItemAtPath:hairSource toPath:[filePath stringByAppendingPathComponent:model.name] error:nil];
@@ -1323,85 +1761,7 @@ static int ARFilterID = 0 ;
 }
 
 
-
-#pragma mark ------ 道具编辑相关 ------
-/// 获取当前选中的道具类别
-- (NSString *)getSelectedType
-{
-    if ([FUManager shareInstance].itemTypeSelectIndex < 0)
-    {
-        [FUManager shareInstance].itemTypeSelectIndex = 0;
-    }
-    
-    return [FUManager shareInstance].itemTypeArray[[FUManager shareInstance].itemTypeSelectIndex];
-}
-
-
-/// 获取当前类别的捏脸model
-- (FUItemModel *)getNieLianModelOfSelectedType
-{
-    NSArray *array = [self getItemArrayOfSelectedType];
-    
-    FUItemModel *model = array[0];
-    
-    return model;
-}
-
-/// 获取当前类别选中的道具编号
-- (NSInteger)getSelectedItemIndexOfSelectedType
-{
-    NSString *type = [self getSelectedType];
-    
-    if (!self.selectedItemIndexDict)
-    {
-        [self getSelectedItemIndexDictWithAvatar:self.currentAvatars.lastObject];
-    }
-    
-    NSInteger index = [[self.selectedItemIndexDict objectForKey:type] integerValue];
-    
-    return index;
-}
-
-/// 设置选中道具编号
-/// @param index 道具编号
-- (void)setSelectedItemIndex:(NSInteger)index
-{
-    NSString *type = [self getSelectedType];
-    [self.selectedItemIndexDict setValue:@(index) forKey:type];
-}
-
-/// 获取当前类别的道具数组
-- (NSArray *)getItemArrayOfSelectedType
-{
-    if ([FUManager shareInstance].itemTypeSelectIndex == -1)
-    {
-        return [[NSArray alloc] init];
-    }
-    NSString *type = [self getSelectedType];
-    NSArray *array = [FUManager shareInstance].itemsDict[type];
-    
-    return array;
-}
-
-/// 获取道具选中字典
-/// @param avatar 形象模型
-- (NSMutableDictionary *)getSelectedItemIndexDictWithAvatar:(FUAvatar *)avatar
-{
-    NSMutableDictionary *selectedItemIndexDict = [[NSMutableDictionary alloc]init];
-    
-    [self.itemTypeArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        
-        FUItemModel *model = [avatar valueForKey:obj];
-        NSArray *modelArray = self.itemsDict[obj];
-        
-        NSInteger index = [modelArray containsObject:model]?[modelArray indexOfObject:model]:0;
-        
-        [selectedItemIndexDict setObject:@(index) forKey:obj];
-    }];
-    
-    return selectedItemIndexDict;
-}
-
+#pragma mark ------ 颜色编辑相关 ------
 /// 获取颜色选中字典
 /// @param avatar 形象模型
 - (NSMutableDictionary *)getSelectedColorIndexDictWithAvatar:(FUAvatar *)avatar
@@ -1424,13 +1784,12 @@ static int ARFilterID = 0 ;
     return selectedColorDict;
 }
 
-
-#pragma mark ------ 颜色编辑相关 ------
 - (FUP2AColor *)getSkinColorWithProgress:(double)progress
 {
     NSInteger colorsCount = [[FUManager shareInstance] getColorArrayCountWithType:FUFigureColorTypeSkinColor];
     double step = 1.0/(colorsCount - 1);
-    
+    if (progress < 0)
+        progress = 0;
     double colorIndexDouble = progress / step;
     int colorIndex = colorIndexDouble;
     
@@ -1467,9 +1826,13 @@ static int ARFilterID = 0 ;
 {
     NSArray *selectedColorArray = self.colorDict[[self getColorKeyWithType:type]];
     NSInteger index = [[self.selectedColorDict objectForKey:[self getColorKeyWithType:type]] intValue]-1;
-    FUP2AColor *color = [selectedColorArray objectAtIndex:index];
-    
-    return color;
+    if (index >= 0)
+    {
+        FUP2AColor *color = [selectedColorArray objectAtIndex:index];
+        return color;
+    }
+
+    return nil;
 }
 
 /// 设置对应类别的选中颜色编号
@@ -1528,6 +1891,15 @@ static int ARFilterID = 0 ;
         case FUFigureColorTypeHatColor:
             key = @"hat_color";
             break;
+        case FUFigureColorTypeEyebrowColor:
+            key = @"eyebrow_color";
+            break;
+        case FUFigureColorTypeEyeshadowColor:
+            key = @"eyeshadow_color";
+            break;
+        case FUFigureColorTypeEyelashColor:
+            key = @"eyelash_color";
+            break;
         default:
             break;
     }
@@ -1559,6 +1931,7 @@ static int ARFilterID = 0 ;
     
     avatar.isQType = [dict[@"q_type"] integerValue];
     avatar.clothType = (FUAvataClothType)[dict[@"clothType"] integerValue];
+    avatar.hairType = (FUAvataHairType)[dict[@"hairType"] integerValue];
     
     avatar.clothes = [self getItemModelWithKey:TAG_FU_ITEM_CLOTH andDict:dict];
     avatar.upper = [self getItemModelWithKey:TAG_FU_ITEM_UPPER andDict:dict];
@@ -1580,6 +1953,7 @@ static int ARFilterID = 0 ;
     avatar.faceMakeup = [self getItemModelWithKey:TAG_FU_ITEM_FACEMAKEUP andDict:dict];
     avatar.lipGloss = [self getItemModelWithKey:TAG_FU_ITEM_LIPGLOSS andDict:dict];
     avatar.decorations = [self getItemModelWithKey:TAG_FU_ITEM_DECORATION andDict:dict];
+    avatar.hairHat = [self getItemModelWithKey:TAG_FU_ITEM_HAIRHAT andDict:dict];
     
     avatar.skinColorIndex = [self getIndexWithColorTypeKey:@"skin" andDict:dict];
     avatar.lipColorIndex = [self getIndexWithColorTypeKey:@"lip" andDict:dict];
@@ -1589,6 +1963,9 @@ static int ARFilterID = 0 ;
     avatar.glassFrameColorIndex = [self getIndexWithColorTypeKey:@"glassFrame" andDict:dict] ;
     avatar.glassColorIndex = [self getIndexWithColorTypeKey:@"glass" andDict:dict];
     avatar.hatColorIndex = [self getIndexWithColorTypeKey:@"hat" andDict:dict];
+    avatar.eyebrowColorIndex = [self getIndexWithColorTypeKey:@"eyebrow" andDict:dict];
+    avatar.eyeshadowColorIndex = [self getIndexWithColorTypeKey:@"eyeshadow" andDict:dict];
+    avatar.eyelashColorIndex = [self getIndexWithColorTypeKey:@"eyelash" andDict:dict];
     avatar.skinColorProgress = [dict[TAG_FU_SKIN_COLOR_PROGRESS] doubleValue];
     
     return avatar;
@@ -1621,7 +1998,7 @@ static int ARFilterID = 0 ;
     FUItemModel *defaultHairModel = [self gethairNameWithNum:hairLabel andGender:gender];
     avatar.hair = defaultHairModel;
     
-    NSString *baseHairPath = [NSString stringWithFormat:@"%@/%@",defaultHairModel.path,defaultHairModel.bundle];
+    NSString *baseHairPath = [defaultHairModel getBundlePath];
     NSData *baseHairData = [NSData dataWithContentsOfFile:baseHairPath];
     NSData *defaultHairData = [[fuPTAClient shareInstance] createHairWithHeadData:data defaultHairData:baseHairData];
     NSString *defaultHairPath = [[avatar filePath] stringByAppendingPathComponent:avatar.hair.name];
@@ -1669,9 +2046,10 @@ static int ARFilterID = 0 ;
     }
     avatar.wearFemaleClothes = avatar.gender;
     avatar.lower = self.itemsDict[TAG_FU_ITEM_LOWER][1];
-    avatar.shoes = self.itemsDict[TAG_FU_ITEM_SHOES][7];
+    avatar.shoes = self.itemsDict[TAG_FU_ITEM_SHOES][9];
     avatar.clothes = self.itemsDict[TAG_FU_ITEM_CLOTH][0];
     avatar.clothType = FUAvataClothTypeUpperAndLower;
+    avatar.lipGloss = self.itemsDict[TAG_FU_ITEM_LIPGLOSS][1];
     
     // 胡子
     
@@ -1696,8 +2074,16 @@ static int ARFilterID = 0 ;
     [avatarInfo setObject:avatar.hat.name forKey:@"hat"];
     [avatarInfo setObject:avatar.clothes.name forKey:@"clothes"];
     [avatarInfo setObject:avatar.glasses.name forKey:@"glasses"];
-    
-    [avatarInfo setObject:@(0.3) forKey:@"skin_color_progress"];
+    [avatarInfo setObject:avatar.lipGloss.name forKey:@"lipGloss"];
+    [avatarInfo setValue:@(-1) forKey:@"skin_color_progress"];
+    if (gender == FUGenderFemale)
+    {
+        [avatarInfo setValue:@(2) forKey:@"lipColorIndex"];
+    }
+    else
+    {
+        [avatarInfo setValue:@(7) forKey:@"lipColorIndex"];
+    }
     
     NSString *avatarInfoPath = [[CurrentAvatarStylePath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
     NSData *avatarInfoData = [NSJSONSerialization dataWithJSONObject:avatarInfo options:NSJSONWritingPrettyPrinted error:nil];
@@ -1722,7 +2108,7 @@ static int ARFilterID = 0 ;
     //获取文件路径
     NSString *filePath = [documentPath stringByAppendingPathComponent:avatar.name];
     
-    NSString *hairPath = [model.path stringByAppendingPathComponent:model.bundle];
+    NSString *hairPath = [model getBundlePath];
     NSData *hairData = [NSData dataWithContentsOfFile:hairPath];
     
     if (hairData != nil)
@@ -1748,7 +2134,7 @@ static int ARFilterID = 0 ;
         
         [hairArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             FUItemModel *enumModel = (FUItemModel *)obj;
-            NSString *hairPath = [enumModel.path stringByAppendingPathComponent:enumModel.bundle];
+            NSString *hairPath = [enumModel getBundlePath];
             NSData *hairData = [NSData dataWithContentsOfFile:hairPath];
             
             if (hairData != nil)
@@ -2011,7 +2397,7 @@ static int ARFilterID = 0 ;
         
         FUItemModel *enumModel = (FUItemModel *)obj;
         
-        if ([enumModel.name isEqualToString:glassesName])
+        if ([enumModel.name containsString:glassesName])
         {
             model = enumModel;
             *stop = YES;
@@ -2061,7 +2447,7 @@ static int ARFilterID = 0 ;
     [beardArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         FUItemModel *enumModel = (FUItemModel *)obj;
         
-        if ([enumModel.gender_match integerValue] == male&&[enumModel.label containsObject:[NSNumber numberWithInt:num]])
+        if ([enumModel.gender_match integerValue] == (male ? FUGenderMale : FUGenderFemale)&&[enumModel.label containsObject:[NSNumber numberWithInt:num]])
         {
             [matchBeardArray addObject:enumModel];
         }
@@ -2098,7 +2484,7 @@ static float CenterScale = 0.3;
 
     // 2、保证正脸
     float rotation[4];
-    [FURenderer getFaceInfo:0 name:@"rotation" pret:rotation number:4];
+    [FURenderer faceCaptureGetResultRotation:self.faceCapture faceN:0 buffer:rotation length:4];
     
     float xAngle = atanf(2 * (rotation[3] * rotation[0] + rotation[1] * rotation[2]) / (1 - 2 * (rotation[0] * rotation[0] + rotation[1] * rotation[1]))) * 180 / M_PI;
     float yAngle = asinf(2 * (rotation[1] * rotation[3] - rotation[0] * rotation[2])) * 180 / M_PI;
@@ -2122,11 +2508,10 @@ static float CenterScale = 0.3;
     
     // 4、夸张表情
     float expression[46];
-    [FURenderer getFaceInfo:0 name:@"expression" pret:expression number:46];
-    
+    [FURenderer faceCaptureGetResultExpression:self.faceCapture faceN:0 buffer:expression length:46];
     for (int i = 0; i < 46; i ++)
     {
-        if (expression[i] > 1)
+        if (expression[i] > 0.5)
         {
             return @" 请保持面部无夸张表情  ";
         }
@@ -2333,6 +2718,250 @@ static float CenterScale = 0.3;
 {
     NSString *version = [[fuPTAClient shareInstance] getVersion];
     return [NSString stringWithFormat:@"SDK v%@", version];
+}
+
+#pragma mark - 动画
+static int ranNum = 0;
+///  设置一个等待执行的特殊动画
+- (void)setNextSpecialAnimation
+{
+	//随机从两个动画里抽取一个
+	//int ranNum = arc4random()%3;
+	if (ranNum == 0)
+	{
+		self.nextSpecialAni = @"ani_danshoubixin_mid.bundle";
+	}
+	else if (ranNum == 1)
+	{
+		self.nextSpecialAni = @"ani_hi_mid.bundle";
+	}
+	else
+	{
+		self.nextSpecialAni = @"ani_rock_mid.bundle";
+	}
+	ranNum++;
+	if (ranNum > 2) {
+		ranNum = 0;
+	}
+}
+
+/// 清除正在等待执行的特殊动画
+- (void)removeNextSpecialAnimation
+{
+    self.nextSpecialAni = nil;
+}
+
+/// 播放在等待中的特殊动画
+- (void)playNextSpecialAnimation
+{
+    FUAvatar *avatar = self.currentAvatars.firstObject;
+    NSString *animationPath = [[NSBundle mainBundle] pathForResource:self.nextSpecialAni ofType:nil];
+
+    [avatar reloadAnimationWithPath:animationPath];
+    [avatar playOnceAnimation];
+    [[FUManager shareInstance] removeNextSpecialAnimation];
+}
+
+/// 立即播放一个特殊动画
+- (void)playSpecialAnimation
+{
+    [[FUManager shareInstance] setNextSpecialAnimation];
+    [[FUManager shareInstance] playNextSpecialAnimation];
+    [FUManager shareInstance].isPlayingSpecialAni = YES;
+}
+
+
+#pragma mark ----- 编辑
+- (void)configEditInfo
+{
+    self.selectedEditType = @"face";
+    self.subTypeSelectedDict = [[NSMutableDictionary alloc]init];
+    for (NSString *type in self.typeInfoDict.allKeys)
+    {
+        [self.subTypeSelectedDict setValue:@(0) forKey:type];
+    }
+    self.isGlassesColor = NO;
+}
+
+
+- (NSInteger)getCurrentTypeArrayCount
+{
+    FUEditTypeModel *model = self.typeInfoDict[self.selectedEditType];
+    NSArray *array = model.subTypeArray;
+    return array.count;
+}
+
+- (NSArray *)getCurrentTypeArray
+{
+    FUEditTypeModel *model = self.typeInfoDict[self.selectedEditType];
+    NSArray *array = model.subTypeArray;
+    return array;
+}
+
+- (NSString *)getSubTypeNameWithIndex:(NSInteger)index
+{
+    NSArray *array = [self getCurrentTypeArray];
+    NSString *name = [array[index] valueForKey:@"name"];
+    
+    return name;
+}
+
+- (NSString *)getSubTypeKeyWithIndex:(NSInteger)index
+{
+    NSArray *array = [self getCurrentTypeArray];
+    NSString *name = [array[index] valueForKey:@"type"];
+    
+    return name;
+}
+
+
+- (void)setSubTypeSelectedIndex:(NSInteger)index
+{
+    [self.subTypeSelectedDict setValue:@(index) forKey:self.selectedEditType];
+}
+
+- (NSInteger)getSubTypeSelectedIndex
+{
+    return [[self.subTypeSelectedDict objectForKey:self.selectedEditType] integerValue];
+}
+
+/// 获取当前类别的道具数组
+- (NSArray *)getItemArrayOfSelectedSubType
+{
+    NSString *type = [self getSubTypeKeyWithIndex:[self getSubTypeSelectedIndex]];
+    NSArray *array = [FUManager shareInstance].itemsDict[type];
+    
+    return array;
+}
+
+
+/// 获取当前类别选中的道具编号
+- (NSInteger)getSelectedItemIndexOfSelectedSubType
+{
+    NSString *type = [self getSubTypeKeyWithIndex:[self getSubTypeSelectedIndex]];
+    
+    if (!self.selectedItemIndexDict)
+    {
+        [self getSelectedItemIndexDictWithAvatar:self.currentAvatars.lastObject];
+    }
+    
+    NSInteger index = [[self.selectedItemIndexDict objectForKey:type] integerValue];
+    
+    return index;
+}
+
+- (BOOL)checkIsBgKey:(NSString *)key
+{
+    if ([key isEqualToString:@"2d"])
+    {
+        return YES;
+    }
+    else
+    {
+        return NO;
+    }
+}
+
+/// 获取道具选中字典
+/// @param avatar 形象模型
+- (NSMutableDictionary *)getSelectedItemIndexDictWithAvatar:(FUAvatar *)avatar
+{
+    NSMutableDictionary *selectedItemIndexDict = [[NSMutableDictionary alloc]init];
+    
+    [self.itemTypeArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        FUItemModel *model = [[FUItemModel alloc]init];
+        
+        if ([self checkIsBgKey:(NSString *)obj])
+        {
+            NSArray *items = self.itemsDict[obj];
+            for (int i = 0 ; i < items.count; i++)
+            {
+                if ([self.backgroundModel isEqualToBGModel:items[i]])
+                {
+                    self.backgroundModel = items[i];
+                    model = items[i];
+                    break;
+                }
+            }
+        }
+        else
+        {
+            model = [avatar valueForKey:obj];
+        }
+        
+        NSArray *modelArray = self.itemsDict[obj];
+        
+        NSInteger index = [modelArray containsObject:model]?[modelArray indexOfObject:model]:0;
+        
+        [selectedItemIndexDict setObject:@(index) forKey:obj];
+    }];
+    
+    return selectedItemIndexDict;
+}
+
+- (NSString *)getSubTypeImageOfSelectedTypeWithIndex:(NSInteger)index
+{
+    NSString *type = [self getSubTypeKeyWithIndex:index];
+    
+    NSString *imageName = [NSString stringWithFormat:@"icon_%@_%@",self.selectedEditType,type];
+    
+    if (index == [self getSubTypeSelectedIndex]&&self.isHiddenDecView != YES)
+    {
+        imageName = [imageName stringByAppendingString:@"_selected"];
+    }
+    return imageName;
+}
+
+- (BOOL)isChangeBackGround
+{
+    return [self.selectedEditType isEqualToString:@"background"];
+}
+
+/// 获取当前类别的捏脸model
+- (FUItemModel *)getNieLianModelOfSelectedType
+{
+    NSArray *array = [self getItemArrayOfSelectedSubType];
+    
+    FUItemModel *model = array[0];
+    
+    return model;
+}
+
+/// 获取当前选中的道具类别
+- (NSString *)getSelectedType
+{
+    NSString *type = [self getSubTypeKeyWithIndex:[self getSubTypeSelectedIndex]];
+    
+    return type;
+}
+
+#pragma mark - Resolution
+
+/// 设置输出精度与相机输入一致，目前相机设置为720*1280
+- (void)setOutputResolutionAdjustCamera
+{
+    [[FURenderer shareRenderer] setOutputResolution:720 h:1280];
+}
+/// 根据屏幕尺寸设置输出精度
+- (void)setOutputResolutionAdjustScreen
+{
+    int width = (int)CVPixelBufferGetBytesPerRow(renderTarget)/4;
+    int height = (int)CVPixelBufferGetHeight(renderTarget);
+  
+    [[FURenderer shareRenderer]setOutputResolution:width h:height];
+}
+
+/// 设置指定输出尺寸
+/// @param width 指定图像宽
+/// @param height 指定图像高
+- (void)setOutputResolutionWithWidth:(CGFloat)width height:(CGFloat)height
+{
+    self.outPutSize = CGSizeMake(width, height);
+    [[FURenderer shareRenderer]setOutputResolution:width h:height];
+    // 如果存在老的 bodyTrackBuffer ，则进行释放
+    if (bodyTrackBuffer) CVPixelBufferRelease(bodyTrackBuffer);
+	bodyTrackBuffer = [self createEmptyPixelBuffer:CGSizeMake(self.outPutSize.width, self.outPutSize.height)];
 }
 
 @end

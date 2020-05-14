@@ -7,8 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "FUAvatar.h"
-
 
 @protocol FUARFilterViewDelegate <NSObject>
 
