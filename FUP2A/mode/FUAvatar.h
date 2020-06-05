@@ -43,9 +43,16 @@ typedef enum : NSInteger {
     FUItemTypePupil,
     FUItemTypeMakeFaceup,
     FUItemTypeLipGloss,
-    FUItemTypeDecorations,  // 配饰
-    FUItemTypeHairHat,  // 发帽
+    // 配饰 大类 ，多选
+    FUItemTypeDecoration_shou,  // 手饰
+    FUItemTypeDecoration_jiao,  // 脚饰
+    FUItemTypeDecoration_xianglian,  // 项链
+    FUItemTypeDecoration_erhuan,  // 耳环
+    FUItemTypeDecoration_toushi,  // 头饰
     
+    
+    
+    FUItemTypeHairHat,  // 发帽
     FUItemTypeAnimation,
     FUItemTypeCamera,
     FUItemTypeBackground,     // 编辑页的背景选项
@@ -63,8 +70,7 @@ static const int tmpItemsCount  = 100;
     int items[FUItemTypeEnd];
     // 临时记录的句柄数组
     int tmpItems[tmpItemsCount];
-    // 同步信号量
-    dispatch_semaphore_t signal;
+
 }
 @property (nonatomic, copy) NSString *name;
 @property (nonatomic, copy) NSString *uuid;
@@ -91,13 +97,15 @@ static const int tmpItemsCount  = 100;
 @property (nonatomic, strong) FUItemModel *beard;
 @property (nonatomic, strong) FUItemModel *hat;
 @property (nonatomic, strong) FUItemModel *shoes;    // 鞋子
-@property (nonatomic, strong) FUItemModel *decorations;  // 配饰
+
 
 @property (nonatomic, strong) FUItemModel *face;
 @property (nonatomic, strong) FUItemModel *eyes;
 @property (nonatomic, strong) FUItemModel *mouth;
 @property (nonatomic, strong) FUItemModel *nose;
-// make up
+@property (nonatomic, strong) FUItemModel *hairHat;   //发帽
+@property (nonatomic, strong) FUItemModel *dress_2d;   //2d背景
+// make up  美妆大类  多选
 @property (nonatomic, strong) FUItemModel *eyeLash;  //睫毛
 @property (nonatomic, strong) FUItemModel *eyeBrow;  //眉毛
 @property (nonatomic, strong) FUItemModel *eyeShadow;  //眼影
@@ -105,7 +113,14 @@ static const int tmpItemsCount  = 100;
 @property (nonatomic, strong) FUItemModel *pupil;     //美瞳
 @property (nonatomic, strong) FUItemModel *faceMakeup;  //脸妆
 @property (nonatomic, strong) FUItemModel *lipGloss;   //唇妆
-@property (nonatomic, strong) FUItemModel *hairHat;   //发帽
+// 配饰 大类  多选
+@property (nonatomic, strong) FUItemModel *decoration_shou;    // 手饰
+@property (nonatomic, strong) FUItemModel *decoration_jiao;    // 脚饰
+@property (nonatomic, strong) FUItemModel *decoration_xianglian;    // 项链
+@property (nonatomic, strong) FUItemModel *decoration_erhuan;    // 耳环
+@property (nonatomic, strong) FUItemModel *decoration_toushi;    // 头饰
+
+
 
 @property (nonatomic, assign) double hairLabel;
 @property (nonatomic, assign) double bearLabel;
@@ -212,6 +227,10 @@ static const int tmpItemsCount  = 100;
  退出身体跟随模式
  */
 - (void)quitFollowBodyMode;
+/**
+ 设置在身体动画和身体追踪数据之间过渡的时间，默认值为0.5（秒）
+ */
+- (void)setHuman3dAnimTransitionTime:(float)time;
 /**
   去掉脖子
  */
@@ -436,7 +455,10 @@ static const int tmpItemsCount  = 100;
  加载待机动画
  */
 - (void)loadStandbyAnimation;
-
+/**
+ 人脸追踪时加载 Pose 不带信号量
+ */
+- (void)loadTrackFaceModePose_NoSignal;
 /**
  人脸追踪时加载 Pose
  */
@@ -446,6 +468,10 @@ static const int tmpItemsCount  = 100;
  呼吸动画
  */
 - (void)loadIdleModePose;
+/**
+呼吸动画,不带信号量
+*/
+- (void)loadIdleModePose_NoSignal;
 
 /**
  身体追踪时加载 Pose
@@ -529,6 +555,10 @@ static const int tmpItemsCount  = 100;
  使用相机bundle缩放至脸部特写
  */
 - (void)resetScaleToFace_UseCam;
+/**
+ 使用相机bundle缩放至脸部特写,不使用信号量，防止造成死锁
+ */
+- (void)resetScaleToFace_UseCamNoSignal;
 
 /**
  使用相机bundle缩放至小比例的全身
@@ -578,7 +608,17 @@ static const int tmpItemsCount  = 100;
 /// 根据传入的形象模型重设形象的信息
 /// @param avatar 形象模型
 - (void)resetValueFromBeforeEditAvatar:(FUAvatar *)avatar;
-
+/**
+ 加载 avatar 模型
+ --  会加载 头、头发、身体、衣服、默认动作 四个道具。
+ --  如果有 胡子、帽子、眼镜也会加载，没有则不加载。
+ --  会设置 肤色、唇色、瞳色、发色(光头不设)。
+ --  如果有 胡子、帽子、眼镜也会设置其对应颜色。
+ 
+ @return 返回 controller 所在句柄
+ @param isBg 是否渲染模型自身的背景 bundle
+ */
+- (int)loadAvatarToControllerWith:(BOOL)isBg;
 /**
  加载 avatar 模型
  --  会加载 头、头发、身体、衣服、默认动作 四个道具。
@@ -589,6 +629,7 @@ static const int tmpItemsCount  = 100;
  @return 返回 controller 所在句柄
  */
 - (int)loadAvatarToController;
+
 /// 加载形象颜色
 - (void)loadAvatarColor;
 
@@ -653,9 +694,25 @@ static const int tmpItemsCount  = 100;
 /// @param model 唇妆数据
 - (void)bindLipGlossWithItemModel:(FUItemModel *)model;
 
+
+//   ========================= 饰品大类  多选  ==============
+ 
 /// 加载饰品
-/// @param model 饰品数据
-- (void)bindDecorationWithItemModel:(FUItemModel *)model;
+/// @param model 手饰品数据
+- (void)bindDecorationShouWithItemModel:(FUItemModel *)model;
+/// 加载饰品
+/// @param model 脚饰品数据
+- (void)bindDecorationJiaoWithItemModel:(FUItemModel *)model;
+/// 加载饰品
+/// @param model 项链饰品数据
+- (void)bindDecorationXianglianWithItemModel:(FUItemModel *)model;
+/// 加载饰品
+/// @param model 耳环饰品数据
+- (void)bindDecorationErhuanWithItemModel:(FUItemModel *)model;
+/// 加载饰品
+/// @param model 头饰饰品数据
+- (void)bindDecorationToushiWithItemModel:(FUItemModel *)model;
+
 
 /// 加载发帽
 /// @param model 发帽数据

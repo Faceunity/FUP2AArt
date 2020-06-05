@@ -13,7 +13,7 @@
 #import "FUPhotoListViewController.h"
 #import "FUOrientationViewController.h"
 #import "FURotation.h"
-
+#import "FUTrackController.h"
 @interface FUBodyTrackController ()<FUCameraDelegate,FUSwitchDelegate,FUPoseTrackViewDelegate,
 FUPhotoListViewControllerDelegate
 >
@@ -21,8 +21,6 @@ FUPhotoListViewControllerDelegate
     BOOL isPreparing ;   // 是不是在准备中，如果在准备中，则停止相机的渲染
     BOOL _isVideoInput;             // 判断当前是否是视频输入
     BOOL _shouldBreakVideoInput;    // 是否打破视频的输入
-    // 同步信号量
-    dispatch_semaphore_t signal;
 }
 @property (nonatomic, strong) FUCamera *camera;
 @property (weak, nonatomic) IBOutlet FUOpenGLView *renderView;
@@ -73,7 +71,6 @@ FUPhotoListViewControllerDelegate
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.isFirstLoad = YES;
-    signal = dispatch_semaphore_create(1);
     // Do any additional setup after loading the view.
     [[FUManager shareInstance] loadPoseTrackAnim];
     self.poseTrackView.delegate = self;
@@ -81,6 +78,7 @@ FUPhotoListViewControllerDelegate
     self.renderMode = FURenderPreviewMode;
     
     [self configSwitch];
+    [self addObserver];
 }
 
 - (void)configSwitch
@@ -113,10 +111,8 @@ FUPhotoListViewControllerDelegate
 
 - (void)PoseTrackViewDidSelectedAvatar:(FUAvatar *)avatar
 {
-	dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
-	[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:avatar];
+	[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:avatar :NO];
 	self.currentAvatar = avatar;
-	// [self.currentAvatar closeHairAnimation];
 	// 当前avatar 进入AR模式，用于身体追踪和ARFilter
 	[self.currentAvatar enterTrackBodyMode];
 	if (!self.bodySwitch.on)
@@ -134,7 +130,6 @@ FUPhotoListViewControllerDelegate
 		if (!self.followSwitch.on)
 		[self resetCam];
 	}
-	dispatch_semaphore_signal(signal);
 }
 
 
@@ -274,6 +269,7 @@ FUPhotoListViewControllerDelegate
     {
         isPreparing = NO;
         [[FUManager shareInstance]setOutputResolutionWithWidth:720 height:1280];
+        [[FUManager shareInstance] loadDefaultBackGroundToController];
         [self PoseTrackViewDidSelectedInput:@"live"];
         FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
         self.currentAvatar = avatar ;
@@ -281,7 +277,7 @@ FUPhotoListViewControllerDelegate
         // 1.即将进入AR滤镜，加载处理头发的道具
         [[FUManager shareInstance] destoryHairMask];
         // 2.解绑定身体、上衣、裤子、鞋子资源，只保留头部的一些素材
-        [[FUManager shareInstance]reloadAvatarToControllerWithAvatar:self.currentAvatar];
+        [[FUManager shareInstance]reloadAvatarToControllerWithAvatar:self.currentAvatar : NO];
         [self.poseTrackView selectedModeWith:self.currentAvatar];
         
         // 5.向nama设置enter_ar_mode为1，进入AR滤镜模式
@@ -347,7 +343,6 @@ FUPhotoListViewControllerDelegate
 -(void)didOutputVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer
 {
     if (isPreparing) return;
-    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
     CVPixelBufferRef pixelBuffer;
     CVPixelBufferRef mirrored_pixel = NULL;
     pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
@@ -380,7 +375,6 @@ FUPhotoListViewControllerDelegate
     
     [self.renderView displayPixelBuffer:mirrored_pixel withLandmarks:nil count:0 Mirr:NO];
     CVPixelBufferRelease(mirrored_pixel);
-    dispatch_semaphore_signal(signal);
 }
 -(void)cancelSelectVideo{
 }
@@ -531,7 +525,6 @@ static int FrameNum = 0;
 static int frameIndex = 0 ;
 -(void)renderVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer
 {
-    dispatch_semaphore_wait(signal, DISPATCH_TIME_FOREVER);
 	__weak typeof(self)weakSelf = self;
 	frameIndex = frameIndex +1 ;
 	__block CVPixelBufferRef pixelBuffer;
@@ -585,7 +578,6 @@ static int frameIndex = 0 ;
 		default:
 			break;
 	}
-	dispatch_semaphore_signal(signal);
 }
 
 
@@ -645,7 +637,7 @@ static int frameIndex = 0 ;
    self.poseTrackView.hidden = !self.poseTrackView.hidden;
    
    [self resetCam];
-   self.touchBlock();
+   self.touchBlock(self.poseTrackView.hidden);
    [self resetBottom];
 }
 
@@ -673,6 +665,39 @@ static int frameIndex = 0 ;
     }
     return _camera ;
 }
+#pragma mark --- Observer
+
+- (void)addObserver{
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willResignActive) name:UIApplicationWillResignActiveNotification object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(willEnterForeground) name:UIApplicationWillEnterForegroundNotification object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didBecomeActive) name:UIApplicationDidBecomeActiveNotification object:nil];
+}
+
+
+- (void)willResignActive    {
+	if ([self.navigationController.visibleViewController isKindOfClass:[FUTrackController class]]) {
+		if (_isVideoInput) {
+			[self.mReader cancelReading];
+			[self destroyDisplayLink];
+		}
+	}
+}
+
+- (void)willEnterForeground {
+	
+
+}
+
+- (void)didBecomeActive {
+	
+	if ([self.navigationController.visibleViewController isKindOfClass:[FUTrackController class]]) {
+	// 视频播放进入后台可能会中断，这里重启
+		if (_isVideoInput) {
+			[self playLocalVideoWithTimer];
+		}
+	}
+}
+
 
 -(void)dealloc{
    NSLog(@"FUBodyTrackController-----销毁了");

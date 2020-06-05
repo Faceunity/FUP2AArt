@@ -124,6 +124,7 @@ FUARFilterViewDelegate
 		[self.currentAvatar quitARMode];
 		NSString *filterName = @"noitem";
 		[self ARFilterViewDidSelectedARFilter:filterName];
+	    [self.filterView selectModelType];
 	}
 }
 - (void)viewWillAppear:(BOOL)animated {
@@ -232,7 +233,7 @@ FUARFilterViewDelegate
 -(void)hideOrShowFilterView{
 	self.filterView.hidden = !self.filterView.hidden;
 	[self ARFilterViewDidShowTopView:!self.filterView.hidden];
-	self.touchBlock();
+	self.touchBlock(self.filterView.hidden);
 }
 
 

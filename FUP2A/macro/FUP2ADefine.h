@@ -11,6 +11,13 @@ typedef NS_ENUM(NSInteger, FUAvatarStyle){
     FUAvatarStyleQ                = 1,
 };
 
+typedef enum : NSInteger {
+    FUEditTypeFace,    // 捏脸
+	FUEditTypeMakeup,    // 美妆
+	FUEditTypeDress,    // 服饰
+} FUEditType; //编辑大类
+#define FUEditTypeArray @[@"face",@"makeup",@"dress"]
+#define FUEditTypeKey(enum) [FUEditTypeArray objectAtIndex:enum]
 typedef NS_ENUM(NSInteger, FUGender){
     FUGenderMale           = 0,
     FUGenderFemale         = 1,
@@ -68,10 +75,15 @@ typedef enum : NSInteger {
 
 #define AvatarQPath         [documentPath stringByAppendingPathComponent:@"AvatarQs"]
 
+#define StaPath        [documentPath stringByAppendingPathComponent:@"Sta"]
+
 //#define CurrentAvatarStylePath ([FUManager shareInstance].avatarStyle == FUAvatarStyleNormal ? AvatarListPath : AvatarQPath)
 #define CurrentAvatarStylePath  AvatarQPath
 #define VideoPath           [documentPath stringByAppendingPathComponent:@"video.mp4"]
-
+// 预制的“你好”语音文件和口型系数 文件夹
+#define FUPrefabricateVoice_dir        [[NSBundle mainBundle] pathForResource:@"prefabricateVoice" ofType:nil]
+// 预制的“你好”语音文件和口型系数 配置表
+#define FUPrefabricateVoice_config     [FUPrefabricateVoice_dir stringByAppendingPathComponent:@"config.json"]
 #define DefaultAvatarNum    2
 
 #define FU_HEAD_BUNDLE @"head.bundle"
@@ -88,6 +100,8 @@ typedef enum : NSInteger {
 #define FUEnterNileLianNot @"FUEnterNileLianNot"
 // 生成头发中
 #define FUCreatingHairBundleNot @"FUCreatingHairBundleNot"
+// 生成发帽中
+#define FUCreatingHairHatBundleNot @"FUCreatingHairHatBundleNot"
 // 撤销重做的通知
 #define FUAvatarEditedDoNot @"FUAvatarEditedDoNot"
 
@@ -128,19 +142,29 @@ static int const FUAppVersionInvalid = 3001;
 #define TAG_FU_ITEM_LOWER  @"lower"
 #define TAG_FU_ITEM_SHOES  @"shoes"
 #define TAG_FU_ITEM_HAT  @"hat"
-#define TAG_FU_ITEM_EYELASH  @"eyeLash"
-#define TAG_FU_ITEM_EYEBROW  @"eyeBrow"
+#define TAG_FU_ITEM_HAIRHAT  @"hairHat"
 #define TAG_FU_ITEM_BEARD  @"beard"
 #define TAG_FU_ITEM_GLASSES  @"glasses"
+// =========== 美妆 大类  多选  ===============
+#define TAG_FU_ITEM_EYELASH  @"eyeLash"
+#define TAG_FU_ITEM_EYEBROW  @"eyeBrow"
 #define TAG_FU_ITEM_EYESHADOW  @"eyeShadow"
 #define TAG_FU_ITEM_EYELINER  @"eyeLiner"
 #define TAG_FU_ITEM_PUPIL  @"pupil"
 #define TAG_FU_ITEM_FACEMAKEUP  @"faceMakeup"
 #define TAG_FU_ITEM_LIPGLOSS  @"lipGloss"
-#define TAG_FU_ITEM_DECORATION  @"decorations"
-#define TAG_FU_ITEM_HAIRHAT  @"hairHat"
+// =========== 配饰 大类  多选  ===============
+#define TAG_FU_ITEM_DECORATIONS @"decorations"
 
-#define TAG_FU_ITEM_BACKGROUND_2D  @"2d"
+
+
+#define TAG_FU_ITEM_DECORATION_SHOU  @"decoration_shou"
+#define TAG_FU_ITEM_DECORATION_JIAO  @"decoration_jiao"
+#define TAG_FU_ITEM_DECORATION_XIANGLIAN  @"decoration_xianglian"
+#define TAG_FU_ITEM_DECORATION_ERHUAN  @"decoration_erhuan"
+#define TAG_FU_ITEM_DECORATION_TOUSHI  @"decoration_toushi"
+
+#define TAG_FU_ITEM_DRESS_2D  @"dress_2d"
 #define TAG_FU_ITEM_BACKGROUND_3D  @"3d"
 #define TAG_FU_ITEM_BACKGROUND_ANIMATION  @"animation"
 

@@ -43,6 +43,16 @@
 				<key>name</key>
 				<string>鼻型</string>
 			</dict>
+			<dict>
+				<key>type</key>
+				<string>beard</string>
+				<key>name</key>
+				<string>胡子</string>
+				<key>path</key>
+				<array>
+					<string>QItems/beard</string>
+				</array>
+			</dict>
 		</array>
 	</dict>
 	<dict>
@@ -122,16 +132,6 @@
 				<key>name</key>
 				<string>腮红</string>
 			</dict>
-			<dict>
-				<key>type</key>
-				<string>beard</string>
-				<key>path</key>
-				<array>
-					<string>QItems/beard</string>
-				</array>
-				<key>name</key>
-				<string>胡子</string>
-			</dict>
 		</array>
 	</dict>
 	<dict>
@@ -208,31 +208,20 @@
 				<string>decorations</string>
 				<key>path</key>
 				<array>
-					<string>QItems/decoration/lower</string>
-					<string>QItems/decoration/middle</string>
-					<string>QItems/decoration/upper</string>
+					<string>QItems/decoration</string>
 				</array>
 				<key>name</key>
 				<string>饰品</string>
 			</dict>
-		</array>
-	</dict>
-	<dict>
-		<key>name</key>
-		<string>场景</string>
-		<key>type</key>
-		<string>background</string>
-		<key>subTypeArray</key>
-		<array>
 			<dict>
 				<key>type</key>
-				<string>2d</string>
+				<string>dress_2d</string>
 				<key>path</key>
 				<array>
-					<string>QItems/background/2d</string>
+					<string>QItems/background/dress_2d</string>
 				</array>
 				<key>name</key>
-				<string>2d</string>
+				<string>dress_2d</string>
 			</dict>
 		</array>
 	</dict>

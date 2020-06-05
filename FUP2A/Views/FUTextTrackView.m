@@ -26,8 +26,10 @@ typedef enum : NSInteger {
 
 
 @property (weak, nonatomic) IBOutlet UIButton *modelBtn;
+@property (weak, nonatomic) IBOutlet UIView *modelLine;
 @property (weak, nonatomic) IBOutlet UIButton *inputBtn;
 @property (weak, nonatomic) IBOutlet UIButton *toneBtn;
+@property (weak, nonatomic) IBOutlet UIView *toneLine;
 
 
 @property (weak, nonatomic) IBOutlet UICollectionView *collection;
@@ -36,8 +38,8 @@ typedef enum : NSInteger {
 //
 @property (nonatomic, strong) NSArray *modelsArray ;
 @property (nonatomic, strong) NSArray *filtersArray ;
-@property (nonatomic, strong) NSArray *toneArray ;
-@property (weak, nonatomic) IBOutlet UIView *line;
+
+
 @end
 
 @implementation FUTextTrackView
@@ -57,7 +59,7 @@ typedef enum : NSInteger {
 	self.collectionType = FUTextTrackCollectionTypeModel ;
 	modelIndex = 0 ;
 	filterIndex = 0 ;
-	self.toneArray = @[@"温柔女声01",@"标准男声02",@"严厉女声03",@"萝莉女声04",@"温柔女声05",@"标准女声06",@"标准男声07",@"标准男声08",@"严厉女声09",@"亲和女声10",@"甜美女声11",@"自然女声12",@"温柔女声13",@"严厉女声14",@"儿童音15",@"萝莉女声16",@"萝莉女声17"];
+//	self.toneArray = @[@"温柔女声01",@"标准男声02",@"严厉女声03",@"萝莉女声04",@"温柔女声05",@"标准女声06",@"标准男声07",@"标准男声08",@"严厉女声09",@"亲和女声10",@"甜美女声11",@"自然女声12",@"温柔女声13",@"严厉女声14",@"儿童音15",@"萝莉女声16",@"萝莉女声17"];
 	[self reloadData];
 }
 -(void) setTheTalkBar{
@@ -109,42 +111,27 @@ typedef enum : NSInteger {
 	self.modelBtn.selected = NO;
 	self.inputBtn.selected = NO;
 	self.toneBtn.selected = NO;
+	self.modelLine.hidden = YES;
+	self.toneLine.hidden = YES;
 }
 - (IBAction)modelAndInputBtnAction:(UIButton *)sender {
 	[self resetButtons];
-	
 	sender.selected = YES ;
-	CGFloat centerX = sender.center.x ;
-	CGPoint center = self.line.center ;
-	center.x = centerX ;
-	self.line.center = center ;
-   
 	if (sender == self.modelBtn) {
+	self.modelLine.hidden = NO;
 		self.collectionType = FUTextTrackCollectionTypeModel;
+		
 	}else if (sender == self.inputBtn) {
 		self.collectionType = FUTextTrackCollectionTypeFilter;
 	}else if (sender == self.toneBtn) {
+	    self.toneLine.hidden = NO;
 		self.collectionType = FUTextTrackCollectionTypeTone;
 	}
 }
 
 
 
-- (void)showCollection:(BOOL)show {
-	if (show) {
-		self.collection.hidden = NO ;
-		[UIView animateWithDuration:0.35 animations:^{
-			self.collection.transform = CGAffineTransformIdentity ;
-		}];
-	}else {
-		[UIView animateWithDuration:0.35 animations:^{
-			self.collection.transform = CGAffineTransformMakeTranslation(0, self.collection.frame.size.height) ;
-		}completion:^(BOOL finished) {
-			self.collection.hidden = YES ;
-			self.line.hidden = YES ;
-		}];
-	}
-}
+
 // 隐藏键盘
 /// return 隐藏之前键盘是否已弹起
 -(BOOL)hideKeyboard{

@@ -79,65 +79,69 @@
 
 // 删除
 - (IBAction)deleteAction:(UIButton *)sender {
-    
-    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil message:@"确认删除所选模型？" preferredStyle:UIAlertControllerStyleAlert];
-    
-    UIAlertAction *cancle = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
-    }];
-    [cancle setValue:[UIColor lightGrayColor] forKey:@"titleTextColor"];
-    
-    
-    __weak typeof(self)weaklSelf = self ;
-    UIAlertAction *certain = [UIAlertAction actionWithTitle:@"确认" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
-        
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        
-        FUAvatar *currentAvatar = [FUManager shareInstance].currentAvatars.firstObject ;
-        NSString *name = currentAvatar.name;
-        
-        for (FUAvatar *avatar  in weaklSelf.selectedItems) {
-            if ([weaklSelf.dataSource containsObject:avatar]) {
-                [weaklSelf.dataSource removeObject:avatar];
-                
-                // delete file
-                NSString *filePath = [documentPath stringByAppendingPathComponent:avatar.name];
-                if ([fileManager fileExistsAtPath:filePath]) {
-                    [fileManager removeItemAtPath:filePath error:nil];
-                }
-                // delete avatar info
-                NSString *rootPath = CurrentAvatarStylePath ;
-                NSString *jsonPath = [[rootPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
-                if ([fileManager fileExistsAtPath:jsonPath]) {
-                    [fileManager removeItemAtPath:jsonPath error:nil];
-                }
-                
-                if ([name isEqualToString:avatar.name]) {
-                    if (self.mDelegate && [self.mDelegate respondsToSelector:@selector(historyViewDidDeleteCurrentItem)]) {
-                        [self.mDelegate historyViewDidDeleteCurrentItem];
-                    }
-                }
-            }
-            
-            for (FUAvatar *a in [FUManager shareInstance].avatarList) {
-                if (!a.defaultModel && [avatar.name isEqualToString:a.name]) {
-                    [[FUManager shareInstance].avatarList removeObject:a];
-                    break ;
-                }
-            }
-        }
-        
-        [weaklSelf.selectedItems removeAllObjects];
-        [weaklSelf.collection reloadData];
-        
-        weaklSelf.noitemLabel.hidden = weaklSelf.dataSource.count != 0 ;
-        [weaklSelf setDeleteBtnTitle];
-    }];
-    
-    [alertController addAction:cancle];
-    [alertController addAction:certain];
-    
-    [self presentViewController:alertController animated:YES completion:^{
-    }];
+	
+	UIAlertController *alertController = [UIAlertController alertControllerWithTitle:nil message:@"确认删除所选模型？" preferredStyle:UIAlertControllerStyleAlert];
+	
+	UIAlertAction *cancle = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+	}];
+	[cancle setValue:[UIColor lightGrayColor] forKey:@"titleTextColor"];
+	
+	
+	__weak typeof(self)weaklSelf = self ;
+	UIAlertAction *certain = [UIAlertAction actionWithTitle:@"确认" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+		
+		NSFileManager *fileManager = [NSFileManager defaultManager];
+		
+		FUAvatar *currentAvatar = [FUManager shareInstance].currentAvatars.firstObject ;
+		NSString *name = currentAvatar.name;
+		
+		for (FUAvatar *avatar  in weaklSelf.selectedItems) {
+			if ([weaklSelf.dataSource containsObject:avatar]) {
+				[weaklSelf.dataSource removeObject:avatar];
+				
+				// delete file
+				NSString *filePath = [documentPath stringByAppendingPathComponent:avatar.name];
+				NSError * error;
+				if ([fileManager fileExistsAtPath:filePath]) {
+					[fileManager removeItemAtPath:filePath error:&error];
+				}
+				if (error) {
+					NSLog(@"删除avatar 所在的文件夹失败::%@",error);
+				}
+				// delete avatar info
+				NSString *rootPath = CurrentAvatarStylePath ;
+				NSString *jsonPath = [[rootPath stringByAppendingPathComponent:avatar.name] stringByAppendingString:@".json"];
+				if ([fileManager fileExistsAtPath:jsonPath]) {
+					[fileManager removeItemAtPath:jsonPath error:nil];
+				}
+				
+				if ([name isEqualToString:avatar.name]) {
+					if (self.mDelegate && [self.mDelegate respondsToSelector:@selector(historyViewDidDeleteCurrentItem)]) {
+						[self.mDelegate historyViewDidDeleteCurrentItem];
+					}
+				}
+			}
+			
+			for (FUAvatar *a in [FUManager shareInstance].avatarList) {
+				if (!a.defaultModel && [avatar.name isEqualToString:a.name]) {
+					[[FUManager shareInstance].avatarList removeObject:a];
+					break ;
+				}
+			}
+		}
+		
+		[weaklSelf.selectedItems removeAllObjects];
+		[weaklSelf.collection reloadData];
+		
+		weaklSelf.noitemLabel.hidden = weaklSelf.dataSource.count != 0 ;
+		[weaklSelf setDeleteBtnTitle];
+	}];
+	
+	[alertController addAction:cancle];
+	[alertController addAction:certain];
+	
+	[self presentViewController:alertController animated:YES completion:^{
+	}];
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {

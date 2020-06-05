@@ -9,8 +9,6 @@
 #import "FUShapeParamsMode.h"
 
 @interface FUShapeParamsMode ()
-@property (nonatomic, strong) NSArray *propertyNames ;
-@property (nonatomic, strong) NSMutableDictionary *defaultValues ;
 @end
 
 @implementation FUShapeParamsMode
@@ -55,6 +53,16 @@ static FUShapeParamsMode *model = nil ;
     }];
 }
 
+/// 每次进入编辑界面，进行脸部点位保存
+/// @param avatar 记录需要保存点位的avatar
+- (void)recordOrignalParamsWithAvatar:(FUAvatar *)avatar {
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+    for (NSString *proName in self.faecepupKeyArray) {
+        double value = [avatar getFacepupModeParamWith:proName];
+        [dict setObject:@(value) forKey:proName];
+    }
+     self.orginalFaceupBeforEnterEditVC = dict;
+}
 - (void)getOrignalParamsWithAvatar:(FUAvatar *)avatar
 {
     NSArray *params = [avatar getFacepupModeParamsWithLength:(int)self.faecepupKeyArray.count];
@@ -66,6 +74,20 @@ static FUShapeParamsMode *model = nil ;
         [dict setValue:params[i] forKey:key];
     }
     self.orginalFaceup = [dict mutableCopy];
+	self.editingFaceup = [dict mutableCopy];
+}
+/// 获取当前的捏脸点位
+/// @param avatar 模型
+- (void)getCurrentParamsWithAvatar:(FUAvatar *)avatar
+{
+    NSArray *params = [avatar getFacepupModeParamsWithLength:(int)self.faecepupKeyArray.count];
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:1];
+    for (int i = 0; i < params.count; i++)
+    {
+        NSString *key = self.faecepupKeyArray[i];
+        
+        [dict setValue:params[i] forKey:key];
+    }
     self.editingFaceup = [dict mutableCopy];
 }
 
@@ -152,13 +174,40 @@ static FUShapeParamsMode *model = nil ;
 
 - (BOOL)shouldDeformHair
 {
-    NSArray *array = @[@"HeadBone_stretch", @"HeadBone_shrink", @"HeadBone_wide", @"HeadBone_narrow", @"Head_wide", @"Head_narrow", @"head_shrink", @"head_stretch"];
+    // 改变脸型，就需要重新deform 头发、发帽
+    NSArray *array =
+    @[@"HeadBone_stretch",
+    @"HeadBone_shrink",
+    @"HeadBone_wide",
+    @"HeadBone_narrow",
+    @"Head_wide",
+    @"Head_narrow",
+    @"head_shrink",
+    @"head_stretch",
     
+	@"head_fat",
+	@"head_thin",
+	@"cheek_wide",
+	@"cheekbone_narrow",
+	@"jawbone_Wide",
+	@"jawbone_Narrow",
+	@"jaw_m_wide",
+	@"jaw_M_narrow",
+	@"jaw_wide",
+	@"jaw_narrow",
+	@"jaw_up",
+	@"jaw_lower",
+	@"jawTip_forward",
+	@"jawTip_backward",
+	@"jawBone_m_up",
+	@"jawBone_m_down"
+    ];
+    NSLog(@"self.orginalFaceup--::%@---::%@",self.orginalFaceupBeforEnterEditVC,self.editingFaceup);
     for (NSString *propertyName in array)
     {
-        if ([self.orginalFaceup.allKeys containsObject:propertyName])
+        if ([self.orginalFaceupBeforEnterEditVC.allKeys containsObject:propertyName])
         {
-            double value0 = [[self.orginalFaceup valueForKey:propertyName] doubleValue];
+            double value0 = [[self.orginalFaceupBeforEnterEditVC valueForKey:propertyName] doubleValue];
             double value1 = [[self.editingFaceup valueForKey:propertyName] doubleValue];
             if (value0 != value1)
             {

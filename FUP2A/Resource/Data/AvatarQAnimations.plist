@@ -43,7 +43,7 @@
 	<array>
 		<dict>
 			<key>bg</key>
-			<string>keting_mesh</string>
+			<string>keting_A_mesh</string>
 			<key>gender</key>
 			<string>0</string>
 			<key>animation</key>
@@ -54,8 +54,6 @@
 			<string>ani_dance</string>
 		</dict>
 		<dict>
-			<key>bg</key>
-			<string>yuanlin_mesh</string>
 			<key>camera</key>
 			<string>ani_LRPP_cam</string>
 			<key>otherAnimations</key>

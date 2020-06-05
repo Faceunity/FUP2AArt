@@ -86,44 +86,32 @@ UINavigationControllerDelegate
     
     renderMode = GroupSelectedRunModeCommon ;
     animationFrameCount = 0 ;
-    
+    // 解绑脚下阴影
+    [[FUManager shareInstance] unBindPlaneShadow];
     FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
     [avatar setCurrentAvatarIndex:0];
     [[FUManager shareInstance] removeRenderAvatar:avatar];
     [self showDefaultTips];
     customRenderBackground = NO ;
-    [self.camera startCapture ];
-
+   
+   __block NSString *camPath = [[NSBundle mainBundle] pathForResource:@"ani_cam" ofType:@"bundle"];
     dispatch_async(dispatch_get_main_queue(), ^{
         switch (self.sceneryModel)
         {
             case FUSceneryModeSingle:
             {
-                NSString *camPath = [[NSBundle mainBundle] pathForResource:self.singleModel.camera ofType:@"bundle"];
-                [[FUManager shareInstance] reloadCamItemWithPath:camPath];
+              //  [[FUManager shareInstance] reloadCamItemWithPath:camPath];
             }
                 break;
             case FUSceneryModeMultiple:
             {
-                NSString *camPath = [[NSBundle mainBundle] pathForResource:self.multipleModel.camera ofType:@"bundle"];
-                [[FUManager shareInstance] reloadCamItemWithPath:camPath];
+				camPath = [[NSBundle mainBundle] pathForResource:self.multipleModel.camera ofType:@"bundle"];
             }
                 break;
             case FUSceneryModeAnimation: {
-                NSString *camPath = nil;
-                if (self.animationModel.camera)
-                {
-                    camPath = [[NSBundle mainBundle] pathForResource:self.animationModel.camera ofType:@"bundle"];
-                }
-                else
-                {
-                    camPath = [[NSBundle mainBundle] pathForResource:@"ani_cam" ofType:@"bundle"];
-                }
-                [[FUManager shareInstance] reloadCamItemWithPath:camPath];
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    fuItemSetParamd([FUManager shareInstance].defalutQController, "stop_camera_animation",1);
-                });
-                
+				camPath = [[NSBundle mainBundle] pathForResource:@"ani_cam" ofType:@"bundle"];
+                [[FUManager shareInstance] reloadCamItemWithPath:camPath];  // start_camera_animation
+                fuItemSetParamd([FUManager shareInstance].defalutQController, "start_camera_animation",1);
             }
                 break;
             default:
@@ -135,10 +123,13 @@ UINavigationControllerDelegate
     if (self.animationModel.animationBG)
     {
         NSString *bgPath = [[NSBundle mainBundle] pathForResource:self.animationModel.animationBG ofType:@"bundle"];
+	  //  NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"Resource/QItems/background/dress_2d/mid/keting_mesh" ofType:@"bundle"];
+		// 多人合影，需要设置背景的instanceId，否则无法解绑
+		[[FUManager shareInstance] setBackgroundInstanceId];
         [[FUManager shareInstance]reloadBackGroundAndBindToController:bgPath];
         
         
-        NSArray *bgArray = [FUManager shareInstance].itemsDict[TAG_FU_ITEM_BACKGROUND_2D];
+        NSArray *bgArray = [FUManager shareInstance].itemsDict[TAG_FU_ITEM_DRESS_2D];
         for (int i = 0; i < bgArray.count; i++)
         {
             FUItemModel *model = bgArray[i];
@@ -152,10 +143,12 @@ UINavigationControllerDelegate
     }
     else
     {
+		  // 多人合影，需要设置背景的instanceId，否则无法解绑
+		  [[FUManager shareInstance] setBackgroundInstanceId];
           [[FUManager shareInstance]loadDefaultBackGroundToController];
     }
     
-    
+     [self.camera startCapture ];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -228,24 +221,29 @@ UINavigationControllerDelegate
 
 - (IBAction)backAction:(UIButton *)sender
 {
-    [[FUManager shareInstance] reloadCamItemWithPath:nil];
-    fuItemSetParamd([FUManager shareInstance].defalutQController, "start_camera_animation",1);
     [self.camera stopCapture];
+    [[FUManager shareInstance] reloadCamItemWithPath:nil];
+    // 取消脚下阴影
+    [[FUManager shareInstance] unBindPlaneShadow];
     
-    if ([FUManager shareInstance].currentAvatars.count != 0) {
-        NSArray *tmpArr = [[FUManager shareInstance].currentAvatars copy];;
-        for (FUAvatar *avatar in tmpArr) {
-            [[FUManager shareInstance] removeRenderAvatar:avatar];
-        }
-    }
+	if ([FUManager shareInstance].currentAvatars.count != 0) {
+		NSArray *tmpArr = [[FUManager shareInstance].currentAvatars copy];;
+		for (FUAvatar *avatar in tmpArr) {
+			//	  [avatar stopCameraAnimation];
+			//	  [avatar stopLoopCameraAnimation];
+			[[FUManager shareInstance] removeRenderAvatar:avatar];
+		}
+		
+	}
     
+
+	NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"default_bg.bundle" ofType:nil];
+	// 多人合影，需要设置背景的instanceId，否则无法解绑
+	[[FUManager shareInstance] setBackgroundInstanceId];
+	[[FUManager shareInstance] reloadBackGroundAndBindToController:bgPath];
+
     [[FUP2AHelper shareInstance] cancleRecord];
     
-    if (![[FUManager shareInstance] isBackgroundItemExist]) {
-        
-        NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"default_bg.bundle" ofType:nil];
-        [[FUManager shareInstance] reloadBackGroundAndBindToController:bgPath];
-    }
     
     [self.navigationController popViewControllerAnimated:YES];
 }
@@ -424,9 +422,9 @@ UINavigationControllerDelegate
         case FUSceneryModeMultiple:{
             if ([FUManager shareInstance].currentAvatars.count == 1) {
                 FUAvatar *currentAvatar = [FUManager shareInstance].currentAvatars.firstObject;
-                if (avatar.gender == currentAvatar.gender) {
-                    return 3 ;
-                }
+//                if (avatar.gender == currentAvatar.gender) {
+//                    return 3 ;
+//                }
             }
             return 0 ;
         }
@@ -465,7 +463,7 @@ UINavigationControllerDelegate
 {
     if (self.bgButton.selected)
     {
-        NSArray *array = [FUManager shareInstance].itemsDict[TAG_FU_ITEM_BACKGROUND_2D];
+        NSArray *array = [FUManager shareInstance].itemsDict[TAG_FU_ITEM_DRESS_2D];
         return array.count;
     }
     return [FUManager shareInstance].avatarList.count ;
@@ -477,7 +475,7 @@ UINavigationControllerDelegate
     
     if (self.bgButton.selected)
     {
-        NSArray *items = [FUManager shareInstance].itemsDict[TAG_FU_ITEM_BACKGROUND_2D];
+        NSArray *items = [FUManager shareInstance].itemsDict[TAG_FU_ITEM_DRESS_2D];
         FUItemModel *item = items[indexPath.row];
         
         UIImage * image = [UIImage imageWithContentsOfFile:[item getIconPath]];
@@ -518,7 +516,7 @@ UINavigationControllerDelegate
                 cell.maskImage.hidden = selected ;
             }else {
                 FUAvatar *a = [FUManager shareInstance].currentAvatars.firstObject;
-                cell.maskImage.hidden = !a || selected || a.gender != avatar.gender ;
+                cell.maskImage.hidden = YES;
             }
         }
             break;
@@ -540,8 +538,10 @@ UINavigationControllerDelegate
         }
         
         self.selectedBgIndex = indexPath.row;
-        NSArray *items = [FUManager shareInstance].itemsDict[TAG_FU_ITEM_BACKGROUND_2D];
+        NSArray *items = [FUManager shareInstance].itemsDict[TAG_FU_ITEM_DRESS_2D];
         FUItemModel *item = items[indexPath.row];
+		// 多人合影，需要设置背景的instanceId，否则无法解绑
+		[[FUManager shareInstance] setBackgroundInstanceId];
         [[FUManager shareInstance]reloadBackGroundAndBindToController:[item getBundlePath]];
         
         
@@ -574,9 +574,11 @@ UINavigationControllerDelegate
         [selectedIndex removeObject:@(indexPath.row)];
         [collectionView reloadData];
         
-        [avatar stopCameraAnimation];
+      //  [avatar stopCameraAnimation];
         [avatar stopLoopCameraAnimation];
         [[FUManager shareInstance] removeRenderAvatar:avatar];
+		// 取消脚下阴影
+		[[FUManager shareInstance] unBindPlaneShadow];
         [self setNextBtnEnable:NO];
         
         renderMode = GroupSelectedRunModeCommon ;
@@ -653,10 +655,8 @@ UINavigationControllerDelegate
             default:
                 break;
         }
-        
-        [[FUManager shareInstance] addRenderAvatar:avatar];
-        //	[avatar resetScaleToSmallBody];
-        
+        // 加载avatar，且不加载avatar的背景
+        [[FUManager shareInstance] addRenderAvatar:avatar :NO];
         [avatar resetScaleToOriginal];
         
         
@@ -694,12 +694,14 @@ UINavigationControllerDelegate
                 [avatar enableCameraAnimation];
                 [avatar loopCameraAnimation];
                 NSString *animation ;
-                for (FUSingleModel *model in self.multipleModel.modelArray) {
-                    if (model.gender == avatar.gender) {
-                        animation = model.animationName ;
-                        break ;
-                    }
-                }
+//                for (FUSingleModel *model in self.multipleModel.modelArray) {
+//                    if (model.gender == avatar.gender) {
+//                        animation = model.animationName ;
+//                        break ;
+//                    }
+//                }
+			   FUSingleModel * model = self.multipleModel.modelArray[avatar.currentInstanceId];
+			    animation = model.animationName ;
                 NSString *animationPath = [[NSBundle mainBundle] pathForResource:animation ofType:@"bundle"];
                 [avatar reloadAnimationWithPath:animationPath];
                 
@@ -719,7 +721,8 @@ UINavigationControllerDelegate
             }
                 break ;
             case FUSceneryModeAnimation: {
-                
+				// 添加 脚下阴影
+				[[FUManager shareInstance] bindPlaneShadow];
                 NSString *animationPath = [[NSBundle mainBundle] pathForResource:self.animationModel.animationName ofType:@"bundle"];
                 [avatar reloadAnimationWithPath:animationPath];
                 
@@ -731,7 +734,7 @@ UINavigationControllerDelegate
                 }
      
                 NSString *camPath = nil;
-                if (self.animationModel.camera)
+                if (0)   // self.animationModel.camera
                 {
                     camPath = [[NSBundle mainBundle] pathForResource:self.animationModel.camera ofType:@"bundle"];
                 }
@@ -909,6 +912,7 @@ UINavigationControllerDelegate
         
     }
     self.selectedBgIndex = 0;
+    [self.collection reloadData];
 }
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
@@ -930,7 +934,8 @@ UINavigationControllerDelegate
 }
 
 - (void)exchangeRenderBackgroundWithImage:(UIImage *)image WithRenderMode:(GroupSelectedRunMode) newRenderMode{
-    
+	// 多人合影，需要设置背景的instanceId，否则无法解绑
+	[[FUManager shareInstance] setBackgroundInstanceId];
     [[FUManager shareInstance] reloadBackGroundAndBindToController:nil];
     self.bgImage = image;
     self.viewRender.bgImage = self.bgImage;

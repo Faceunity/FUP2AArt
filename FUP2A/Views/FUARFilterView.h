@@ -25,6 +25,8 @@
 - (void)selectedModeWith:(FUAvatar *)avatar ;
 - (void)showCollection:(BOOL)show ;
 - (void)selectNoFilter;
+/// 选择模型类型
+- (void)selectModelType;
 @end
 
 @interface FUARFilterCell: UICollectionViewCell

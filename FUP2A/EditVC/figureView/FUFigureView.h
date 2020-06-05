@@ -16,7 +16,8 @@
 - (void)figureViewDidSelectedTypeWithIndex:(NSInteger)typeIndex;
 // 隐藏全部子页面
 - (void)figureViewDidHiddenAllTypeViews;
-
+//// 重置
+-(void)reset:(UIButton*)btn;
 //// 撤销
 -(void)undo:(UIButton*)btn;
 // 重做
@@ -37,4 +38,5 @@
 -(void)shouldHidePartViews;
 
 - (void)updateSliderWithValue:(double)value;
+- (void)reloadTopCollection;
 @end

@@ -22,7 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface FUPoseTrackBttomView : UIView
-
 @property (nonatomic, assign) id<FUPoseTrackBttomViewDelegate>delegate ;
 - (void)selectedModeWith:(FUAvatar *)avatar ;
 - (void)showCollection:(BOOL)show ;

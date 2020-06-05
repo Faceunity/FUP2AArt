@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "FUStack.h"
-#import "FUAvatarEditedDoModel.h"
+
 
 NS_ASSUME_NONNULL_BEGIN
 typedef void (^PopCompleteBlock)(NSDictionary * config,BOOL isEmpty);
@@ -17,9 +17,12 @@ typedef void (^PopCompleteBlock)(NSDictionary * config,BOOL isEmpty);
 + (FUAvatarEditManager *)sharedInstance;
 @property (nonatomic,strong)FUStack *undoStack;
 @property (nonatomic,strong)FUStack *redoStack;
+@property (nonatomic,assign,readonly)BOOL undoStackEmpty;
+@property (nonatomic,assign,readonly)BOOL redoStackEmpty;
+@property (nonatomic,strong,readonly)id undoStackTop;
+@property (nonatomic,strong,readonly)id redoStackTop;
 @property (nonatomic,strong)NSMutableDictionary * orignalStateDic;
-// 记录当前编辑的类型  判断是否要调整UI
-@property (nonatomic,assign)FUAvatarEditedDoModelType type;
+
 // 当前avatar还没有编辑过
 @property (nonatomic,assign)BOOL hadNotEdit;
 // 是否在编辑界面
