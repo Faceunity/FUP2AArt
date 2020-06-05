@@ -34,6 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FUTextTrackView : UIView
 @property (nonatomic, assign) id<FUTextTrackViewDelegate>delegate ;
+@property (nonatomic, strong) NSArray *toneArray ;
 @property(nonatomic,strong)FUKeyBoardInputView *mInputView;
 - (void)selectedModeWith:(FUAvatar *)avatar ;
 - (void)showCollection:(BOOL)show ;

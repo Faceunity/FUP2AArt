@@ -1,0 +1,19 @@
+[
+    {"name":"Siqi","chineseName":"温柔女声01","staTimeStride":0.007500},
+    {"name":"Sicheng","chineseName":"标准男声02","staTimeStride":0.007500},
+    {"name":"Sijing","chineseName":"严厉女声03","staTimeStride":0.007500},
+    {"name":"Xiaobei","chineseName":"萝莉女声04","staTimeStride":0.007500},
+    {"name":"Aiqi","chineseName":"温柔女声05","staTimeStride":0.007500},
+    {"name":"Aijia","chineseName":"标准女声06","staTimeStride":0.007500},
+    {"name":"Aicheng","chineseName":"标准男声07","staTimeStride":0.007500},
+    {"name":"Aida","chineseName":"标准男声08","staTimeStride":0.007500},
+    {"name":"Aiya","chineseName":"严厉女声09","staTimeStride":0.007500},
+    {"name":"Aixia","chineseName":"亲和女声10","staTimeStride":0.007500},
+    {"name":"Aimei","chineseName":"甜美女声11","staTimeStride":0.007500},
+    {"name":"Aiyu","chineseName":"自然女声12","staTimeStride":0.007500},
+    {"name":"Aiyue","chineseName":"温柔女声13","staTimeStride":0.007500},
+    {"name":"Aijing","chineseName":"严厉女声14","staTimeStride":0.007500},
+    {"name":"Aitong","chineseName":"儿童音15","staTimeStride":0.007500},
+    {"name":"Aiwei","chineseName":"萝莉女声16","staTimeStride":0.007500},
+    {"name":"Aibao","chineseName":"萝莉女声17","staTimeStride":0.007500}
+]

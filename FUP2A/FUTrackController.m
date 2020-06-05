@@ -194,9 +194,9 @@
 		};
         
         
-        vc.touchBlock = ^{
-            weakSelf.isHiddenCollectionView = !weakSelf.isHiddenCollectionView;
-        };
+		vc.touchBlock = ^(BOOL isHidden) {
+			weakSelf.isHiddenCollectionView = isHidden;
+		};
 		vc.textTrackView = self.textTrackView;
 		self.textTrackVC = vc;
 		
@@ -205,9 +205,9 @@
 		vc.filterView = self.arFilterView;
         __weak typeof(self)weakSelf = self ;
          
-         vc.touchBlock = ^{
-             weakSelf.isHiddenCollectionView = !weakSelf.isHiddenCollectionView;
-         };
+		 vc.touchBlock = ^(BOOL isHidden) {
+			 weakSelf.isHiddenCollectionView = isHidden;
+		 };
 		self.arFilterVC = vc;
 		
 	}
@@ -216,9 +216,9 @@
         vc.poseTrackView = self.bodyTrackView;
         __weak typeof(self)weakSelf = self ;
         
-        vc.touchBlock = ^{
-            weakSelf.isHiddenCollectionView = !weakSelf.isHiddenCollectionView;
-        };
+		vc.touchBlock = ^(BOOL isHidden) {
+			weakSelf.isHiddenCollectionView = isHidden;
+		};
         self.bodyTrackVC = vc;
         
     }

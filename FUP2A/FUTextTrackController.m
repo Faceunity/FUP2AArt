@@ -32,7 +32,7 @@ FUHistoryViewControllerDelegate,FUTextTrackViewDelegate,UIImagePickerControllerD
 	
 	
 	void * _human3dPtr;
-	
+
 }
 
 @property (nonatomic, strong) FUCamera *camera ;       // 相机输入源
@@ -48,7 +48,6 @@ FUHistoryViewControllerDelegate,FUTextTrackViewDelegate,UIImagePickerControllerD
 @property (nonatomic, assign) UIInterfaceOrientation videoOrientation;   // 当前视频方向
 @property (nonatomic, strong) FUAvatar *commonAvatar;    //  记录进入人体追踪之前的avatar，当从追踪界面返回时，继续渲染这个 avatar
 @property (nonatomic, strong) FUAvatar *currentAvatar;    // 当前选择的人体追踪 Avatar
-@property (nonatomic, assign) int staExpressionsFrameNumber;    // 当前语音表情系数的总帧数
 @property (nonatomic, assign) float *staTotalExpressions;    // 当前语音表情系数的多个帧组成的口型系数数组
 @property (nonatomic, assign) float staTimeStride;    // 语音的帧间隔
 @property (nonatomic, assign) FUVideoRecordState videoRecordState ;   // 录制视频的状态
@@ -57,6 +56,7 @@ FUHistoryViewControllerDelegate,FUTextTrackViewDelegate,UIImagePickerControllerD
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *faceTrackBtnBottom;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *preViewBottom;
 @property (nonatomic, strong) FUStaLiteRequestManager *staRequestMgr;
+@property (nonatomic, strong)NSArray *prefabricateConfigArr; // 预制的”你好“声音信息，包含音色的中文名
 @end
 static int expSize = 57;
 
@@ -105,8 +105,16 @@ static int expSize = 57;
 			
 		}
 	}];
+    [self loadPrefabricateVoiceData];
 }
-
+#define FUChineseName @"chineseName"
+-(void)loadPrefabricateVoiceData{
+    NSError *error;
+    NSData *jsonData = [[NSString stringWithContentsOfFile:FUPrefabricateVoice_config encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
+    NSArray *configArr = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&error];
+    self.prefabricateConfigArr = configArr;
+    self.textTrackView.toneArray = [self.prefabricateConfigArr valueForKey:FUChineseName];
+}
 -(void)viewDidAppear:(BOOL)animated{
 	[super viewDidAppear:animated];
 	self.textTrackView.delegate = self;
@@ -134,7 +142,7 @@ static int expSize = 57;
 	_isShow = isShow;
 	if (isShow) {   // 显示当前界面
         [[FUManager shareInstance]setOutputResolutionAdjustScreen];
-		[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:self.currentAvatar];
+		[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:self.currentAvatar :NO];
         [self.currentAvatar loadIdleModePose];
 		[self.currentAvatar resetScaleToBody];
 		// 打开 avatar的口型系数驱动功能
@@ -166,7 +174,7 @@ static int expSize = 57;
 		self.staPlayState = Original;
 		[self.currentAvatar disableBlendshape];
 		[self.camera stopCapture];                             // 相机暂停捕获
-
+  
 		
 	}
 }
@@ -215,8 +223,6 @@ static int expSize = 57;
 	[[FUManager shareInstance] reloadFilterWithPath:filterPath];
 }
 -(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
-	CGFloat YY = CGRectGetMinY(self.textTrackView.mInputView.frame);
-	NSLog(@"YY----------%f",YY);
 	if ([self.textTrackView hideKeyboard]) {
 		if (self.textTrackView.hidden) {
 			self.faceTrackBtnBottom.constant = 54;
@@ -232,9 +238,8 @@ static int expSize = 57;
 			self.faceTrackBtnBottom.constant = 167;
 		}
 	}
-    self.touchBlock();
+	self.touchBlock(self.textTrackView.hidden);
 	//self.textTrackView.mInputView.frame
-	
 }
 - (void)TextTrackViewShowOrHideKeyBoardInput:(BOOL)isShow height:(float)h{
 	if (isShow) {
@@ -276,78 +281,67 @@ static int expSize = 57;
 static int frameIndex = 0 ;
 
 -(void)didOutputVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer {
-	if (loadingBundles) {
-		return ;
-	}
-	
-	frameIndex ++ ;
-	CVPixelBufferRef pixelBuffer;
-	pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
-	
+    if (loadingBundles) {
+        return ;
+    }
+    frameIndex ++ ;
+    CVPixelBufferRef pixelBuffer;
+    pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
+    
     CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
     const int landmarks_cnt = 150;
     float landmarks[landmarks_cnt];
-	// 人体追踪的渲染方法
+    // 人体追踪的渲染方法
     CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemWithPixelBuffer:mirrored_pixel RenderMode:renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
-
-	if (self.staPlayState == StaPlaying) {
-		static int staFrameIndex = 0;
-		float currentTime = [FUMusicPlayer sharePlayer].currentTime;
-		float totalTime = [FUMusicPlayer sharePlayer].duration;
-		staFrameIndex = staFrameIndex == (int)(currentTime / self.staTimeStride) ? staFrameIndex :  (int)(currentTime /  self.staTimeStride);
-		double exp[57] = {0.0};
-		float *expression = &self.staTotalExpressions[expSize * staFrameIndex];
-		for (int i = 0; i < expSize; i++) {
-			exp[i] = (double)expression[i];
-		}
-		[self.currentAvatar setBlend_expression:exp];
-	}else if (self.staPlayState == Original) {
-	double exp[57] = {0.0};
-	[self.currentAvatar setBlend_expression:exp];
-	}
-	
-	[self.displayView displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:NO];
-	
-	switch (self.videoRecordState) {
-		case Original:
-			break;
-		case Recording:
-		{
-			
-			[[FUP2AHelper shareInstance] recordBufferWithType:FUP2AHelperRecordTypeStaVideo buffer:buffer
-												 sampleBuffer:sampleBuffer];
-		}
-			break;
-		case Completed:
-		{
-			
-			[[FUP2AHelper shareInstance] stopRecordWithType:FUP2AHelperRecordTypeStaVideo Completion:^(NSString *retPath) {
-				dispatch_async(dispatch_get_main_queue(), ^{
-				});
-			}];
-			
-			
-			self.staPlayState = Original;
-		}
-			break;
-			
-		default:
-			break;
-	}
-	if (renderMode == FURenderPreviewMode) {
-		if (self.camera.isFrontCamera){
-			[self.preView displayPixelBuffer:pixelBuffer withLandmarks:landmarks count:150 Mirr:YES];
-		}else{
-			[self.preView displayPixelBuffer:pixelBuffer withLandmarks:landmarks count:150 Mirr:NO];
-		}
-	}else{
-		if (self.camera.isFrontCamera){
-			[self.preView displayPixelBuffer:pixelBuffer withLandmarks:nil count:0 Mirr:YES];
-		}else{
-			[self.preView displayPixelBuffer:pixelBuffer withLandmarks:nil count:0 Mirr:NO];
-		}
-	}
-	CVPixelBufferRelease(mirrored_pixel);
+    
+    if (self.staPlayState == StaPlaying) {
+        static int staFrameIndex = 0;
+        float currentTime = [FUMusicPlayer sharePlayer].currentTime;
+        float totalTime = [FUMusicPlayer sharePlayer].duration;
+        staFrameIndex = staFrameIndex == (int)(currentTime / self.staTimeStride) ? staFrameIndex :  (int)(currentTime /  self.staTimeStride);
+        double exp[57] = {0.0};
+        float *expression = &self.staTotalExpressions[expSize * staFrameIndex];
+        for (int i = 0; i < expSize; i++) {
+            exp[i] = (double)expression[i];
+        }
+        [self.currentAvatar setBlend_expression:exp];
+    }else if (self.staPlayState == Original) {
+        double exp[57] = {0.0};
+        [self.currentAvatar setBlend_expression:exp];
+    }
+    
+    [self.displayView displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:NO];
+    
+    switch (self.videoRecordState) {
+        case Original:
+            break;
+        case Recording:
+        {
+        }
+            break;
+        case Completed:
+        {
+            self.staPlayState = Original;
+        }
+            break;
+            
+        default:
+            break;
+    }
+    if (renderMode == FURenderPreviewMode) {
+        if (self.camera.isFrontCamera){
+            [self.preView displayPixelBuffer:pixelBuffer withLandmarks:landmarks count:150 Mirr:YES];
+        }else{
+            [self.preView displayPixelBuffer:pixelBuffer withLandmarks:landmarks count:150 Mirr:NO];
+        }
+    }else{
+        if (self.camera.isFrontCamera){
+            [self.preView displayPixelBuffer:pixelBuffer withLandmarks:nil count:0 Mirr:YES];
+        }else{
+            [self.preView displayPixelBuffer:pixelBuffer withLandmarks:nil count:0 Mirr:NO];
+        }
+    }
+    CVPixelBufferRelease(mirrored_pixel);
 }
 
 
@@ -369,7 +363,7 @@ static int frameIndex = 0 ;
 		}
 		
 		else if (status == PHAuthorizationStatusDenied) {
-			__weak typeof(self)weakSelf = self ;
+			
 			UIAlertController * alertVC = [UIAlertController alertControllerWithTitle:nil message:@"请打开你的权限！" preferredStyle:UIAlertControllerStyleAlert];
 			UIAlertAction *certain = [UIAlertAction actionWithTitle:@"确认" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
 				[appManager openAppSettingView];
@@ -396,7 +390,7 @@ static int frameIndex = 0 ;
 // 重新选择的avatar
 -(void)TextTrackViewDidSelectedAvatar:(FUAvatar *)avatar{
 	loadingBundles = YES;
-	[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:avatar];
+	[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:avatar :NO];
 	if (avatar == nil) {
 		self.currentAvatar = nil;
 	}else{
@@ -416,33 +410,56 @@ static int frameIndex = 0 ;
 }
 // 点击音色
 - (void)TextTrackViewDidSelectedTone:(NSString *)tone{
-	NSLog(@"音色是--------------%@",tone);
-	if ([tone isEqualToString:@"温柔女声01"]) self.currentToneName = @"Siqi";
-	else if ([tone isEqualToString:@"标准男声02"]) self.currentToneName = @"Sicheng";
-	else if ([tone isEqualToString:@"严厉女声03"]) self.currentToneName = @"Sijing";
-	else if ([tone isEqualToString:@"萝莉女声04"]) self.currentToneName = @"Xiaobei";
-	else if ([tone isEqualToString:@"温柔女声05"]) self.currentToneName = @"Aiqi";
-	else if ([tone isEqualToString:@"标准女声06"]) self.currentToneName = @"Aijia";
-	else if ([tone isEqualToString:@"标准男声07"]) self.currentToneName = @"Aicheng";
-	else if ([tone isEqualToString:@"标准男声08"]) self.currentToneName = @"Aida";
-	else if ([tone isEqualToString:@"严厉女声09"]) self.currentToneName = @"Aiya";
-	else if ([tone isEqualToString:@"亲和女声10"]) self.currentToneName = @"Aixia";
-	else if ([tone isEqualToString:@"甜美女声11"]) self.currentToneName = @"Aimei";
-	else if ([tone isEqualToString:@"自然女声12"]) self.currentToneName = @"Aiyu";
-	else if ([tone isEqualToString:@"温柔女声13"]) self.currentToneName = @"Aiyue";
-	else if ([tone isEqualToString:@"严厉女声14"]) self.currentToneName = @"Aijing";
-	else if ([tone isEqualToString:@"儿童音15"]) self.currentToneName = @"Aitong";
-	else if ([tone isEqualToString:@"萝莉女声16"]) self.currentToneName = @"Aiwei";
-	else if ([tone isEqualToString:@"萝莉女声17"]) self.currentToneName = @"Aibao";
-	else self.currentToneName = @"Siqi";
+    __weak typeof(self)weakSelf = self ;
+    [self.prefabricateConfigArr enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *dic = obj;
+        if ([dic[FUChineseName] isEqualToString:tone]) {
+            weakSelf.currentToneName = dic[@"name"];
+            weakSelf.staTimeStride = [dic[@"staTimeStride"] floatValue];
+            *stop = YES;
+        }
+    }];
+    if (self.currentToneName == nil) {
+        self.currentToneName = @"Siqi";
+        self.staTimeStride = 0.007500; 
+    }
+    [self playPrefabricateVoice];
 	
 }
-
-
+-(void)playPrefabricateVoice{
+    double exp[57] = {0.0};
+    [self.currentAvatar setBlend_expression:exp];
+    self.staPlayState = StaOriginal;
+    NSError *error;
+    NSString *mp3Path = [FUPrefabricateVoice_dir stringByAppendingPathComponent :[NSString stringWithFormat:@"%@.mp3",self.currentToneName]];
+    NSData *voiceData = [NSData dataWithContentsOfFile:mp3Path];
+    
+    NSString *expressionPath = [FUPrefabricateVoice_dir stringByAppendingPathComponent :[NSString stringWithFormat:@"%@.json",self.currentToneName]];
+    NSData *jsonData = [[NSString stringWithContentsOfFile:expressionPath encoding:NSUTF8StringEncoding error:nil] dataUsingEncoding:NSUTF8StringEncoding];
+    NSArray *configArr = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&error];
+    //口型系数
+    self.staTotalExpressions = malloc(sizeof(float) * configArr.count );
+    for (int i = 0 ; i < configArr.count; i++) {
+        NSNumber *n = configArr[i];
+        self.staTotalExpressions[i] = [n floatValue];
+    }
+    
+    self.staPlayState = StaPlaying;
+    [[FUMusicPlayer sharePlayer] playMusicData:voiceData];
+}
+#define FUGetAllHelloVoiceData_Debug 0
 // 键盘输入文字
 - (void)TextTrackViewInput:(NSString *)text{
-	NSLog(@"键盘输入文字是-----%@",text);
+    __weak typeof(self)weakSelf = self ;
 	self.staPlayState = StaOriginal;
+#if FUGetAllHelloVoiceData_Debug
+    if (0)
+#else
+    if ([text isEqualToString:@"您好"])
+#endif
+	{   // 如果输入的文字是“你好”，则加载本地的mp3和口型系数，不再需要网络下载 [text isEqualToString:@"你好"]
+        [self playPrefabricateVoice];
+    }else{
 	[self.staRequestMgr process:text
 										  voiceName:self.currentToneName
 										voiceFormat:@"mp3"
@@ -457,42 +474,51 @@ static int frameIndex = 0 ;
             return ;
         }
         
-        
-		// ⚠️⚠️⚠️⚠️⚠️⚠️ 必须将返回的声音保存到位置
-		[FUP2AHelper shareInstance].saveAudioPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"FUStaAudio.mp3"];
-		[FUP2AHelper shareInstance].saveVideoPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"fup2a_video.mp4"];
-		[voiceData writeToFile: [FUP2AHelper shareInstance].saveAudioPath atomically:NO];
-		if ([[NSFileManager defaultManager] fileExistsAtPath: [FUP2AHelper shareInstance].saveAudioPath]) {
-			NSLog(@"存在FUStaAudioPath---------%@", [FUP2AHelper shareInstance].saveAudioPath);
-		}else{
-			NSLog(@"不存在FUStaAudioPath---------%@", [FUP2AHelper shareInstance].saveAudioPath);
-		}
-		[[FUP2AHelper shareInstance] startRecordWithType:FUP2AHelperRecordTypeStaVideo];
 		
-		self.staTimeStride = timeStride;
-		//长度
+		weakSelf.staTimeStride = timeStride;
 		int expressionsTotalSize = (int)expressionData.length;
+        NSMutableArray * totalExpressionArray = [NSMutableArray array];
+        
 		//数组第一个指针，口型系数
 		float *expressions = (float *) expressionData.bytes;
-		for (int i = 0; i < expressionsTotalSize; i++) {
-			
-		}
+
 		//口型系数
-		self.staTotalExpressions =	malloc(sizeof(float) *expressionsTotalSize );
-		memcpy(self.staTotalExpressions, expressions, expressionsTotalSize);
-		self.staExpressionsFrameNumber = expressionsTotalSize /sizeof(float) / expSize;
-		self.staPlayState = StaPlaying;
+		weakSelf.staTotalExpressions =	malloc(sizeof(float) *expressionsTotalSize );
+		memcpy(weakSelf.staTotalExpressions, expressions, expressionsTotalSize);
+        for (int i = 0; i < expressionsTotalSize; i++) {
+             totalExpressionArray[i] = @(weakSelf.staTotalExpressions[i]);
+         }
+		weakSelf.staPlayState = StaPlaying;
 		[[FUMusicPlayer sharePlayer] playMusicData:voiceData];
-		
-		
-		
+#if FUGetAllHelloVoiceData_Debug
+        [weakSelf localVoiceData:voiceData expression:totalExpressionArray];
+#endif
 	}];
+    }
 }
 
+#if FUGetAllHelloVoiceData_Debug
+-(void)getAllVoiceData{
+    
+}
 
+-(void)localVoiceData:(NSData * _Nonnull)voiceData expression:(NSArray * _Nonnull) expressionArray{
+    NSFileManager *df = [NSFileManager defaultManager];
+    NSError *error;
+    BOOL isDirectory;
+    if(![df fileExistsAtPath:StaPath isDirectory:&isDirectory]){
+        [df createDirectoryAtPath:StaPath withIntermediateDirectories:YES attributes:nil error:&error];
+    }
+    [voiceData writeToFile:[StaPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mp3",self.currentToneName]] options:nil error:&error];
+    NSData * jsonData = [NSJSONSerialization dataWithJSONObject:expressionArray options:NSJSONWritingPrettyPrinted error:&error];
+    [jsonData writeToFile:[StaPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.json",self.currentToneName]] atomically:YES];
+
+    
+    
+}
+#endif
 - (void)selectAction{
 	
-	NSLog(@"从相册选择");
 	UIImagePickerController *picker=[[UIImagePickerController alloc] init];
 	
 	picker.delegate=self;
@@ -553,7 +579,7 @@ static int frameIndex = 0 ;
 	self.staPlayState = StaCompleted;
 }
 -(void)dealloc{
-	NSLog(@"FUTextTrackController-----------销毁了");
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+    NSLog(@"FUTextTrackController-----销毁了");
 }
 @end

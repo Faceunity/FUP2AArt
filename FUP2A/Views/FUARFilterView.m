@@ -20,7 +20,6 @@ typedef enum : NSInteger {
 }
 
 @property (nonatomic, assign) FUARCollectionType collectionType ;
-
 @property (weak, nonatomic) IBOutlet UIButton *modelBtn;
 @property (weak, nonatomic) IBOutlet UIButton *filterBtn;
 @property (weak, nonatomic) IBOutlet UICollectionView *collection;
@@ -46,18 +45,20 @@ typedef enum : NSInteger {
 }
 
 - (void)selectedModeWith:(FUAvatar *)avatar {
-
-    [self reloadData];
-
-    modelIndex = 0 ;
-    if ([[FUManager shareInstance].avatarList containsObject:avatar]) {
-        modelIndex = [[FUManager shareInstance].avatarList indexOfObject:avatar];
-    }
-    
-    [self.collection reloadData];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self.collection scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:self->modelIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:NO];
-    });
+	
+	[self reloadData];
+	
+	modelIndex = 0 ;
+	if ([[FUManager shareInstance].avatarList containsObject:avatar]) {
+		modelIndex = [[FUManager shareInstance].avatarList indexOfObject:avatar];
+	}
+	
+	[self.collection reloadData];
+	if (self.collectionType == FUARCollectionTypeModel) {
+		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+			[self.collection scrollToItemAtIndexPath:[NSIndexPath indexPathForRow:self->modelIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:NO];
+		});
+	}
 }
 
 - (void)reloadData {
@@ -79,6 +80,10 @@ typedef enum : NSInteger {
         filterIndex = 0 ;
         [self.collection reloadData];
     }
+}
+/// 选择模型类型
+- (void)selectModelType{
+   [self topBtnAction:self.modelBtn];
 }
 
 - (IBAction)topBtnAction:(UIButton *)sender {

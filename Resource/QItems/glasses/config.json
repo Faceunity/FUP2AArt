@@ -29,20 +29,6 @@
             "gender_match": 2
         },
         {
-            "bundle": "mid/glass_4.bundle",
-            "icon": "mid/glass_4",
-            "label": [],
-            "gender": 2,
-            "gender_match": 2
-        },
-        {
-            "bundle": "mid/glass_5.bundle",
-            "icon": "mid/glass_5",
-            "label": [],
-            "gender": 2,
-            "gender_match": 2
-        },
-        {
             "bundle": "mid/glass_6.bundle",
             "icon": "mid/glass_6",
             "label": [],
@@ -66,20 +52,6 @@
         {
             "bundle": "mid/glass_9.bundle",
             "icon": "mid/glass_9",
-            "label": [],
-            "gender": 2,
-            "gender_match": 2
-        },
-        {
-            "bundle": "mid/glass_10.bundle",
-            "icon": "mid/glass_10",
-            "label": [],
-            "gender": 2,
-            "gender_match": 2
-        },
-        {
-            "bundle": "mid/glass_11.bundle",
-            "icon": "mid/glass_11",
             "label": [],
             "gender": 2,
             "gender_match": 2
@@ -109,27 +81,6 @@
             "bundle": "mid/glass_15.bundle",
             "icon": "mid/glass_15",
             "label": [1, 2],
-            "gender": 2,
-            "gender_match": 2
-        },
-        {
-            "bundle": "mid/glass_16.bundle",
-            "icon": "mid/glass_16",
-            "label": [],
-            "gender": 2,
-            "gender_match": 2
-        },
-        {
-            "bundle": "mid/glass_17.bundle",
-            "icon": "mid/glass_17",
-            "label": [],
-            "gender": 2,
-            "gender_match": 2
-        },
-        {
-            "bundle": "mid/glass_18.bundle",
-            "icon": "mid/glass_18",
-            "label": [],
             "gender": 2,
             "gender_match": 2
         },

@@ -11,7 +11,10 @@
 @protocol FUFigureHorizCollectionDelegate <NSObject>
 
 @optional
-- (void)didSelectedItem;
+/// 取消选择美妆类型
+/// @param model
+- (void)cancelSelectedItem;
+- (void)didSelectedItem:(FUItemModel*)model;
 @end
 
 @interface FUFigureDecorationCollection : UICollectionView
@@ -22,6 +25,9 @@
 @end
 
 @interface FUFigureDecorationCell : UICollectionViewCell
-
+@property (assign, nonatomic)BOOL showTagLabel;
+@property (strong, nonatomic)NSString *tagLabelText;
+// 标签
+@property (weak, nonatomic) IBOutlet UILabel *tagLabel;
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 @end

@@ -1105,7 +1105,67 @@ static int frameid = 0 ;
     return mirrored_pixel ;
 }
 ```
+## 添加脚下阴影
+即为形象的左脚和右脚分别添加脚下阴影
+```objective-c
+/**
+ 为形象的左脚和右脚分别添加脚下阴影
+ */
+- (void)bindPlaneShadow {
+	if (zuojiao_plane_mg_ptr <= 0) {
+		NSString *zuojiao_plane_mg_Path = [[NSBundle mainBundle] pathForResource:@"zuojiao_plane_shadow.bundle" ofType:nil];
+		zuojiao_plane_mg_ptr = [self bindItemToControllerWithFilepath:zuojiao_plane_mg_Path];
+	}
+	if (youjiao_plane_mg_ptr <= 0) {
+		NSString *youjiao_plane_mg_Path = [[NSBundle mainBundle] pathForResource:@"youjiao_plane_shadow.bundle" ofType:nil];
+		youjiao_plane_mg_ptr = [self bindItemToControllerWithFilepath:youjiao_plane_mg_Path];
+	}
+}
+```
+在 FUP2A/FUP2A/ViewController.m 文件中调用
 
+```objective-c
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    [[FUManager shareInstance] bindPlaneShadow];
+    // 其他代码
+}
+```
+
+解绑形象的脚下阴影
+```objective-c
+/**
+ 分别解绑形象的左脚和右脚的脚下阴影
+*/
+- (void)unBindPlaneShadow {
+	if (zuojiao_plane_mg_ptr > 0) {
+		// 解绑
+		[FURenderer unBindItems:_defalutQController items:&zuojiao_plane_mg_ptr itemsCount:1];
+		// 销毁
+		[FURenderer destroyItem:zuojiao_plane_mg_ptr];
+		zuojiao_plane_mg_ptr = 0;
+	}
+	if (youjiao_plane_mg_ptr > 0) {
+		// 解绑
+		[FURenderer unBindItems:_defalutQController items:&youjiao_plane_mg_ptr itemsCount:1];
+		// 销毁
+		[FURenderer destroyItem:youjiao_plane_mg_ptr];
+		youjiao_plane_mg_ptr = 0;
+	}
+}
+```
+在 FUP2A/FUP2A/FUGroupSelectedController.m 文件中调用
+
+```objective-c
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // 其他代码
+    // 解绑脚下阴影
+    [[FUManager shareInstance] unBindPlaneShadow];
+    // 其他代码
+}
+```
 
 ## 形象应用
 形象应用功能包括：单人场景、多人场景、动画场景。

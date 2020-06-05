@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong)FUTextTrackView  *textTrackView ;
 @property (nonatomic, assign) BOOL isShow;
 @property (nonatomic, strong) void (^ backBlock)(void);
-@property (nonatomic, strong) void (^ touchBlock)(void);
+@property (nonatomic, strong) void (^ touchBlock)(BOOL);
 - (IBAction)backAction:(id)sender;
 @end
 

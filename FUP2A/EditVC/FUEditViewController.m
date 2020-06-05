@@ -46,6 +46,7 @@ FUFigureViewDelegate
 @property (weak, nonatomic) IBOutlet UIButton *faceBtn;
 @property (nonatomic,strong) FUFigureViewController * figureVC;
 @property (weak, nonatomic) IBOutlet UIView *doAndUndoView;
+@property (weak, nonatomic) IBOutlet UIButton *resetBtn;
 @property (weak, nonatomic) IBOutlet UIButton *undoBtn;
 @property (weak, nonatomic) IBOutlet UIButton *redoBtn;
 
@@ -63,24 +64,29 @@ FUFigureViewDelegate
 {
 	return YES;
 }
-
+-(instancetype)initWithCoder:(NSCoder *)coder{
+	if (self = [super initWithCoder:coder]) {
+		[[FUManager shareInstance]enterEditMode];
+	}
+	return self;
+}
 - (void)viewDidLoad
 {
 	[super viewDidLoad];
-    
-    [[FUManager shareInstance]enterEditMode];
     [[FUManager shareInstance]configEditInfo];
-	[self setUPContainerView];
+	//[self setUPContainerView];
 	appManager.editVC = self;
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(HairsWriteToLocalSuccessNotMethod) name:HairsWriteToLocalSuccessNot object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(FUAvatarEditManagerStackNotEmptyMethod) name:FUAvatarEditManagerStackNotEmptyNot object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(FUNielianEditManagerStackNotEmptyNotMethod) name:FUNielianEditManagerStackNotEmptyNot object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(enterNieLianNotMethod) name:FUEnterNileLianNot object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(creatingHairBundleNotMethod:) name:FUCreatingHairBundleNot object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(creatingHairHatBundleNotMethod:) name:FUCreatingHairHatBundleNot object:nil];
     
 	self.currentAvatar = [FUManager shareInstance].currentAvatars.firstObject;
 //    [self.currentAvatar closeHairAnimation];
 	[self.currentAvatar enterFacepupMode];
+	[[FUShapeParamsMode shareInstance]recordOrignalParamsWithAvatar:self.currentAvatar];
 	[self.currentAvatar loadIdleModePose];
 	self.currentMeshPoints = [NSMutableArray arrayWithCapacity:1];
 	
@@ -128,6 +134,7 @@ FUFigureViewDelegate
         {
 			self.redoBtn.enabled = YES;
 		}
+		self.resetBtn.enabled = YES;
 	});
 }
 
@@ -156,20 +163,18 @@ FUFigureViewDelegate
 {
 	if ([segue.identifier isEqualToString:@"FUFigureView"])
     {
-		UIViewController *vc = segue.destinationViewController;
+		FUFigureViewController *vc = segue.destinationViewController;
+		self.figureVC = vc;
 		self.figureView = (FUFigureView *)vc.view;
 		
 		self.figureView.delegate = self;
+		[self.figureView setupFigureView];
 	}
 }
 
 - (void)didOutputVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer
 {
-    if ([FUManager shareInstance].isStopRefreshBuffer)
-    {
-        return;
-    }
-    
+
 	CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
 	
 	CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
@@ -195,6 +200,7 @@ FUFigureViewDelegate
 {
     if (transforming)
     {
+        
         transforming = NO;
 
         [self removeMeshPoints];
@@ -214,7 +220,7 @@ FUFigureViewDelegate
         }
         
         self.faceBtn.hidden = YES;
-        if(customFaceuped) self.downloadBtn.enabled = YES;
+        if([[FUManager shareInstance] hasEditAvatar] || customFaceuped) self.downloadBtn.enabled = YES;
         
         return;
     }
@@ -259,7 +265,7 @@ FUFigureViewDelegate
     if (transforming)
     {
         transforming = NO;
-        [self showFigureView:YES];
+       
         
         FUItemModel *model = [[FUManager shareInstance]getNieLianModelOfSelectedType];
         
@@ -289,7 +295,8 @@ FUFigureViewDelegate
         //修改模型信息的参数
         [self.currentAvatar setValue:model forKey:model.type];
         [[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditedDoNot object:nil];
-
+		[self showFigureView:YES];
+       
         [self removeMeshPoints];
         [self.currentAvatar resetScaleToBody_UseCam];
         [self.currentAvatar loadIdleModePose];
@@ -373,7 +380,19 @@ FUFigureViewDelegate
         [self stopLoadingHairAnimation];
     }
 }
-
+// 加载发帽的动画
+- (void)creatingHairHatBundleNotMethod:(NSNotification *)not
+{
+    BOOL show =  [not.userInfo[@"show"] boolValue];
+    if (show)
+    {
+        [self startLoadingHairHatAnimation];
+    }
+    else
+    {
+        [self stopLoadingHairHatAnimation];
+    }
+}
 - (void)startLoadingAnimation
 {
 	self.loadingView.hidden = NO;
@@ -447,6 +466,24 @@ FUFigureViewDelegate
 }
 
 - (void)stopLoadingHairAnimation
+{
+	dispatch_async(dispatch_get_main_queue(), ^{
+		self.view.userInteractionEnabled = true;
+		[self stopLoadingAnimation];
+	});
+}
+
+// 加载发帽动画
+- (void)startLoadingHairHatAnimation
+{
+	dispatch_async(dispatch_get_main_queue(), ^{
+		self.loadingLabel.text = @"发帽加载中";
+		self.view.userInteractionEnabled = false;
+		[self startLoadingAnimation];
+	});
+}
+
+- (void)stopLoadingHairHatAnimation
 {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		self.view.userInteractionEnabled = true;
@@ -538,10 +575,10 @@ FUFigureViewDelegate
 - (void)enterNieLianNotMethod
 {
     [[FUShapeParamsMode shareInstance]getOrignalParamsWithAvatar:self.currentAvatar];
-    [self.currentAvatar loadTrackFaceModePose];
+    [self.currentAvatar loadTrackFaceModePose_NoSignal];
     transforming = YES;
     [self showFigureView:NO];
-    [self.currentAvatar resetScaleToFace_UseCam];
+    [self.currentAvatar resetScaleToFace_UseCamNoSignal];
 
     
     [self showMeshPointWithKey:[FUManager shareInstance].shapeModeKey];
@@ -619,13 +656,14 @@ FUFigureViewDelegate
     {
 		self.figureView.hidden = NO;
 		self.figureView.transform = CGAffineTransformMakeTranslation(0, self.figureView.frame.size.height);
-		[UIView animateWithDuration:0.5 animations:^{
+		[UIView animateWithDuration:0.2 animations:^{
 			self.figureView.transform = CGAffineTransformIdentity;
 		}];
+		[self.figureView reloadTopCollection];
 	}
     else
     {
-		[UIView animateWithDuration:0.5 animations:^{
+		[UIView animateWithDuration:0.2 animations:^{
 			self.figureView.transform = CGAffineTransformMakeTranslation(0, self.figureView.frame.size.height);
 		}completion:^(BOOL finished) {
 			self.figureView.hidden = YES;
@@ -634,39 +672,72 @@ FUFigureViewDelegate
 	self.doAndUndoView.hidden = show;
 }
 
+		 // 撤销
+- (void)reset:(UIButton*)btn{
+	[[FUManager shareInstance]reloadItemBeforeEdit];
+    [[FUManager shareInstance]getSelectedInfo];
+	[[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditedDoNot object:nil];
+	[[FUAvatarEditManager sharedInstance]clear];
+	self.downloadBtn.enabled = NO;
+}
+
+
 // 撤销
 - (void)undo:(UIButton*)btn
 {
 	_figureViewUndoBtn = btn;
 	[[FUAvatarEditManager sharedInstance] undoStackPop:^(NSDictionary * config,BOOL isEmpty) {
 		
-        id item = config[@"oldConfig"];
-        if ([item isKindOfClass:[FUItemModel class]])
-        {
-            FUItemModel *model = (FUItemModel *)item;
-            [[FUManager shareInstance]bindItemWithModel:model];
-            [[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditedDoNot object:nil];
-        }
-        else if ([item isKindOfClass:[FUP2AColor class]])
-        {
-            FUP2AColor *color = (FUP2AColor *)item;
-            FUFigureColorType colorType = (FUFigureColorType)[config[@"colorType"] integerValue];
-            if (colorType == FUFigureColorTypeSkinColor)
-            {
-                double oldSkinColorProgress = [config[@"oldSkinColorProgress"] doubleValue];
-                [[FUManager shareInstance]configSkinColorWithProgress:oldSkinColorProgress isPush:NO];
-                self.currentAvatar.skinColorProgress = oldSkinColorProgress;
-                [self.figureView updateSliderWithValue:oldSkinColorProgress];
-            }
-            else
-            {
-                [[FUManager shareInstance]configColorWithColor:color ofType:colorType];
-                [[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditedDoNot object:nil];
-            }
-        }
-        
+		id item = config[@"oldConfig"];
+		
+		if ([item isKindOfClass:[FUItemModel class]])
+		{
+			FUItemModel * currentModel = config[@"currentConfig"];
+			FUItemModel *model = (FUItemModel *)item;
+			if ([model isKindOfClass:[FUMultipleRecordItemModel class]]) {   // 如果是美妆类型，且记录了多选状态
+				if(((FUMultipleRecordItemModel*)model).recordType == FUMultipleRecordItemModelTypeMakeup){
+					[[FUManager shareInstance] reserveMultipleMakeupItemState:model];
+				}else if(((FUMultipleRecordItemModel*)model).recordType == FUMultipleRecordItemModelTypeDecorations)
+				{
+					[[FUManager shareInstance] reserveMultipleDecorationItemState:model];
+				}else if(((FUMultipleRecordItemModel*)model).recordType == FUMultipleRecordItemModelTypeMutualExclusion) // 处理 头发、发帽、头饰互斥的逻辑
+				{
+					[[FUManager shareInstance] dealMutualExclusion:model current:currentModel direction:YES];
+				}
+			}else{
+				if ([model.name containsString:@"noitem"] && ([[FUManager shareInstance].makeupTypeArray containsObject:currentModel.type] || [[FUManager shareInstance].decorationTypeArray containsObject:currentModel.type]))  {  // 如果是美妆，且第一个为noitem
+					[[FUManager shareInstance] removeItemWithModel:currentModel AndType:currentModel.type];
+					[[FUManager shareInstance].selectedItemIndexDict setObject:@(0) forKey:currentModel.type];
+					[FUAvatarEditManager sharedInstance].undo = NO;
+					[FUAvatarEditManager sharedInstance].redo = NO;
+					
+				}else{
+					[[FUManager shareInstance]bindItemWithModel:model];
+					
+				}
+			}
+			[[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditedDoNot object:nil];
+		}
+		else if ([item isKindOfClass:[FUP2AColor class]])
+		{
+			FUP2AColor *color = (FUP2AColor *)item;
+			FUFigureColorType colorType = (FUFigureColorType)[config[@"colorType"] integerValue];
+			if (colorType == FUFigureColorTypeSkinColor)
+			{
+				double oldSkinColorProgress = [config[@"oldSkinColorProgress"] doubleValue];
+				[[FUManager shareInstance]configSkinColorWithProgress:oldSkinColorProgress isPush:NO];
+				self.currentAvatar.skinColorProgress = oldSkinColorProgress;
+				[self.figureView updateSliderWithValue:oldSkinColorProgress];
+			}
+			else
+			{
+				[[FUManager shareInstance]configColorWithColor:color ofType:colorType];
+				[[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditedDoNot object:nil];
+			}
+		}
+		
 		if (isEmpty)
-        {
+		{
 			btn.enabled = false;
 		}
 	}];
@@ -678,35 +749,57 @@ FUFigureViewDelegate
 {
 	_figureViewRedoBtn = btn;
 	[[FUAvatarEditManager sharedInstance] redoStackPop:^(NSDictionary * config,BOOL isEmpty) {
-        
-        id item = config[@"currentConfig"];
-        if ([item isKindOfClass:[FUItemModel class]])
-        {
-            FUItemModel *model = (FUItemModel *)item;
-            [[FUManager shareInstance]bindItemWithModel:model];
-            [[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditedDoNot object:nil];
-        }
-        else if ([item isKindOfClass:[FUP2AColor class]])
-        {
-            FUP2AColor *color = (FUP2AColor *)item;
-            FUFigureColorType colorType = (FUFigureColorType)[config[@"colorType"] integerValue];
-            
-            if (colorType == FUFigureColorTypeSkinColor)
-            {
-                double skinColorProgress = [config[@"skinColorProgress"] doubleValue];
-                [[FUManager shareInstance]configSkinColorWithProgress:skinColorProgress isPush:NO];
-                self.currentAvatar.skinColorProgress = skinColorProgress;
-                [self.figureView updateSliderWithValue:skinColorProgress];
-            }
-            else
-            {
-                [[FUManager shareInstance]configColorWithColor:color ofType:colorType];
-                [[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditedDoNot object:nil];
-            }
-        }
-        
+		
+		id item = config[@"currentConfig"];
+		if ([item isKindOfClass:[FUItemModel class]])
+		{
+			FUItemModel * oldModel = config[@"oldConfig"];
+			FUItemModel *model = (FUItemModel *)item;
+			if ([oldModel isKindOfClass:[FUMultipleRecordItemModel class]]) {   // 如果是美妆类型，且记录了多选状态
+				if(((FUMultipleRecordItemModel*)oldModel).recordType == FUMultipleRecordItemModelTypeMakeup){
+					[[FUManager shareInstance] resetMakeupItems];
+				}else if(((FUMultipleRecordItemModel*)oldModel).recordType == FUMultipleRecordItemModelTypeDecorations)
+				{
+					[[FUManager shareInstance] resetDecorationItems];
+				}else if(((FUMultipleRecordItemModel*)oldModel).recordType == FUMultipleRecordItemModelTypeMutualExclusion) // 处理 头发、发帽、头饰互斥的逻辑
+				{
+					[[FUManager shareInstance] dealMutualExclusion:oldModel current:model direction:NO];
+				}
+				
+			}else{
+				if ([model.name containsString:@"noitem"] && ([[FUManager shareInstance].makeupTypeArray containsObject:oldModel.type] || [[FUManager shareInstance].decorationTypeArray containsObject:oldModel.type]))  {  // 如果是美妆，且第一个为noitem
+					[[FUManager shareInstance] removeItemWithModel:oldModel AndType:oldModel.type];
+					[[FUManager shareInstance].selectedItemIndexDict setObject:@(0) forKey:oldModel.type];
+					[FUAvatarEditManager sharedInstance].undo = NO;
+					[FUAvatarEditManager sharedInstance].redo = NO;
+				}else{
+					[[FUManager shareInstance]bindItemWithModel:model];
+					
+				}
+			}
+			[[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditedDoNot object:nil];
+		}
+		else if ([item isKindOfClass:[FUP2AColor class]])
+		{
+			FUP2AColor *color = (FUP2AColor *)item;
+			FUFigureColorType colorType = (FUFigureColorType)[config[@"colorType"] integerValue];
+			
+			if (colorType == FUFigureColorTypeSkinColor)
+			{
+				double skinColorProgress = [config[@"skinColorProgress"] doubleValue];
+				[[FUManager shareInstance]configSkinColorWithProgress:skinColorProgress isPush:NO];
+				self.currentAvatar.skinColorProgress = skinColorProgress;
+				[self.figureView updateSliderWithValue:skinColorProgress];
+			}
+			else
+			{
+				[[FUManager shareInstance]configColorWithColor:color ofType:colorType];
+				[[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditedDoNot object:nil];
+			}
+		}
+		
 		if (isEmpty)
-        {
+		{
 			btn.enabled = false;
 		}
 	}];
@@ -779,7 +872,6 @@ static double preY = 0.0;
 				}
 					break;
 			}
-			NSLog(@"imageName--------%@",imageName);
 			self.tipImage.image = [UIImage imageNamed:imageName];
 			self.tipImage.hidden = NO;
 			
@@ -844,7 +936,22 @@ static double preY = 0.0;
 		[[FUNielianEditManager sharedInstance] push:editDict];
 	}
 }
-
+// 重置的点击事件
+- (IBAction)resetClick:(UIButton *)sender{
+   self.resetBtn.enabled = NO;
+   self.redoBtn.enabled = NO;
+   self.undoBtn.enabled =  NO;
+   FUItemModel *model = [self.currentAvatar valueForKey:[[FUManager shareInstance] getSelectedType]];
+   if (!model.shapeDict)
+   {
+	   [self.currentAvatar configFacepupParamWithDict:[FUShapeParamsMode shareInstance].orginalFaceup];
+   }
+   else
+   {
+	   [self.currentAvatar configFacepupParamWithDict:model.shapeDict];
+   }
+   [[FUNielianEditManager sharedInstance] clear];
+}
 // 撤销的点击事件
 - (IBAction)undoClick:(UIButton *)sender
 {
@@ -855,6 +962,7 @@ static double preY = 0.0;
 		}
 	}];
 	self.redoBtn.enabled = YES;
+	self.resetBtn.enabled = YES;
 }
 // 重做的点击事件
 - (IBAction)redoClick:(UIButton *)sender
@@ -866,6 +974,7 @@ static double preY = 0.0;
 		}
 	}];
 	self.undoBtn.enabled = YES;
+	self.resetBtn.enabled = YES;
 }
 
 - (void)undoFacePoint:(NSDictionary *)config

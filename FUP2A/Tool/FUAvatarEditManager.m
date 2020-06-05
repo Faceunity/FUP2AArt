@@ -45,11 +45,24 @@ static FUAvatarEditManager *sharedInstance;
 	completion(obj,self.redoStack.isEmpty);
 	
 }
+-(BOOL)undoStackEmpty{
+	return self.undoStack.isEmpty;
+}
+-(BOOL)redoStackEmpty{
+	return self.redoStack.isEmpty;
+}
+-(id)undoStackTop{
+	return self.undoStack.top;
+}
+-(id)redoStackTop{
+	return self.redoStack.top;
+}
 -(void)push:(NSObject *)object
 {
 	if (self.undoStack.top == nil)
     {
 		self.undoStack.top = object;
+		self.orignalStateDic = object;
 		[[NSNotificationCenter defaultCenter]postNotificationName:FUAvatarEditManagerStackNotEmptyNot object:nil];
 	}
 	[self.undoStack push:object];

@@ -172,6 +172,7 @@ typedef enum : NSUInteger {
 //        self.videoConnection.videoMirrored = isFront && self.shouldMirror;
   //      self.videoConnection.videoMirrored = self.shouldMirror;
     }
+    self.captureSession.sessionPreset = AVCaptureSessionPreset1280x720;
     [self.captureSession startRunning];
 }
 

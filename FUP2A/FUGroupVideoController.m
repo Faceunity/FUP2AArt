@@ -41,7 +41,9 @@
 }
 
 - (IBAction)backToRoot:(UIButton *)sender {
-	
+	// 多人合影，需要设置背景的instanceId，否则无法解绑
+	[[FUManager shareInstance] setBackgroundInstanceId];
+	[[FUManager shareInstance]reloadBackGroundAndBindToController:nil];
 	if ([FUManager shareInstance].currentAvatars.count != 0) {
 		NSArray *tmpArr = [[FUManager shareInstance].currentAvatars copy];;
 		for (FUAvatar *avatar in tmpArr) {
@@ -50,7 +52,7 @@
 	}
 	
 	[[FUManager shareInstance].currentAvatars.firstObject resetScaleToSmallBody];
-	UIViewController * lasTwoVC =  self.navigationController.viewControllers[1];
+	UIViewController * lasTwoVC =  self.navigationController.viewControllers[0];
 	[self.navigationController popToViewController:lasTwoVC animated:true];
 
 }

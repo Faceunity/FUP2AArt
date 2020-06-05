@@ -9,11 +9,11 @@
 #import "FUPoseTrackBttomView.h"
 #import "FUPoseTrackView.h"
 #import "FUARFilterView.h"
-
 typedef enum : NSInteger {
     FUARCollectionTypeModel,
     FUARCollectionTypeFilter,
 } FUARCollectionType;
+
 
 @interface FUPoseTrackBttomView ()<UICollectionViewDelegate, UICollectionViewDataSource>
 {

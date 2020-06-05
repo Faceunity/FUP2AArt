@@ -1,0 +1,20 @@
+{
+    "list": [
+        {
+            "bundle": "mid/default_bg.bundle",
+            "icon": "none",
+        },
+        {
+            "bundle": "mid/keting_A_mesh.bundle",
+            "icon": "mid/keting_A_mesh",
+        },
+        {
+            "bundle": "mid/keting_mesh.bundle",
+            "icon": "mid/keting_mesh",
+        },
+        {
+            "bundle": "mid/wuguan_mesh.bundle",
+            "icon": "mid/wuguan_mesh",
+        }
+    ]
+}

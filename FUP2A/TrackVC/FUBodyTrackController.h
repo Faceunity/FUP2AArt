@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface FUBodyTrackController : UIViewController
 @property (nonatomic, strong)FUPoseTrackView  *poseTrackView ;
 @property (nonatomic, assign) BOOL isShow;
-@property (nonatomic, strong) void (^ touchBlock)(void);
+@property (nonatomic, strong) void (^ touchBlock)(BOOL);
 -(void)hideOrShowPoseTrackView;
 - (void)resetBottom;
 @end

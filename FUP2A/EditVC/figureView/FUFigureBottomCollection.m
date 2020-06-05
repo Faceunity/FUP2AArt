@@ -29,7 +29,7 @@
 - (void)reloadData
 {
     
-    self.count =  [[FUManager shareInstance] getCurrentTypeArrayCount];
+   // self.count =  [[FUManager shareInstance] getCurrentTypeArrayCount];
     [super reloadData];
 }
 
@@ -44,24 +44,20 @@
     
     FUFigureBottomCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"FUFigureBottomCell" forIndexPath:indexPath];
 
-    cell.imageView.image = [UIImage imageNamed:[[FUManager shareInstance]getSubTypeImageOfSelectedTypeWithIndex:indexPath.row]];
     return cell ;
 }
 
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
     [self reloadData];
-    if (indexPath.row == [[FUManager shareInstance] getSubTypeSelectedIndex]&&[FUManager shareInstance].isHiddenDecView == NO)
+    if (indexPath.row == [[FUManager shareInstance] getSubTypeSelectedIndex])
     {
         if ([self.mDelegate respondsToSelector:@selector(bottomCollectionDidSelectedIndex:show:animation:)])
         {
             [self.mDelegate bottomCollectionDidSelectedIndex:indexPath.row show:NO animation:YES];
-            [FUManager shareInstance].isHiddenDecView = YES;
         }
         return ;
     }
-    
-    [FUManager shareInstance].isHiddenDecView = NO;
     [[FUManager shareInstance]setSubTypeSelectedIndex:indexPath.row];
     [self reloadCam];
     
@@ -76,11 +72,11 @@
 - (void)reloadCam
 {
     FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
-    if ([[FUManager shareInstance].selectedEditType isEqualToString:@"face"]||[[FUManager shareInstance].selectedEditType isEqualToString:@"makeup"])
+    if ([FUManager shareInstance].selectedEditType == FUEditTypeFace||[FUManager shareInstance].selectedEditType == FUEditTypeMakeup)
     {
         [avatar resetScaleToBody_UseCam];
     }
-    else if ([[FUManager shareInstance].selectedEditType isEqualToString:@"dress"]||[[FUManager shareInstance].selectedEditType isEqualToString:@"background"])
+    else if ([FUManager shareInstance].selectedEditType == FUEditTypeDress)
     {
         NSString *subType = [[FUManager shareInstance]getSubTypeKeyWithIndex:[[FUManager shareInstance]getSubTypeSelectedIndex]];
         if ([subType isEqualToString:TAG_FU_ITEM_HAIRHAT]||[subType isEqualToString:TAG_FU_ITEM_GLASSES])
@@ -94,18 +90,6 @@
     }
 }
 
-
-- (NSString *)getBackgroundTypeImageWithIndex:(NSInteger)index
-{
-    
-    NSString *imageName = [NSString stringWithFormat:@"icon_background_%@",self.bgSubTypeKeyArray[index]];
-    
-    if (index == [FUManager shareInstance].iSelectedBgSubtypeIndex&&[FUManager shareInstance].isHiddenDecView != YES)
-    {
-        imageName = [imageName stringByAppendingString:@"_selected"];
-    }
-    return imageName;
-}
 
 
 @end

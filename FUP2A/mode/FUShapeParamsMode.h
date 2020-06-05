@@ -15,7 +15,7 @@
 @property (nonatomic, strong) NSMutableDictionary *facepupDict;  //加载捏脸点位
 @property (nonatomic, strong) NSArray *faecepupKeyArray;   //捏脸点位key的有序数组
 @property(nonatomic,strong) NSMutableDictionary * orginalFaceup;  //最初始的捏脸数据
-//@property(nonatomic,strong) NSMutableDictionary * beforeNieLianFaceup;  //进入捏脸模式之前的捏脸数据
+@property(nonatomic,strong) NSMutableDictionary * orginalFaceupBeforEnterEditVC;  //进入捏脸界面之前的捏脸数据
 @property(nonatomic,strong) NSMutableDictionary * editingFaceup;   //当前的捏脸数据
 
 
@@ -24,11 +24,15 @@
 /// 获取初始捏脸数据
 /// @param avatar 形象
 - (void)getOrignalParamsWithAvatar:(FUAvatar *)avatar;
-
+/// 获取当前的捏脸点位
+/// @param avatar 模型
+//- (void)getCurrentParamsWithAvatar:(FUAvatar *)avatar;
 /// 重置捏脸参数，将所有捏脸参数设置为0
 /// @param avatar 形象
 - (void)resetAllParamsWithAvatar:(FUAvatar *)avatar;
-
+/// 每次进入编辑界面，进行脸部点位保存
+/// @param avatar 记录需要保存点位的avatar
+- (void)recordOrignalParamsWithAvatar:(FUAvatar *)avatar ;
 /// 获取最终捏脸参数，针对修改后但是没有生成新head的情况
 /// @param avatar 形象
 - (NSArray *)getShapeParamsWithAvatar:(FUAvatar *)avatar;
