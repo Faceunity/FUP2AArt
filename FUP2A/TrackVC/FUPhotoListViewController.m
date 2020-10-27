@@ -118,7 +118,8 @@ return nav.navigationBar.frame.size.height;\
     //获取用户自建相册
     PHFetchResult *userAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:subType options:nil];
     [userAlbums enumerateObjectsUsingBlock:^(PHAssetCollection * _Nonnull collection, NSUInteger idx, BOOL * _Nonnull stop) {
-        if ([collection isKindOfClass:[PHAssetCollection class]]) {
+         //  && collection.assetCollectionSubtype != PHAssetCollectionSubtypeAlbumCloudShared 排除 iCloud 图片
+		if ([collection isKindOfClass:[PHAssetCollection class]]) {
             PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:nil];
             if (fetchResult.count > 0) {
                 
@@ -126,7 +127,13 @@ return nav.navigationBar.frame.size.height;\
                 NSMutableArray *photosInfo = [[NSMutableArray alloc]init];
                 [fetchResult enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL * _Nonnull stop) {
 //                    [photosInfo addObject:asset];
-                    //从相册中取出照片
+					NSArray *resourceArray = [PHAssetResource assetResourcesForAsset:asset];
+					BOOL bIsLocallayAvailable = [[resourceArray.firstObject valueForKey:@"locallyAvailable"] boolValue]; // If this returns NO, then the asset is in iCloud and not saved locally yet
+					// 如果不是本地视频，则排除掉
+					if (!bIsLocallayAvailable) {
+						return;
+					}
+					//从相册中取出照片
                     PHImageRequestOptions *opt = [[PHImageRequestOptions alloc]init];
                     opt.resizeMode = PHImageRequestOptionsResizeModeExact;//缩率图
                     opt.synchronous = YES;
@@ -158,14 +165,20 @@ return nav.navigationBar.frame.size.height;\
     //获取系统智能相册
     PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:subType options:nil];
     [smartAlbums enumerateObjectsUsingBlock:^(PHAssetCollection * _Nonnull collection, NSUInteger idx, BOOL * _Nonnull stop) {
-        if ([collection isKindOfClass:[PHAssetCollection class]]) {
+       //  && collection.assetCollectionSubtype != PHAssetCollectionSubtypeAlbumCloudShared 排除 iCloud 图片
+		if ([collection isKindOfClass:[PHAssetCollection class]]) {
             PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:nil];
             if (fetchResult.count > 0) {
                 
                 NSMutableArray *photos = [[NSMutableArray alloc]init];
                 NSMutableArray *photosInfo = [[NSMutableArray alloc]init];
                 [fetchResult enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL * _Nonnull stop) {
-
+					NSArray *resourceArray = [PHAssetResource assetResourcesForAsset:asset];
+					BOOL bIsLocallayAvailable = [[resourceArray.firstObject valueForKey:@"locallyAvailable"] boolValue]; // If this returns NO, then the asset is in iCloud and not saved locally yet
+					// 如果不是本地视频，则排除掉
+					if (!bIsLocallayAvailable) {
+						return;
+					}
 //                    [photosInfo addObject:asset];
                     //从相册中取出照片
                     PHImageRequestOptions *opt = [[PHImageRequestOptions alloc]init];

@@ -1,9 +1,9 @@
 {
 	"master":{
-		"TOKENURL" : "https://api2.faceunity.com:7070/token/info",
-		"UPLOADURL" : "https://api-ptoa.faceunity.com/api/p2a/upload",
-		"DOWNLOADURL" : "https://api-ptoa.faceunity.com/api/p2a/download",
-		"NetConfigVersion" : "1.7.1",
+        "TOKENURL" : "https://token-server.faceunity.com/api/token/info",
+        "UPLOADURL" : "https://api-pta.faceunity.com/api/p2a/upload",
+        "DOWNLOADURL" : "https://api-pta.faceunity.com/api/p2a/download",
+        "NetConfigVersion" : "1.7.1",
 	},
 	"mg":{
 		"TOKENURL" : "http://47.97.4.207:7070/token?company=faceunity",

@@ -10,7 +10,8 @@
 #import <FUStaLite/FUStaLite.h>
 #import "authpack.h"
 #import <AFNetworking.h>
-static NSString *const  url                  = @"http://tts-migu.faceunity.com/api/tts/upload";
+#error 请联系FaceUnity商务获取TTS请求地址
+static NSString *const  url                  = @"XXXXX";
 
 
 @interface FUStaLiteRequestManager ()

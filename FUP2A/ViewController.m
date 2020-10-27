@@ -261,11 +261,13 @@ FUHistoryViewControllerDelegate
     
     if (sender.selected)
     {
+        [[FUManager shareInstance]enableFaceCapture:1];
         [avatar loadIdleModePose];
         [avatar enterTrackFaceMode];
     }
     else
     {
+        [[FUManager shareInstance]enableFaceCapture:0];
         [avatar quitTrackFaceMode];
         [avatar loadStandbyAnimation];
     }
@@ -326,8 +328,10 @@ CRender * viewRender;
     CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
     const int landmarks_cnt = 314;
     float landmarks[landmarks_cnt] ;
-    
+    CFAbsoluteTime renderBeforeTime = CFAbsoluteTimeGetCurrent();
     CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemWithPixelBuffer:mirrored_pixel RenderMode:renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
+    CFAbsoluteTime interval = CFAbsoluteTimeGetCurrent() - renderBeforeTime;
+//    NSLog(@"在预览页耗时----::%f s",interval);
     CGSize size = [UIScreen mainScreen].currentMode.size;
     
     [self.displayView displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:NO];
@@ -366,7 +370,7 @@ CRender * viewRender;
     
     if (renderMode == FURenderPreviewMode)
     {
-        [self.preView displayPixelBuffer:pixelBuffer withLandmarks:landmarks count:150 Mirr:YES];
+        [self.preView displayPixelBuffer:pixelBuffer withLandmarks:landmarks count:landmarks_cnt Mirr:YES];
     }
     CVPixelBufferRelease(mirrored_pixel);
 }

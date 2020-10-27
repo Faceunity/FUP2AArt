@@ -68,6 +68,7 @@ FULoadingViewDelegate
 	
 	self.currentType = FUCurrentViewTypeNone ;
 	[self.camera startCapture ];
+    [[FUManager shareInstance] enableFaceCapture:1];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -105,9 +106,10 @@ FULoadingViewDelegate
 - (IBAction)backAction:(UIButton *)sender {
 	
 	[self.camera stopCapture];
-	
+    
 	switch (self.currentType) {
 		case FUCurrentViewTypeNone:{
+            [[FUManager shareInstance]enableFaceCapture:0];
 			[self.navigationController popViewControllerAnimated:YES];
 		}
 			break;
@@ -250,8 +252,8 @@ static int frameID = 0;
 		takePhoto = NO ;
 		
 		CGRect faceRect = [[FUManager shareInstance] getFaceRect];
-        int faceNum = [[FUManager shareInstance] faceCaptureGetResultIsFace];
-        if (CGSizeEqualToSize(faceRect.size, CGSizeZero)|| faceNum != 1) {
+
+        if (CGSizeEqualToSize(faceRect.size, CGSizeZero)) {
 			self.currentType = FUCurrentViewTypeNone ;
 			[self downloadErrorWithMessage:@"面部识别失败，请重新尝试。"];
 			self.iconImage = nil ;
@@ -398,7 +400,7 @@ static int frameID = 0;
 					NSLog(@"------------------------------------------------------------------------------ create avatar completed ~");
 					[avatar resetScaleToBody];
 					
-					
+                    [[FUManager shareInstance]enableFaceCapture:0];
 					[weakSelf.navigationController popViewControllerAnimated:YES ];
 				});
 			}else {

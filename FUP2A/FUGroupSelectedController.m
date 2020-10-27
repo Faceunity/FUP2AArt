@@ -321,7 +321,10 @@ UINavigationControllerDelegate
 -(void)didOutputVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer {
     dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER) ;
     CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
+    CFAbsoluteTime renderBeforeTime = CFAbsoluteTimeGetCurrent();
     CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemWithPixelBuffer:pixelBuffer HightResolution:1];
+    CFAbsoluteTime interval = CFAbsoluteTimeGetCurrent() - renderBeforeTime;
+//    NSLog(@"在合影页耗时----::%f s",interval);
     BOOL isNeedRelease = NO;
     if (customRenderBackground) {
         buffer = [self.viewRender mergeBgImageToBuffer:buffer ReleaseBuffer:&isNeedRelease];

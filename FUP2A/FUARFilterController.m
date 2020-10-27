@@ -73,23 +73,23 @@ FUARFilterViewDelegate
     if (acceleration.x >= 0.75) {
         orientationNew = UIInterfaceOrientationLandscapeLeft;
         self.rotationMode = 3;
-        NSLog(@"Landscape Left");
+//        NSLog(@"Landscape Left");
         
     }
     else if (acceleration.x <= -0.75) {
         orientationNew = UIInterfaceOrientationLandscapeRight;
         self.rotationMode = 1;
-        NSLog(@"Landscape Right");
+//        NSLog(@"Landscape Right");
     }
     else if (acceleration.y <= -0.75) {
         orientationNew = UIInterfaceOrientationPortrait;
         self.rotationMode = 0;
-        NSLog(@"Portrait");
+//        NSLog(@"Portrait");
     }
     else if (acceleration.y >= 0.75) {
         orientationNew = UIInterfaceOrientationPortraitUpsideDown;
         self.rotationMode = 2;
-        NSLog(@"UpsideDown");
+//        NSLog(@"UpsideDown");
     }
     return orientationNew;
 }
@@ -115,6 +115,7 @@ FUARFilterViewDelegate
 		// 5.向nama设置enter_ar_mode为1，进入AR滤镜模式
 		[self.currentAvatar enterARMode];
 		[self.camera startCapture];
+        [[FUManager shareInstance]enableFaceCapture:1];
 	}
     else
     {
@@ -125,6 +126,7 @@ FUARFilterViewDelegate
 		NSString *filterName = @"noitem";
 		[self ARFilterViewDidSelectedARFilter:filterName];
 	    [self.filterView selectModelType];
+        [[FUManager shareInstance]enableFaceCapture:0];
 	}
 }
 - (void)viewWillAppear:(BOOL)animated {
@@ -135,7 +137,7 @@ FUARFilterViewDelegate
     
 	self.camera.shouldMirror = !self.camera.shouldMirror ;
 	[self.camera changeCameraInputDeviceisFront:!self.camera.isFrontCamera];
-	[[FUManager shareInstance] faceCapureReset];
+//	[[FUManager shareInstance] faceCapureReset];
 }
 - (IBAction)backAction:(id)sender {
 	// 离开AR滤镜，删除处理头发的道具
@@ -144,6 +146,7 @@ FUARFilterViewDelegate
 	[self.currentAvatar quitARMode];
 	[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:self.commonAvatar];
 	[self.commonAvatar  loadStandbyAnimation];
+    [[FUManager shareInstance]enableFaceCapture:0];
 	
 	
 	[self.navigationController popViewControllerAnimated:NO];
@@ -165,7 +168,10 @@ FUARFilterViewDelegate
     if (self.camera.isFrontCamera)
     {
 		CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
+		CFAbsoluteTime renderBeforeTime = CFAbsoluteTimeGetCurrent();
 		[[FUManager shareInstance] renderARFilterItemWithBuffer:mirrored_pixel rotationMode:self.rotationMode];
+		CFAbsoluteTime interval = CFAbsoluteTimeGetCurrent() - renderBeforeTime;
+//		NSLog(@"在AR驱动页耗时----::%f s",interval);
 		
 		[self.renderView displayPixelBuffer:mirrored_pixel withLandmarks:nil count:0 Mirr:NO];
 		CVPixelBufferRelease(mirrored_pixel);
@@ -173,7 +179,10 @@ FUARFilterViewDelegate
     else
     {
 		[[FURenderer shareRenderer] setInputCameraMatrix:0 flip_y:0 rotate_mode:0];
+		CFAbsoluteTime renderBeforeTime = CFAbsoluteTimeGetCurrent();
 		[[FUManager shareInstance] renderARFilterItemWithBuffer:pixelBuffer rotationMode:self.rotationMode];
+		CFAbsoluteTime interval = CFAbsoluteTimeGetCurrent() - renderBeforeTime;
+//		NSLog(@"在AR驱动页耗时----::%f s",interval);
 		[self.renderView displayPixelBuffer:pixelBuffer withLandmarks:nil count:0 Mirr:NO];
 	}
 }
