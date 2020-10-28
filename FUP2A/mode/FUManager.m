@@ -63,12 +63,7 @@ static FUManager *fuManager = nil;
     return self;
 }
 
-- (void)initHuman3D
-{
-    NSData *human3dData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ai_human_processor.bundle" ofType:nil]];
-//    _human3dPtr = [FURenderer create3DBodyTracker:(void*)human3dData.bytes size:(int)human3dData.length];
-    [FURenderer loadAIModelFromPackage:(void *)human3dData.bytes size:(int)human3dData.length aitype:FUAITYPE_HUMAN_PROCESSOR];
-}
+
 
 - (void)enableHuman3D:(int)enable
 {
@@ -529,30 +524,7 @@ static int ARFilterID = 0 ;
     dispatch_semaphore_signal(self.signal);
     
     return pixelBuffer;
-    
-//    dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER);
 
-//    FUAvatarInfo* info=[self GetAvatarInfo:pixelBuffer renderMode:renderMode];
-
-//    int h = (int)CVPixelBufferGetHeight(pixelBuffer);
-//    int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer);
-//    int w = stride/4;
-//
-//
-//    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
-//    void* pod = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
-//
-//    [FURenderer run3DBodyTracker:human3dPtr humanHandle:0 inPtr:pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:0];
-//
-//    [[FURenderer shareRenderer]renderBundles:&info->info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
-//
-//    [self rotateImage:pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
-//    memcpy(pod, self.rotatedImageManager.mData, w*h*4);
-//
-//    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
-//    dispatch_semaphore_signal(self.signal);
-//
-//    return pixelBuffer;
 }
 
 -(CVPixelBufferRef)dealTheFrontCameraPixelBuffer:(CVPixelBufferRef) pixelBuffer
@@ -602,6 +574,11 @@ static int ARFilterID = 0 ;
     [FURenderer loadAIModelFromPackage:(void *)data.bytes size:(int) data.length aitype:FUAITYPE_FACEPROCESSOR];
 }
 
+- (void)initHuman3D
+{
+    NSData *human3dData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ai_human_processor.bundle" ofType:nil]];
+    [FURenderer loadAIModelFromPackage:(void *)human3dData.bytes size:(int)human3dData.length aitype:FUAITYPE_HUMAN_PROCESSOR];
+}
 - (void)destroyFaceCapture
 {
     fuReleaseAIModel(FUAITYPE_FACEPROCESSOR);
