@@ -1764,7 +1764,7 @@
 					"$(PROJECT_DIR)/FUP2A/Faceunity/P2A/fuauth",
 				);
 				MACH_O_TYPE = mh_execute;
-				MARKETING_VERSION = 1.8.1;
+				MARKETING_VERSION = 1.8.2;
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-isystem",
@@ -1818,7 +1818,7 @@
 					"$(PROJECT_DIR)/FUP2A/Faceunity/P2A/fuauth",
 				);
 				MACH_O_TYPE = mh_execute;
-				MARKETING_VERSION = 1.8.1;
+				MARKETING_VERSION = 1.8.2;
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-isystem",
