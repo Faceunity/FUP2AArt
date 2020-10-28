@@ -291,9 +291,11 @@ static int frameIndex = 0 ;
     CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
     const int landmarks_cnt = 150;
     float landmarks[landmarks_cnt];
+    CFAbsoluteTime renderBeforeTime = CFAbsoluteTimeGetCurrent();
     // 人体追踪的渲染方法
     CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemWithPixelBuffer:mirrored_pixel RenderMode:renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
-    
+    CFAbsoluteTime interval = CFAbsoluteTimeGetCurrent() - renderBeforeTime;
+//    NSLog(@"在文字驱动页耗时----::%f s",interval);
     if (self.staPlayState == StaPlaying) {
         static int staFrameIndex = 0;
         float currentTime = [FUMusicPlayer sharePlayer].currentTime;

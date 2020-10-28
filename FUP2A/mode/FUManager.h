@@ -43,9 +43,9 @@
     int light_ptr;   // 绑定在q_controller上的_cam.bundle道具句柄
 }
 
-@property void* faceCapture ;
-@property BOOL useFaceCapure;
-@property BOOL isFaceCaptureEnabled;
+//@property void* faceCapture ;
+//@property BOOL useFaceCapure;
+//@property BOOL isFaceCaptureEnabled;
 @property (nonatomic, strong) FURotatedImage *rotatedImageManager;
 
 @property (nonatomic, assign) CGSize outPutSize;  //输出图片尺寸
@@ -99,9 +99,13 @@
 // 当前选中的配饰类型，仅限于主动选择和返回、撤销时的加载
 @property (nonatomic, strong) NSString * currentSelectedDecorationType;
 
+- (void)enableFaceCapture:(int)enable;
+
+- (void)enableHuman3D:(int)enable;
+
 /// 获取实例
 + (instancetype)shareInstance;
-- (CVPixelBufferRef)renderBodyTrackWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode;
+- (CVPixelBufferRef)renderBodyTrackWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength;
 /**
  AR 滤镜处理接口
  
@@ -186,10 +190,10 @@
 
 #pragma mark ------ 脸部识别
 /// 重置脸部识别，切换摄像头时使用
-- (void)faceCapureReset;
+//- (void)faceCapureReset;
 
 /// 是否识别到人脸
-- (int)faceCaptureGetResultIsFace;
+//- (int)faceCaptureGetResultIsFace;
 
 /// 复制CVPixelBufferRef，需要外部调用负责释放返回值
 /// @param pixelBuffer 输入的 CVPixelBufferRef

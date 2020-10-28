@@ -292,27 +292,27 @@
  进入身体追踪模式
  */
 - (void)enterTrackBodyMode {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"enter_human_pose_track_mode" value:@(1)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"enable_human_processor" value:@(1)];
 }
 
 /**
  退出身体追踪模式
  */
 - (void)quitTrackBodyMode {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"quit_human_pose_track_mode" value:@(1)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"enable_human_processor" value:@(0)];
 }
 /**
  进入身体跟随模式
  */
 - (void)enterFollowBodyMode {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"human_3d_track_is_follow" value:@(1)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"human_3d_track_is_follow" value:@(1)];
 }
 
 /**
  退出身体跟随模式
  */
 - (void)quitFollowBodyMode {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"human_3d_track_is_follow" value:@(0)];
+//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"human_3d_track_is_follow" value:@(0)];
 }
 /**
  设置在身体动画和身体追踪数据之间过渡的时间，默认值为0.5（秒）

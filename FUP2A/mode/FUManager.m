@@ -45,23 +45,44 @@ static FUManager *fuManager = nil;
         self.rotatedImageManager = [[FURotatedImage alloc]init];
         
         [self initFaceCapture];
-        [self bindFaceCaptureToController];
-        [self useFaceCapure:YES];
-        
+        [self initHuman3D];
         // 关闭nama的打印
         [FURenderer itemSetParam:self.defalutQController withName:@"FUAI_VLogSetLevel" value:@(0)];
         // 绑定全局的 human3d.bundle
-        NSData *human3dData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"human3d.bundle" ofType:nil]];
-        _human3dPtr = [FURenderer create3DBodyTracker:(void*)human3dData.bytes size:(int)human3dData.length];
+
         // 美妆类型数组
 		self.makeupTypeArray = @[TAG_FU_ITEM_EYELASH,TAG_FU_ITEM_EYELINER,TAG_FU_ITEM_EYESHADOW,TAG_FU_ITEM_EYEBROW,
 		TAG_FU_ITEM_PUPIL,TAG_FU_ITEM_LIPGLOSS,TAG_FU_ITEM_FACEMAKEUP];
         // 配饰类型数组
 		self.decorationTypeArray = @[TAG_FU_ITEM_DECORATION_SHOU,TAG_FU_ITEM_DECORATION_JIAO,TAG_FU_ITEM_DECORATION_XIANGLIAN,
 		TAG_FU_ITEM_DECORATION_ERHUAN,TAG_FU_ITEM_DECORATION_TOUSHI];
+		// 设置相机动画过渡时间
+		[self SetCameraTransitionTime:0];
 		
     }
     return self;
+}
+
+- (void)initHuman3D
+{
+    NSData *human3dData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ai_human_processor.bundle" ofType:nil]];
+//    _human3dPtr = [FURenderer create3DBodyTracker:(void*)human3dData.bytes size:(int)human3dData.length];
+    [FURenderer loadAIModelFromPackage:(void *)human3dData.bytes size:(int)human3dData.length aitype:FUAITYPE_HUMAN_PROCESSOR];
+}
+
+- (void)enableHuman3D:(int)enable
+{
+    fuItemSetParamd(self.defalutQController, "enable_human_processor", enable);
+}
+
+- (void)destoryHuman3D
+{
+    fuReleaseAIModel(FUAITYPE_HUMAN_PROCESSOR);
+}
+/// 设置相机切换动画过渡时间
+/// @param duration 间隔
+-(void)SetCameraTransitionTime:(float)duration{
+	[FURenderer itemSetParam:self.defalutQController withName:@"camera_animation_transition_time" value:@(duration)];
 }
 
 #pragma mark ----- 初始化 ------
@@ -103,8 +124,7 @@ static FUManager *fuManager = nil;
     [FURenderer loadTongueModel:(void *)tongueData.bytes size:(int)tongueData.length];
     
     //加载controller
-    NSString *controller =   @"controller.bundle";
-    NSString *controllerPath = [[NSBundle mainBundle] pathForResource:controller ofType:nil];
+    NSString *controllerPath = [[NSBundle mainBundle] pathForResource:@"controller_cpp" ofType:@"bundle"];
     self.defalutQController = [FURenderer itemWithContentsOfFile:controllerPath];
     
     //加载controller_config
@@ -177,7 +197,8 @@ static FUManager *fuManager = nil;
 {
     if (!renderTarget)
     {
-        CGSize size = [UIScreen mainScreen].currentMode.size;
+	   CGSize size = [UIScreen mainScreen].currentMode.size;
+		//CGSize size = CGSizeMake(720, 1280);
         renderTarget=[self createEmptyPixelBuffer:size];
     }
     if (!screenShotTarget)
@@ -214,16 +235,21 @@ static FUManager *fuManager = nil;
 - (CVPixelBufferRef)trackFaceWithBuffer:(CMSampleBufferRef)sampleBuffer CurrentlLightingValue:(float *)currntLightingValue
 {
     dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER);
-    CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
-    [self trackFace:pixelBuffer];
     
-    if (CGSizeEqualToSize(frameSize, CGSizeZero))
-    {
-        CVPixelBufferLockBaseAddress(pixelBuffer, 0) ;
-        int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
-        int width  = (int)CVPixelBufferGetWidth(pixelBuffer) ;
+    CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
+    
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0) ;
+    
+    void *baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) ;
+    int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
+    int width  = (int)CVPixelBufferGetWidth(pixelBuffer) ;
+    
+    [FURenderer trackFace:FU_FORMAT_BGRA_BUFFER inputData:baseAddress width:width height:height];
+    
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0) ;
+    
+    if (CGSizeEqualToSize(frameSize, CGSizeZero)) {
         frameSize = CGSizeMake(width, height) ;
-        CVPixelBufferUnlockBaseAddress(pixelBuffer,0);
     }
     
     CFDictionaryRef metadataDict = CMCopyDictionaryOfAttachments(NULL,sampleBuffer, kCMAttachmentMode_ShouldPropagate);
@@ -231,13 +257,11 @@ static FUManager *fuManager = nil;
     CFRelease(metadataDict);
     NSDictionary *exifMetadata = [[metadata objectForKey:(NSString *)kCGImagePropertyExifDictionary] mutableCopy];
     lightingValue = [[exifMetadata objectForKey:(NSString *)kCGImagePropertyExifBrightnessValue] floatValue];
-    if(currntLightingValue)
-    {
-        *currntLightingValue = lightingValue;
-    }
+    *currntLightingValue = lightingValue;
     dispatch_semaphore_signal(self.signal);
     return pixelBuffer ;
 }
+
 
 static int frameId = 0 ;
 /**
@@ -250,49 +274,55 @@ static int frameId = 0 ;
  */
 - (CVPixelBufferRef)renderP2AItemWithPixelBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength
 {
-    dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER);
-    
-    FUAvatarInfo* info;
-    if(self.useFaceCapure)
-    {
-        info = [[FUAvatarInfo alloc] init];
-        [self enableFaceCapture:(FURenderPreviewMode==renderMode?YES:NO)];
-        if(FURenderPreviewMode == renderMode)
-        {
-            [self trackFace:pixelBuffer];
-            if(landmarks)
-            {
-                [self GetLandmarks:landmarks length:landmarksLength faceIdx:0];
-            }
-        }
-    }
-    else
-    {
-        info = [self GetAvatarInfo:pixelBuffer renderMode:renderMode];
-        if(FURenderPreviewMode == renderMode)
-        {
-            if(landmarks)
-            {
-                memcpy(landmarks, info->landmarks, sizeof(info->landmarks));
-            }
-        }
-    }
-    
-    int h = (int)CVPixelBufferGetHeight(renderTarget);
-    int stride = (int)CVPixelBufferGetBytesPerRow(renderTarget);
-    int w = stride/4;
+	dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER);
+	
+    int renderTarget_h = (int)CVPixelBufferGetHeight(renderTarget);
+    int renderTarget_stride = (int)CVPixelBufferGetBytesPerRow(renderTarget);
+    int renderTarget_w = renderTarget_stride/4;
+//	 int w = 750;/
     CVPixelBufferLockBaseAddress(renderTarget, 0);
-    void* pod = (void *)CVPixelBufferGetBaseAddress(renderTarget);
-    [[FURenderer shareRenderer] renderBundles:&info->info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
-    
-    [self rotateImage:pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
-    
-    memcpy(pod, self.rotatedImageManager.mData, w*h*4);
-    CVPixelBufferUnlockBaseAddress(renderTarget, 0);
-    
-    dispatch_semaphore_signal(self.signal);
-    
-    return renderTarget ;
+    void* renderTarget_pod = (void *)CVPixelBufferGetBaseAddress(renderTarget);
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+    void* pixelBuffer_pod = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
+	
+    int pixelBuffer_h = (int)CVPixelBufferGetHeight(pixelBuffer);
+    int pixelBuffer_stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer);
+    int pixelBuffer_w = pixelBuffer_stride/4;
+	if (renderMode == FURenderPreviewMode)
+	{
+		[[FURenderer shareRenderer] renderBundles:pixelBuffer_pod inFormat:FU_FORMAT_BGRA_BUFFER outPtr:renderTarget_pod outFormat:FU_FORMAT_BGRA_BUFFER width:pixelBuffer_w height:pixelBuffer_h frameId:frameId ++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
+	}else
+	{
+		
+		float expression[56] = {0};
+		float translation[3] = {0};
+		float rotation[4] = {0};
+		rotation[3] = 1;
+		float rotation_mode[1] = {0};
+		float pupil_pos[2] = {0};
+		int is_valid = 0 ;
+		
+		
+		TAvatarInfo info;
+		info.p_translation = translation;
+		info.p_rotation = rotation;
+		info.p_expression = expression;
+		info.rotation_mode = rotation_mode;
+		info.pupil_pos = pupil_pos;
+		info.is_valid = is_valid;
+		
+		[[FURenderer shareRenderer] renderBundles:&info inFormat:FU_FORMAT_AVATAR_INFO outPtr:renderTarget_pod outFormat:FU_FORMAT_BGRA_BUFFER width:renderTarget_w height:renderTarget_h frameId:frameId ++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
+	}
+	
+	[FURenderer getFaceInfo:0 name:@"landmarks" pret:landmarks number:landmarksLength];
+	[self rotateImage:renderTarget_pod inFormat:FU_FORMAT_BGRA_BUFFER w:renderTarget_w h:renderTarget_h rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
+	memcpy(renderTarget_pod, self.rotatedImageManager.mData, renderTarget_w*renderTarget_h*4);
+	CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+	CVPixelBufferUnlockBaseAddress(renderTarget, 0);
+	
+	dispatch_semaphore_signal(self.signal);
+	
+	return renderTarget;
 }
 
 /**
@@ -312,9 +342,24 @@ static int frameId = 0 ;
     CVPixelBufferRef rendered_pixel = [self createEmptyPixelBuffer:CGSizeMake(w, h)];
     CVPixelBufferLockBaseAddress(rendered_pixel, 0);
     void* rendered_pixel_pod = (void *)CVPixelBufferGetBaseAddress(rendered_pixel);
-    FUAvatarInfo* info;
-    info = [self GetAvatarInfo:pixelBuffer renderMode:FURenderCommonMode];
-    [[FURenderer shareRenderer] renderBundles:&info->info inFormat:FU_FORMAT_AVATAR_INFO outPtr:rendered_pixel_pod outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
+    
+    float expression[56] = {0};
+    float translation[3] = {0};
+    float rotation[4] = {0};
+    rotation[3] = 1;
+    float rotation_mode[1] = {0};
+    float pupil_pos[2] = {0};
+    int is_valid = 0 ;
+    
+    TAvatarInfo info;
+    info.p_translation = translation;
+    info.p_rotation = rotation;
+    info.p_expression = expression;
+    info.rotation_mode = rotation_mode;
+    info.pupil_pos = pupil_pos;
+    info.is_valid = is_valid;
+  
+    [[FURenderer shareRenderer] renderBundles:&info inFormat:FU_FORMAT_AVATAR_INFO outPtr:rendered_pixel_pod outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
     [self rotateImage:rendered_pixel_pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
     memcpy(rendered_pixel_pod, self.rotatedImageManager.mData, w*h*4);
     CVPixelBufferUnlockBaseAddress(rendered_pixel, 0);
@@ -334,27 +379,72 @@ static int ARFilterID = 0 ;
  */
 - (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer rotationMode:(int)rotationMode
 {
+//    dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER);
+//
+//    int h = (int)CVPixelBufferGetHeight(pixelBuffer);
+//    int w = (int)CVPixelBufferGetWidth(pixelBuffer);
+//    CVPixelBufferRef mirrored_pixel = NULL;
+//    NSDictionary* pixelBufferOptions = @{ (NSString*) kCVPixelBufferPixelFormatTypeKey :
+//                                              @(kCVPixelFormatType_32BGRA),
+//                                          (NSString*) kCVPixelBufferWidthKey : @(w),
+//                                          (NSString*) kCVPixelBufferHeightKey : @(h),
+//                                          (NSString*) kCVPixelBufferOpenGLESCompatibilityKey : @YES,
+//                                          (NSString*) kCVPixelBufferIOSurfacePropertiesKey : @{}};
+//    CVPixelBufferCreate(kCFAllocatorDefault,
+//                        w, h,
+//                        kCVPixelFormatType_32BGRA,
+//                        (__bridge CFDictionaryRef)pixelBufferOptions,
+//                        &mirrored_pixel);
+//
+//    CVPixelBufferLockBaseAddress(mirrored_pixel, 0);
+//    void* pod1 = (void *)CVPixelBufferGetBaseAddress(mirrored_pixel);
+//
+//    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+//    void* pod0 = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
+//    int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer) ;
+//    int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
+//    void *bytes = CVPixelBufferGetBaseAddress(pixelBuffer) ;
+//    void *newbytes = NULL;
+//    // int fu3DBodyTrackerRun(void* model_ptr, int human_handle, void* img, int w, int h, int fu_image_format, int rotation_mode);
+//    int width = (int)CVPixelBufferGetWidth(pixelBuffer) ;
+//
+//    [[FURenderer shareRenderer] renderBundles:bytes inFormat:FU_FORMAT_BGRA_BUFFER outPtr:pod1 outFormat:FU_FORMAT_BGRA_BUFFER width:stride/4 height:height frameId:ARFilterID ++ items:arItems itemCount:2];
+//    //    fuRenderBundles(FU_FORMAT_BGRA_BUFFER,bytes,FU_FORMAT_BGRA_BUFFER,bytes,width,height,ARFilterID++,arItems,2);
+//
+//
+//
+//    // flip y because nama direct get data from opengl
+//
+//
+//    for (int i = 0; i < height; i++)
+//    {
+//        memcpy((uint8_t*)pod0 + stride * (height-i-1),(uint8_t*)pod1 + stride * i, stride);
+//    }
+//    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+//    CVPixelBufferUnlockBaseAddress(mirrored_pixel, 0);
+//    CVPixelBufferRelease(mirrored_pixel);
+//
+//
+//    dispatch_semaphore_signal(self.signal);
+//
+//    return pixelBuffer;
+    
     dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER);
-    
-    if(self.useFaceCapure){
-        [self trackFace:pixelBuffer rotationMode:rotationMode];
-        [self enableFaceCapture:YES];
-    }
-    
+
     int h = (int)CVPixelBufferGetHeight(pixelBuffer);
     int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer);
     int w = stride/4;
     CVPixelBufferLockBaseAddress(pixelBuffer, 0);
     void* pod0 = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
     [[FURenderer shareRenderer] renderBundles:pod0 inFormat:FU_FORMAT_BGRA_BUFFER outPtr:pod0 outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:ARFilterID++ items:arItems itemCount:2];
-    
+
     [self rotateImage:pod0 inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
     memcpy(pod0, self.rotatedImageManager.mData, w*h*4);
-    
+
     CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
-    
+
     dispatch_semaphore_signal(self.signal);
-    
+
     return pixelBuffer;
 }
 
@@ -368,11 +458,11 @@ static int ARFilterID = 0 ;
     void *baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) ;
     int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
     int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer) ;
-    if(YES == self.useFaceCapure){
-        [self runFaceCapture:baseAddress imageFormat:FU_FORMAT_BGRA_BUFFER width:stride/4 height:height rotateMode:rotationMode];
-    } else {
+//    if(YES == self.useFaceCapure){
+//        [self runFaceCapture:baseAddress imageFormat:FU_FORMAT_BGRA_BUFFER width:stride/4 height:height rotateMode:rotationMode];
+//    } else {
         [FURenderer trackFaceWithTongue:FU_FORMAT_BGRA_BUFFER inputData:baseAddress width:stride/4 height:height];
-    }
+//    }
     CVPixelBufferUnlockBaseAddress(pixelBuffer, 0) ;
 }
 
@@ -390,87 +480,79 @@ static int ARFilterID = 0 ;
  */
 - (CVPixelBufferRef)renderBodyTrackAdjustAssginOutputSizeWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength
 {
-    
     dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER);
     
-    FUAvatarInfo* info=[self GetAvatarInfo:pixelBuffer renderMode:renderMode];
-    if(self.useFaceCapure)
-    {
-        info = [[FUAvatarInfo alloc] init];
-        [self enableFaceCapture:(FURenderPreviewMode==renderMode?YES:NO)];
-        if(FURenderPreviewMode == renderMode)
-        {
-            [self trackFace:pixelBuffer];
-            if(landmarks)
-            {
-                [self GetLandmarks:landmarks length:landmarksLength faceIdx:0];
-            }
-        }
-    }
-    else
-    {
-        info = [self GetAvatarInfo:pixelBuffer renderMode:renderMode];
-        if(FURenderPreviewMode == renderMode)
-        {
-            if(landmarks)
-            {
-                memcpy(landmarks, info->landmarks, sizeof(info->landmarks));
-            }
-        }
-    }
     int h = (int)CVPixelBufferGetHeight(pixelBuffer);
     int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer);
     int w = stride/4;
-    
+
     if (!bodyTrackBuffer)
     {
         bodyTrackBuffer = [self createEmptyPixelBuffer:CGSizeMake(self.outPutSize.width, self.outPutSize.height)];
     }
-    
+
     CVPixelBufferLockBaseAddress(pixelBuffer, 0);
     void* pod1 = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
     CVPixelBufferLockBaseAddress(bodyTrackBuffer, 0);
     void* pod0 = (void *)CVPixelBufferGetBaseAddress(bodyTrackBuffer);
-    
-    [FURenderer run3DBodyTracker:human3dPtr humanHandle:0 inPtr:pod1 inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:0];
-    
-    [[FURenderer shareRenderer]renderBundles:&info->info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod0 outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
-    
+
+    [[FURenderer shareRenderer] renderBundles:pod1 inFormat:FU_FORMAT_BGRA_BUFFER outPtr:pod0 outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId ++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
+    [FURenderer getFaceInfo:0 name:@"landmarks" pret:landmarks number:landmarksLength];
+
     [self rotateImage:pod0 inFormat:FU_FORMAT_BGRA_BUFFER w:self.outPutSize.width h:self.outPutSize.height rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
     memcpy(pod0, self.rotatedImageManager.mData, self.outPutSize.width*self.outPutSize.height*4);
-    
+
     CVPixelBufferUnlockBaseAddress(bodyTrackBuffer, 0);
     CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
     dispatch_semaphore_signal(self.signal);
-    
+
     return bodyTrackBuffer;
 }
-
-- (CVPixelBufferRef)renderBodyTrackWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode
+ 
+- (CVPixelBufferRef)renderBodyTrackWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength
 {
     dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER);
-    
-    FUAvatarInfo* info=[self GetAvatarInfo:pixelBuffer renderMode:renderMode];
-    
+     
     int h = (int)CVPixelBufferGetHeight(pixelBuffer);
     int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer);
     int w = stride/4;
-    
-
     CVPixelBufferLockBaseAddress(pixelBuffer, 0);
-    void* pod = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
+    void* pod0 = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
     
-    [FURenderer run3DBodyTracker:human3dPtr humanHandle:0 inPtr:pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:0];
+    [[FURenderer shareRenderer] renderBundles:pod0 inFormat:FU_FORMAT_BGRA_BUFFER outPtr:pod0 outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId ++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
     
-    [[FURenderer shareRenderer]renderBundles:&info->info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
-    
-    [self rotateImage:pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
-    memcpy(pod, self.rotatedImageManager.mData, w*h*4);
+    [self rotateImage:pod0 inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
+    memcpy(pod0, self.rotatedImageManager.mData, w*h*4);
     
     CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+    
     dispatch_semaphore_signal(self.signal);
     
     return pixelBuffer;
+    
+//    dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER);
+
+//    FUAvatarInfo* info=[self GetAvatarInfo:pixelBuffer renderMode:renderMode];
+
+//    int h = (int)CVPixelBufferGetHeight(pixelBuffer);
+//    int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer);
+//    int w = stride/4;
+//
+//
+//    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+//    void* pod = (void *)CVPixelBufferGetBaseAddress(pixelBuffer);
+//
+//    [FURenderer run3DBodyTracker:human3dPtr humanHandle:0 inPtr:pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:0];
+//
+//    [[FURenderer shareRenderer]renderBundles:&info->info inFormat:FU_FORMAT_AVATAR_INFO outPtr:pod outFormat:FU_FORMAT_BGRA_BUFFER width:w height:h frameId:frameId++ items:mItems itemCount:sizeof(mItems)/sizeof(int)];
+//
+//    [self rotateImage:pod inFormat:FU_FORMAT_BGRA_BUFFER w:w h:h rotationMode:FU_ROTATION_MODE_0 flipX:NO flipY:YES];
+//    memcpy(pod, self.rotatedImageManager.mData, w*h*4);
+//
+//    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+//    dispatch_semaphore_signal(self.signal);
+//
+//    return pixelBuffer;
 }
 
 -(CVPixelBufferRef)dealTheFrontCameraPixelBuffer:(CVPixelBufferRef) pixelBuffer
@@ -515,179 +597,19 @@ static int ARFilterID = 0 ;
 /// 初始化脸部识别
 - (void)initFaceCapture
 {
-    NSData *data = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"face_processor_capture.bundle" ofType:nil]];
-    self.faceCapture = [FURenderer faceCaptureCreate:data.bytes size:(int)data.length];
+    NSData *data = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ai_face_processor.bundle" ofType:nil]];
+//    fuLoadAIModelFromPackage((void *)data.bytes , (int) data.length, FUAITYPE_FACEPROCESSOR);
+    [FURenderer loadAIModelFromPackage:(void *)data.bytes size:(int) data.length aitype:FUAITYPE_FACEPROCESSOR];
 }
 
-/// 绑定脸部识别到Controller
-- (void)bindFaceCaptureToController
-{
-    [FURenderer itemSetParamu64:self.defalutQController  withName:@"register_face_capture_manager"  value:(unsigned long long)self.faceCapture];
-    [FURenderer itemSetParam:self.defalutQController  withName:@"register_face_capture_face_id"  value:@(0.0)];
-}
-
-/// 重置脸部识别，切换摄像头时使用
-- (void)faceCapureReset
-{
-    dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER);
-    if (self.faceCapture)
-    {
-        [FURenderer faceCaptureReset:self.faceCapture];
-        
-    }
-    dispatch_semaphore_signal(self.signal);
-}
-
-/// 销毁脸部识别
 - (void)destroyFaceCapture
 {
-    [FURenderer faceCaptureDestory:self.faceCapture];
-    self.faceCapture = nil;
+    fuReleaseAIModel(FUAITYPE_FACEPROCESSOR);
 }
 
-/// 是否使用新的人脸驱动模式
-/// @param isUse YES为使用，NO为不使用
-- (void)useFaceCapure:(BOOL)isUse
+- (void)enableFaceCapture:(int)enable
 {
-    self.useFaceCapure = isUse;
-    [FURenderer itemSetParam:self.defalutQController withName:@"is_close_dde" value:@(self.useFaceCapure?1.0:0.0)];
-    //需要与初值相反
-    self.isFaceCaptureEnabled = YES;
-    [self enableFaceCapture:!self.isFaceCaptureEnabled];
-}
-
-- (void)enableFaceCapture:(BOOL)isEnable
-{
-    if(self.isFaceCaptureEnabled != isEnable)
-    {
-        self.isFaceCaptureEnabled = isEnable;
-        [FURenderer itemSetParam:self.defalutQController withName:@"close_face_capture" value:@(isEnable?0.0:1.0)];
-    }
-}
-
-- (void)runFaceCapture:(void*)imagePtr imageFormat:(FUFormat)imageFormat width:(int)width height:(int)height rotateMode:(int)rotateMode
-{
-    [FURenderer faceCaptureProcessFrame:self.faceCapture inPtr:imagePtr inFormat:imageFormat w:width h:height rotationMode:rotateMode];
-}
-
-/// 获取脸部识别识别到的人脸数量
-- (int)getFaceCaptureFaceNum
-{
-    return [FURenderer faceCaptureGetResultFaceNum:self.faceCapture];
-}
-
-- (int)getFaceCaptureFaceID:(int)faceIdx
-{
-    return [FURenderer faceCaptureGetResultFaceID:self.faceCapture faceN:faceIdx];
-}
-
-/// 是否识别到人脸
-- (int)faceCaptureGetResultIsFace
-{
-    int num = [FURenderer faceCaptureGetResultIsFace:self.faceCapture faceN:0];
-    return num;
-}
-
-- (BOOL)isFaceCaptureFace:(int)faceIdx
-{
-    return [FURenderer faceCaptureGetResultIsFace:self.faceCapture faceN:faceIdx];
-}
-
-- (BOOL)getFaceCaptureResult:(FUAvatarInfo*)info faceIdx:(int)faceIdx
-{
-    if(nil == info)
-    {
-        return NO;
-    }
-    [info init];
-    
-    if(YES == self.useFaceCapure)
-    {
-        info->isValid= [self isFaceCaptureFace:faceIdx]?1:0;
-        if(info->isValid)
-        {
-#define Get(Func, dst) [FURenderer faceCaptureGetResult##Func:self.faceCapture faceN:faceIdx buffer:info->dst length:sizeof(info->dst)/sizeof(info->dst[0])]
-            Get(Landmarks, landmarks);
-            Get(Identity, identity);
-            Get(Expression, expression);
-            Get(Rotation, rotation);
-            Get(Translation, translation);
-#undef Get
-        }
-    }
-    else
-    {
-        info->isValid=[FURenderer isTracking];
-        if(info->isValid)
-        {
-#define Get(_name, dst) [FURenderer getFaceInfo:faceIdx name:_name pret:info->dst number:sizeof(info->dst)/sizeof(info->dst[0])]
-            Get(@"expression_aligned", expression);
-            Get(@"translation_aligned", translation);
-            Get(@"rotation_aligned", rotation);
-            Get(@"rotation_mode", rotationMode);
-            Get(@"pupil_pos", pupilPos);
-            Get(@"landmarks", landmarks);
-#undef Get
-        }
-    }
-    info->info.is_valid=info->isValid;
-    return info->isValid>0;
-}
-
-- (BOOL)GetLandmarks:(float*)buff length:(int)length faceIdx:(int)faceIdx
-{
-    if(YES == self.useFaceCapure)
-    {
-        if([self getFaceCaptureFaceNum]>0 && [self isFaceCaptureFace:faceIdx])
-        {
-            [FURenderer faceCaptureGetResultLandmarks:self.faceCapture faceN:faceIdx buffer:buff length:length];
-        }
-        else
-        {
-            return NO;
-        }
-    }
-    else
-    {
-        if([FURenderer isTracking])
-        {
-            [FURenderer getFaceInfo:faceIdx name:@"landmarks" pret:buff number:length];
-        }
-        else
-        {
-            return NO;
-        }
-    }
-    return YES;
-}
-
-- (void)trackFace:(CVPixelBufferRef)pixelBuffer
-{
-    CVPixelBufferLockBaseAddress(pixelBuffer, 0) ;
-    void *baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) ;
-    int height = (int)CVPixelBufferGetHeight(pixelBuffer) ;
-    int stride = (int)CVPixelBufferGetBytesPerRow(pixelBuffer) ;
-    if(YES == self.useFaceCapure)
-    {
-        [self runFaceCapture:baseAddress imageFormat:FU_FORMAT_BGRA_BUFFER width:stride/4 height:height rotateMode:0];
-    }
-    else
-    {
-        [FURenderer trackFaceWithTongue:FU_FORMAT_BGRA_BUFFER inputData:baseAddress width:stride/4 height:height];
-    }
-    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0) ;
-}
-
-- (FUAvatarInfo*)GetAvatarInfo:(CVPixelBufferRef)pixelBuffer renderMode:(FURenderMode)renderMode
-{
-    FUAvatarInfo* info=[[FUAvatarInfo alloc] init];
-    if (renderMode == FURenderPreviewMode)
-    {
-        [self trackFace:pixelBuffer];
-        [self getFaceCaptureResult:info faceIdx:0];
-    }
-    [self enableFaceCapture:(renderMode == FURenderPreviewMode)];
-    return info;
+   fuItemSetParamd(self.defalutQController, "enable_face_processor", enable);
 }
 
 #pragma mark ------ 加载道具 ------
@@ -1951,7 +1873,7 @@ static int ARFilterID = 0 ;
         default:
             break;
     }
-    fuItemSetParamd(self.defalutQController, "screen_orientation",or);
+    fuSetDefaultRotationMode(or);
 }
 
 #pragma mark ------ Cam ------
@@ -3060,7 +2982,7 @@ static float CenterScale = 0.3;
 - (NSString *)photoDetectionAction
 {
     // 1、保证单人脸输入
-    int faceNum = [self faceCaptureGetResultIsFace];
+    int faceNum = [FURenderer isTracking];
     if (faceNum != 1)
     {
         return @" 请保持1个人输入  ";
@@ -3068,31 +2990,31 @@ static float CenterScale = 0.3;
 
     // 2、保证正脸
     float rotation[4];
-    [FURenderer faceCaptureGetResultRotation:self.faceCapture faceN:0 buffer:rotation length:4];
-    
+    [FURenderer getFaceInfo:0 name:@"rotation" pret:rotation number:4];
+
     float xAngle = atanf(2 * (rotation[3] * rotation[0] + rotation[1] * rotation[2]) / (1 - 2 * (rotation[0] * rotation[0] + rotation[1] * rotation[1]))) * 180 / M_PI;
     float yAngle = asinf(2 * (rotation[1] * rotation[3] - rotation[0] * rotation[2])) * 180 / M_PI;
     float zAngle = atanf(2 * (rotation[3] * rotation[2] + rotation[0] * rotation[1]) / (1 - 2 * (rotation[1] * rotation[1] + rotation[2] * rotation[2]))) * 180 / M_PI;
-    
+
     if (xAngle < -DetectionAngle || xAngle > DetectionAngle
         || yAngle < -DetectionAngle || yAngle > DetectionAngle
         || zAngle < -DetectionAngle || zAngle > DetectionAngle)
     {
         return @" 识别失败，需要人物正脸完整出镜哦~  ";
     }
-    
+
     // 3、保证人脸在中心区域
     CGPoint faceCenter = [self getFaceCenterInFrameSize:frameSize];
-    
+
     if (faceCenter.x < 0.5 - CenterScale / 2.0 || faceCenter.x > 0.5 + CenterScale / 2.0
         || faceCenter.y < 0.4 - CenterScale / 2.0 || faceCenter.y > 0.4 + CenterScale / 2.0)
     {
         return @" 请将人脸对准虚线框  ";
     }
-    
+
     // 4、夸张表情
     float expression[46];
-    [FURenderer faceCaptureGetResultExpression:self.faceCapture faceN:0 buffer:expression length:46];
+    [FURenderer getFaceInfo:0 name:@"expression" pret:expression number:46];
     for (int i = 0; i < 46; i ++)
     {
         if (expression[i] > 0.5)
@@ -3100,7 +3022,7 @@ static float CenterScale = 0.3;
             return @" 请保持面部无夸张表情  ";
         }
     }
-    
+
     // 5、光照均匀
     // 6、光照充足
     if (lightingValue < -1.0) {
@@ -3118,7 +3040,7 @@ static float CenterScale = 0.3;
 - (CGRect)getFaceRect
 {
     float faceRect[4];
-    int ret = [FURenderer faceCaptureGetResultFaceBbox:self.faceCapture faceN:0 buffer:faceRect length:4];
+    int ret = [FURenderer getFaceInfo:0 name:@"face_rect" pret:faceRect number:4];
     if (!ret)
     {
         return CGRectZero;
@@ -3170,7 +3092,8 @@ static float CenterScale = 0.3;
     
     // 获取人脸矩形框，坐标系原点为图像右下角，float数组为矩形框右下角及左上角两个点的x,y坐标（前两位为右下角的x,y信息，后两位为左上角的x,y信息）
     float faceRect[4];
-    int ret = [FURenderer faceCaptureGetResultFaceBbox:self.faceCapture faceN:0 buffer:faceRect length:4];
+    int ret = [FURenderer getFaceInfo:0 name:@"face_rect" pret:faceRect number:4];
+//    [FURenderer faceCaptureGetResultFaceBbox:self.faceCapture faceN:0 buffer:faceRect length:4];
     
     if (ret == 0)
     {
@@ -3597,9 +3520,11 @@ static int ranNum = 0;
 /// 根据屏幕尺寸设置输出精度
 - (void)setOutputResolutionAdjustScreen
 {
+    
+//    [[FUManager shareInstance]setOutputResolutionAdjustCamera];
     int width = (int)CVPixelBufferGetBytesPerRow(renderTarget)/4;
     int height = (int)CVPixelBufferGetHeight(renderTarget);
-  
+
     [[FURenderer shareRenderer]setOutputResolution:width h:height];
 }
 
@@ -3610,7 +3535,7 @@ static int ranNum = 0;
 {
     self.outPutSize = CGSizeMake(width, height);
     [[FURenderer shareRenderer]setOutputResolution:width h:height];
-    // 如果存在老的 bodyTrackBuffer ，则进行释放
+//    // 如果存在老的 bodyTrackBuffer ，则进行释放
     if (bodyTrackBuffer) CVPixelBufferRelease(bodyTrackBuffer);
 	bodyTrackBuffer = [self createEmptyPixelBuffer:CGSizeMake(self.outPutSize.width, self.outPutSize.height)];
 }

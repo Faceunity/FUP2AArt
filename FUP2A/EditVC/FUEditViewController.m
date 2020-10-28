@@ -182,8 +182,10 @@ FUFigureViewDelegate
 	
 	self.pixelBufferW = size.width;
 	self.pixelBufferH = size.height;
+	CFAbsoluteTime renderBeforeTime = CFAbsoluteTimeGetCurrent();
     CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemWithPixelBuffer:pixelBuffer RenderMode:FURenderCommonMode Landmarks:nil LandmarksLength:0];
-    
+    CFAbsoluteTime interval = CFAbsoluteTimeGetCurrent() - renderBeforeTime;
+//    NSLog(@"在编辑页耗时----::%f s",interval);
 
     [self.renderView displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:NO];
    

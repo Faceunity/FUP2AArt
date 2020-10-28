@@ -51,6 +51,9 @@ FUPhotoListViewControllerDelegate
 @property (nonatomic, strong)  CADisplayLink * displayLink;
 @property (nonatomic, strong) AVAssetReader * mReader;
 @property (nonatomic, assign) BOOL isInputing;
+
+
+@property (nonatomic, strong) dispatch_semaphore_t Signal;
 @end
 
 @implementation FUBodyTrackController
@@ -76,7 +79,7 @@ FUPhotoListViewControllerDelegate
     self.poseTrackView.delegate = self;
     self.settingView.hidden = YES;
     self.renderMode = FURenderPreviewMode;
-    
+    self.Signal = dispatch_semaphore_create(1);
     [self configSwitch];
     [self addObserver];
 }
@@ -220,7 +223,9 @@ FUPhotoListViewControllerDelegate
 {
     _renderMode = renderMode;
     self.faceSwitch.on = _renderMode == FURenderPreviewMode;
-    
+
+    [[FUManager shareInstance]enableFaceCapture:renderMode ==FURenderPreviewMode];
+
 }
 
 - (void)switchView:(FUSwitch *)switchView isOn:(BOOL)on
@@ -279,7 +284,7 @@ FUPhotoListViewControllerDelegate
         // 2.解绑定身体、上衣、裤子、鞋子资源，只保留头部的一些素材
         [[FUManager shareInstance]reloadAvatarToControllerWithAvatar:self.currentAvatar : NO];
         [self.poseTrackView selectedModeWith:self.currentAvatar];
-        
+        [[FUManager shareInstance]enableHuman3D:1];
         // 5.向nama设置enter_ar_mode为1，进入AR滤镜模式
       //  [self.currentAvatar closeHairAnimation];
         // 当前avatar 进入AR模式，用于身体追踪和ARFilter
@@ -313,6 +318,8 @@ FUPhotoListViewControllerDelegate
         [self destroyDisplayLink];
         [self.camera stopCapture];
         [self.currentAvatar quitARMode];
+        [[FUManager shareInstance]enableHuman3D:0];
+        [[FUManager shareInstance]enableFaceCapture:0];
     }
 }
 /// 当前 self.preView 是否为横屏
@@ -342,39 +349,35 @@ FUPhotoListViewControllerDelegate
  */
 -(void)didOutputVideoSampleBuffer:(CMSampleBufferRef)sampleBuffer
 {
-    if (isPreparing) return;
-    CVPixelBufferRef pixelBuffer;
-    CVPixelBufferRef mirrored_pixel = NULL;
-    pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) ;
-    
-    if(self.camera.isFrontCamera) {
-        mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
-    }
-    else
-    {
-        mirrored_pixel = [[FUManager shareInstance]copyPixelBuffer:pixelBuffer];
-        [[FUManager shareInstance]dealTheFrontCameraPixelBuffer:pixelBuffer returnNewBuffer:NO];
-    }
-    
-    const int landmarks_cnt = 150;
-    float landmarks[landmarks_cnt] ;
-    if (_renderMode == FURenderPreviewMode)
-    {
-        [[FUManager shareInstance] renderP2AItemWithPixelBuffer:mirrored_pixel RenderMode:FURenderPreviewMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
-        [self.preView displayPixelBuffer:pixelBuffer withLandmarks:landmarks count:landmarks_cnt Mirr:YES];
-    }
-    else
-    {
-        [self.preView displayPixelBuffer:pixelBuffer withLandmarks:nil count:landmarks_cnt Mirr:YES];
-    }
-    
-    // 人体追踪的渲染方法
-//    mirrored_pixel = [[FUManager shareInstance] renderARFilterItemWithBuffer:mirrored_pixel ptr:_human3dPtr RenderMode:self.renderMode landscape:NO view0ratio:0.0f resolution:self.resolution];
-    
-    [[FUManager shareInstance]renderBodyTrackWithBuffer:mirrored_pixel ptr:[FUManager shareInstance]->_human3dPtr RenderMode:self.renderMode];
-    
-    [self.renderView displayPixelBuffer:mirrored_pixel withLandmarks:nil count:0 Mirr:NO];
-    CVPixelBufferRelease(mirrored_pixel);
+	dispatch_semaphore_wait(self.Signal, DISPATCH_TIME_FOREVER);
+	if (isPreparing) {
+        dispatch_semaphore_signal(self.Signal);
+        return;
+    };
+	CVPixelBufferRef pixelBuffer;
+	
+	pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+	CVPixelBufferRef preview_Buffer = [[FUManager shareInstance]copyPixelBuffer:pixelBuffer];
+	const int landmarks_cnt = 314;
+	float landmarks[landmarks_cnt] ;
+	CVPixelBufferRef buffer;
+	if (self.camera.isFrontCamera)
+	{
+		CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
+		[[FUManager shareInstance]renderBodyTrackWithBuffer:mirrored_pixel ptr:nil RenderMode:self.renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
+		[self.renderView displayPixelBuffer:mirrored_pixel withLandmarks:nil count:0 Mirr:NO];
+		CVPixelBufferRelease(mirrored_pixel);
+	}else{
+		[[FUManager shareInstance]renderBodyTrackWithBuffer:pixelBuffer ptr:nil RenderMode:self.renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
+		[self.renderView displayPixelBuffer:pixelBuffer withLandmarks:nil count:0 Mirr:NO];
+	}
+	
+	[self.preView displayPixelBuffer:preview_Buffer withLandmarks:landmarks count:landmarks_cnt Mirr:self.camera.isFrontCamera];
+	//    CFAbsoluteTime interval = CFAbsoluteTimeGetCurrent()  - renderBeforeTime;
+	////    NSLog(@"在身体追踪页耗时----::%f s",interval);
+	
+	CVPixelBufferRelease(preview_Buffer);
+	dispatch_semaphore_signal(self.Signal);
 }
 -(void)cancelSelectVideo{
 }
@@ -554,13 +557,22 @@ static int frameIndex = 0 ;
 		[self.currentAvatar loadHalfAvatar];
 		[self resetCam];
 	}
-    const int landmarks_cnt = 150;
-    float landmarks[landmarks_cnt] ;
-	CVPixelBufferRef buffer = [[FUManager shareInstance]renderBodyTrackAdjustAssginOutputSizeWithBuffer:pixelBuffer ptr:[FUManager shareInstance]->_human3dPtr RenderMode:self.renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
+	const int landmarks_cnt = 0;
+	float landmarks[landmarks_cnt] ;
+	CVPixelBufferRef buffer;
+	if (0)
+	{
+		CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
+		buffer = [[FUManager shareInstance]renderBodyTrackAdjustAssginOutputSizeWithBuffer:mirrored_pixel ptr:[FUManager shareInstance]->_human3dPtr RenderMode:self.renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
+		CVPixelBufferRelease(mirrored_pixel);
+	}else{
+		buffer = [[FUManager shareInstance]renderBodyTrackAdjustAssginOutputSizeWithBuffer:pixelBuffer ptr:[FUManager shareInstance]->_human3dPtr RenderMode:self.renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
+	}
 	[weakSelf.renderView displayPixelBuffer:buffer withLandmarks:nil count:landmarks_cnt Mirr:NO];
 	// ShouldSpreadScreen:NO 代表不铺满全屏，根据视频尺寸不同，可能或显示黑边
 	[weakSelf.preView displayPixelBuffer:pixelBuffer withLandmarks:landmarks count:landmarks_cnt bufferMirr:NO landmarksMirr:YES ShouldSpreadScreen:NO];
 	CVPixelBufferRelease(pixelBuffer);
+	//    CVPixelBufferRelease(buffer);
 	// 销毁 sampleBuffer
 	switch (self.currentLoacalVideoOrientation) {
 		case UIImageOrientationUp:
@@ -606,7 +618,8 @@ static int frameIndex = 0 ;
     [self.currentAvatar quitTrackBodyMode];
     [self.currentAvatar quitARMode];
     [self.currentAvatar quitFollowBodyMode];
-
+    [[FUManager shareInstance]enableFaceCapture:0];
+    [[FUManager shareInstance]enableHuman3D:0];
     [[FUManager shareInstance] reloadAvatarToControllerWithAvatar:self.originalAvatar];
     [self.navigationController popViewControllerAnimated:NO];
 }
@@ -616,9 +629,11 @@ static int frameIndex = 0 ;
 	if (_isVideoInput) {   // 视频输入，禁止切换摄像头  //@"当前相机不支持旋转相机"
 		[SVProgressHUD showInfoWithStatus:@"当前模式不支持旋转相机"];
 	}else{
+        [self.camera stopCapture];
 		self.camera.shouldMirror = !self.camera.shouldMirror ;
 		[self.camera changeCameraInputDeviceisFront:!self.camera.isFrontCamera];
-		[[FUManager shareInstance] faceCapureReset];
+//		[[FUManager shareInstance] faceCapureReset];
+        [self.camera startCapture];
 	}
 }
 
@@ -700,7 +715,8 @@ static int frameIndex = 0 ;
 
 
 -(void)dealloc{
-   NSLog(@"FUBodyTrackController-----销毁了");
+    NSLog(@"FUBodyTrackController-----销毁了");
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 @end
