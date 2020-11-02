@@ -482,27 +482,25 @@ CRender * viewRender;
 
 - (void)homeBarSelectedActionWithAR:(BOOL)isAR
 {
-    FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
-    if (isAR)
-    {     // AR 滤镜
-        [avatar quitTrackFaceMode];
-        //       [self performSegueWithIdentifier:@"PushToARView" sender:nil];
-        [self performSegueWithIdentifier:@"PushToTrackVC" sender:nil];
-    }
-    else
-    {         // 形象
-	   
-        loadingBundles = YES;
-        FUAvatar *currentAvatar = [FUManager shareInstance].currentAvatars.firstObject;
-        if ([currentAvatar.name isEqualToString:@"Star"])
-        {
-            return;
-        }
-       // FUEditViewController * editVC = [[FUEditViewController alloc]init];
-        [FUManager shareInstance].isEnterEditView = YES;
-       // [self.navigationController pushViewController:editVC animated:YES];
-       [self performSegueWithIdentifier:@"PushToEditView" sender:nil];
-    }
+	FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
+	if (isAR)
+	{     // AR 滤镜
+		[avatar quitTrackFaceMode];
+		//       [self performSegueWithIdentifier:@"PushToARView" sender:nil];
+		[self performSegueWithIdentifier:@"PushToTrackVC" sender:nil];
+	}
+	else
+	{         // 形象
+		loadingBundles = YES;
+		FUAvatar *currentAvatar = [FUManager shareInstance].currentAvatars.firstObject;
+		if ([currentAvatar.name isEqualToString:@"Star"])
+		{
+			return;
+		}
+		[[FUManager shareInstance]enableFaceCapture:0];
+		[FUManager shareInstance].isEnterEditView = YES;
+		[self performSegueWithIdentifier:@"PushToEditView" sender:nil];
+	}
 }
 
 // 合影
