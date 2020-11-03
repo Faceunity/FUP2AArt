@@ -294,6 +294,9 @@ FUPhotoListViewControllerDelegate
         {
             [self.currentAvatar enterFollowBodyMode];
         }
+
+		[self setRenderMode:self.faceSwitch.on ? FURenderPreviewMode : FURenderCommonMode];
+
         
         if (!self.bodySwitch.on)
         {
