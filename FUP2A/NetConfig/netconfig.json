@@ -4,17 +4,5 @@
         "UPLOADURL" : "https://api-pta.faceunity.com/api/p2a/upload",
         "DOWNLOADURL" : "https://api-pta.faceunity.com/api/p2a/download",
         "NetConfigVersion" : "1.7.1",
-	},
-	"mg":{
-		"TOKENURL" : "http://47.97.4.207:7070/token?company=faceunity",
-		"UPLOADURL" : "http://47.97.4.207:7070/api/p2a/upload",
-		"DOWNLOADURL" : "http://47.97.4.207:7070/api/p2a/download",
-		"NetConfigVersion" : "migu_test",
-	},
-	"xy":{
-		"TOKENURL" : "http://47.97.4.207:7070/token?company=faceunity",
-		"UPLOADURL" : "http://47.97.4.207:7070/api/p2a/upload",
-		"DOWNLOADURL" : "http://47.97.4.207:7070/api/p2a/download",
-		"NetConfigVersion" : "xingyue_test",
-	},
+	}
 }
