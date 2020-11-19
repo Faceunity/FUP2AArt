@@ -8,7 +8,6 @@
 
 * authpack.h：Nama SDK鉴权证书，用于在客户端，使用Nama SDK 绘制的鉴权。
 
-* p2a_demo.p12：https 网络请求的鉴权证书，工程中提供的域名为测试域名，该证书仅用于连接测试服务器的鉴权。真实对接中，需要客户自己搭建服务端，并设计自己的鉴权机制，关于服务端的搭建请参考[PTA Server API 说明文档](PTA%20Server%20API.pdf)。
 
 下载证书后，将证书拷贝到[Faceunity](FUP2A/Faceunity)文件夹下，直接运行工程即可。
 
@@ -16,7 +15,7 @@
 
 ### SDK
 
-- **FUP2AClient.framework**： FUP2AClient SDK 负责头和头发的创建，以及头部编辑的功能。不需要鉴权即可使用。
+- **libp2a_client.a**： FUP2AClient SDK 负责头和头发的创建，以及头部编辑的功能。不需要鉴权即可使用。
 - **libnama.a**: Nama SDK，进行风格化形象绘制，需要有鉴权证书才能使用。Nama SDK的接口与资源详细说明，请查看[FULiveDemo 说明文档](https://github.com/Faceunity/FULiveDemo)。
 
 ### 道具
