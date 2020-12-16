@@ -192,8 +192,9 @@ static FUManager *fuManager = nil;
 {
     if (!renderTarget)
     {
-	   CGSize size = [UIScreen mainScreen].currentMode.size;
-		//CGSize size = CGSizeMake(720, 1280);
+		 CGSize size = [self scaleForHighResolutionMachine];
+		
+		//CGSize size = CGSizeMake(750, 1624);
         renderTarget=[self createEmptyPixelBuffer:size];
     }
     if (!screenShotTarget)
@@ -201,7 +202,21 @@ static FUManager *fuManager = nil;
         screenShotTarget=[self createEmptyPixelBuffer:CGSizeMake(460, 630)];
     }
 }
-
+// 以iphone11 作为参照物，来降低高分辨率，解决高分辨率手机卡顿问题
+-(CGSize)scaleForHighResolutionMachine{
+	int iphone11_w = 750;
+	int iphone11_h = 1624;
+	CGSize size = [UIScreen mainScreen].currentMode.size;
+	CGFloat current_iphone_w = size.width;
+	CGFloat current_iphone_h = size.height;
+	CGFloat scale = [UIScreen mainScreen].scale;
+	if (current_iphone_w * current_iphone_h > iphone11_w * iphone11_h && scale == 3) {   // 以iphone11 作为参照物，来降低高分辨率，解决高分辨率手机卡顿问题
+		CGFloat new_current_iphone_w = size.width / 3 * 2;
+		CGFloat new_current_iphone_h = size.height / 3 * 2;
+		return CGSizeMake(new_current_iphone_w, new_current_iphone_h);
+	}
+	return size;
+}
 /// 创建空白buffer
 /// @param size buffer的大小
 - (CVPixelBufferRef)createEmptyPixelBuffer:(CGSize)size
@@ -3194,7 +3209,8 @@ static float CenterScale = 0.3;
 
 -(NSString *)appVersion
 {
-    NSString* versionStr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+   // NSString* versionStr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+	NSString* versionStr = @"1.8.2";    //由于当前版本为 1.8.2 ，为了防止上线 testflight 导致版本号为 1.0 的问题，这里给出固定值
     return [NSString stringWithFormat:@"DigiMe Art v%@",versionStr];
 }
 
