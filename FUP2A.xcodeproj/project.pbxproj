@@ -194,6 +194,7 @@
 		9B5609F3233B830700EDC5F6 /* FUPoseTrackView.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B5609F2233B830700EDC5F6 /* FUPoseTrackView.m */; };
 		9B57F67622BC710300E26620 /* AGLKVertexAttribArrayBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B57F67522BC710200E26620 /* AGLKVertexAttribArrayBuffer.m */; };
 		9B57F67922BC738100E26620 /* AGLKContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B57F67822BC738100E26620 /* AGLKContext.m */; };
+		9B669AEC25495EC800E161D1 /* DigiMe_ArtTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B669AEB25495EC800E161D1 /* DigiMe_ArtTests.m */; };
 		9B6E4C6A235E977100B2E695 /* libfuai.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9BA9405C235D9F6A008844BF /* libfuai.a */; };
 		9B6EF410233B9BDF001F327B /* FUTrackController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B6EF40F233B9BDF001F327B /* FUTrackController.m */; };
 		9B6F211F22C9D03E009EFCEA /* FUAVUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B6F211E22C9D03E009EFCEA /* FUAVUtilities.m */; };
@@ -223,6 +224,16 @@
 		9BF550D92329E9DE00CFAD93 /* FUFigureHorizCollectionCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9BF550D82329E9DE00CFAD93 /* FUFigureHorizCollectionCell.xib */; };
 		9BF550DB2329EA0100CFAD93 /* FUFigureDecorationCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9BF550DA2329EA0100CFAD93 /* FUFigureDecorationCell.xib */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		9B669AF52549617200E161D1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0B8ED6C320C0DC360011221E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0B8ED6CA20C0DC360011221E;
+			remoteInfo = FUP2A;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		0BD6D57A2237BB4A00217E81 /* Embed Frameworks */ = {
@@ -487,6 +498,9 @@
 		9B57F67522BC710200E26620 /* AGLKVertexAttribArrayBuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AGLKVertexAttribArrayBuffer.m; sourceTree = "<group>"; };
 		9B57F67722BC738100E26620 /* AGLKContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AGLKContext.h; sourceTree = "<group>"; };
 		9B57F67822BC738100E26620 /* AGLKContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AGLKContext.m; sourceTree = "<group>"; };
+		9B669AE925495EC800E161D1 /* DigiMe-ArtTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DigiMe-ArtTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B669AEB25495EC800E161D1 /* DigiMe_ArtTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DigiMe_ArtTests.m; sourceTree = "<group>"; };
+		9B669AED25495EC800E161D1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9B6EF40E233B9BDF001F327B /* FUTrackController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUTrackController.h; sourceTree = "<group>"; };
 		9B6EF40F233B9BDF001F327B /* FUTrackController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUTrackController.m; sourceTree = "<group>"; };
 		9B6F211D22C9D03E009EFCEA /* FUAVUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FUAVUtilities.h; sourceTree = "<group>"; };
@@ -548,6 +562,13 @@
 				9B445F2D2350242D00050138 /* FUP2AHelper.framework in Frameworks */,
 				411F71AB23D06D5F00DF65D6 /* libc++.tbd in Frameworks */,
 				9B446537237946C50086B8D4 /* libp2a_client.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9B669AE625495EC800E161D1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -768,6 +789,7 @@
 			children = (
 				9B445F2C2350242D00050138 /* FUP2AHelper.framework */,
 				0B8ED6CD20C0DC360011221E /* FUP2A */,
+				9B669AEA25495EC800E161D1 /* DigiMe-ArtTests */,
 				0B8ED6CC20C0DC360011221E /* Products */,
 				F52A3FCA742E85FFB28AC52D /* Pods */,
 				61AB2E0EF26C724A956A8541 /* Frameworks */,
@@ -778,6 +800,7 @@
 			isa = PBXGroup;
 			children = (
 				0B8ED6CB20C0DC360011221E /* DigiMe-Art.app */,
+				9B669AE925495EC800E161D1 /* DigiMe-ArtTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1196,6 +1219,15 @@
 			path = FUSta;
 			sourceTree = "<group>";
 		};
+		9B669AEA25495EC800E161D1 /* DigiMe-ArtTests */ = {
+			isa = PBXGroup;
+			children = (
+				9B669AEB25495EC800E161D1 /* DigiMe_ArtTests.m */,
+				9B669AED25495EC800E161D1 /* Info.plist */,
+			);
+			path = "DigiMe-ArtTests";
+			sourceTree = "<group>";
+		};
 		9B883DF6246BA1DD0090C280 /* Avatars */ = {
 			isa = PBXGroup;
 			children = (
@@ -1275,6 +1307,24 @@
 			productReference = 0B8ED6CB20C0DC360011221E /* DigiMe-Art.app */;
 			productType = "com.apple.product-type.application";
 		};
+		9B669AE825495EC800E161D1 /* DigiMe-ArtTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9B669AF025495EC800E161D1 /* Build configuration list for PBXNativeTarget "DigiMe-ArtTests" */;
+			buildPhases = (
+				9B669AE525495EC800E161D1 /* Sources */,
+				9B669AE625495EC800E161D1 /* Frameworks */,
+				9B669AE725495EC800E161D1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9B669AF62549617200E161D1 /* PBXTargetDependency */,
+			);
+			name = "DigiMe-ArtTests";
+			productName = "DigiMe-ArtTests";
+			productReference = 9B669AE925495EC800E161D1 /* DigiMe-ArtTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -1286,6 +1336,10 @@
 				TargetAttributes = {
 					0B8ED6CA20C0DC360011221E = {
 						CreatedOnToolsVersion = 9.3.1;
+					};
+					9B669AE825495EC800E161D1 = {
+						CreatedOnToolsVersion = 11.3.1;
+						TestTargetID = 0B8ED6CA20C0DC360011221E;
 					};
 				};
 			};
@@ -1303,6 +1357,7 @@
 			projectRoot = "";
 			targets = (
 				0B8ED6CA20C0DC360011221E /* FUP2A */,
+				9B669AE825495EC800E161D1 /* DigiMe-ArtTests */,
 			);
 		};
 /* End PBXProject section */
@@ -1448,6 +1503,13 @@
 				9BF550D72329E9C200CFAD93 /* FUFigureColorCollectionCell.xib in Resources */,
 				0B0A8AB52122758100A09AB2 /* loading7.png in Resources */,
 				410520A123D042CD004734E9 /* midBody_male0.bundle in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9B669AE725495EC800E161D1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1598,7 +1660,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9B669AE525495EC800E161D1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B669AEC25495EC800E161D1 /* DigiMe_ArtTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9B669AF62549617200E161D1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0B8ED6CA20C0DC360011221E /* FUP2A */;
+			targetProxy = 9B669AF52549617200E161D1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		0B8ED6D420C0DC360011221E /* Main.storyboard */ = {
@@ -1675,6 +1753,7 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				VALIDATE_WORKSPACE = YES;
 			};
 			name = Debug;
 		};
@@ -1727,6 +1806,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
+				VALIDATE_WORKSPACE = YES;
 			};
 			name = Release;
 		};
@@ -1781,7 +1861,6 @@
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = 1;
-				VALIDATE_WORKSPACE = YES;
 			};
 			name = Debug;
 		};
@@ -1835,7 +1914,49 @@
 				PRODUCT_NAME = "DigiMe-Art";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = 1;
-				VALIDATE_WORKSPACE = YES;
+			};
+			name = Release;
+		};
+		9B669AF125495EC800E161D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 35A6KD62ZJ;
+				INFOPLIST_FILE = "DigiMe-ArtTests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.universe.DigiMe-ArtTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DigiMe-Art.app/DigiMe-Art";
+			};
+			name = Debug;
+		};
+		9B669AF225495EC800E161D1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 35A6KD62ZJ;
+				INFOPLIST_FILE = "DigiMe-ArtTests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.universe.DigiMe-ArtTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DigiMe-Art.app/DigiMe-Art";
 			};
 			name = Release;
 		};
@@ -1856,6 +1977,15 @@
 			buildConfigurations = (
 				0B8ED6E220C0DC380011221E /* Debug */,
 				0B8ED6E320C0DC380011221E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9B669AF025495EC800E161D1 /* Build configuration list for PBXNativeTarget "DigiMe-ArtTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9B669AF125495EC800E161D1 /* Debug */,
+				9B669AF225495EC800E161D1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

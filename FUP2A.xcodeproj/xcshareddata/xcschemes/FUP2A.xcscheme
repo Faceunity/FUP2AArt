@@ -37,6 +37,16 @@
          </BuildableReference>
       </MacroExpansion>
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "9B669AE825495EC800E161D1"
+               BuildableName = "DigiMe-ArtTests.xctest"
+               BlueprintName = "DigiMe-ArtTests"
+               ReferencedContainer = "container:FUP2A.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

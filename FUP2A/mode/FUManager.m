@@ -192,7 +192,7 @@ static FUManager *fuManager = nil;
 {
     if (!renderTarget)
     {
-		 CGSize size = [self scaleForHighResolutionMachine];
+		 CGSize size = [AppManager getSuitablePixelBufferSizeForCurrentDevice];
 		
 		//CGSize size = CGSizeMake(750, 1624);
         renderTarget=[self createEmptyPixelBuffer:size];
@@ -202,21 +202,7 @@ static FUManager *fuManager = nil;
         screenShotTarget=[self createEmptyPixelBuffer:CGSizeMake(460, 630)];
     }
 }
-// 以iphone11 作为参照物，来降低高分辨率，解决高分辨率手机卡顿问题
--(CGSize)scaleForHighResolutionMachine{
-	int iphone11_w = 750;
-	int iphone11_h = 1624;
-	CGSize size = [UIScreen mainScreen].currentMode.size;
-	CGFloat current_iphone_w = size.width;
-	CGFloat current_iphone_h = size.height;
-	CGFloat scale = [UIScreen mainScreen].scale;
-	if (current_iphone_w * current_iphone_h > iphone11_w * iphone11_h && scale == 3) {   // 以iphone11 作为参照物，来降低高分辨率，解决高分辨率手机卡顿问题
-		CGFloat new_current_iphone_w = size.width / 3 * 2;
-		CGFloat new_current_iphone_h = size.height / 3 * 2;
-		return CGSizeMake(new_current_iphone_w, new_current_iphone_h);
-	}
-	return size;
-}
+
 /// 创建空白buffer
 /// @param size buffer的大小
 - (CVPixelBufferRef)createEmptyPixelBuffer:(CGSize)size
@@ -598,11 +584,11 @@ static int ARFilterID = 0 ;
 {
     fuReleaseAIModel(FUAITYPE_FACEPROCESSOR);
 }
-
 - (void)enableFaceCapture:(int)enable
 {
    fuItemSetParamd(self.defalutQController, "enable_face_processor", enable);
 }
+
 
 #pragma mark ------ 加载道具 ------
 /// 加载道具等信息
@@ -2697,7 +2683,7 @@ static int ARFilterID = 0 ;
  @param avatar 需要删除的 avatar
  */
 - (void)removeRenderAvatar:(FUAvatar *)avatar
-{//gcz
+{
     if (avatar == nil || ![self.currentAvatars containsObject:avatar])
     {
                 return;

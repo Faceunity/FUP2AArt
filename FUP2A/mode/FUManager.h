@@ -98,7 +98,6 @@
 @property (nonatomic, strong)NSArray * decorationTypeArray;
 // 当前选中的配饰类型，仅限于主动选择和返回、撤销时的加载
 @property (nonatomic, strong) NSString * currentSelectedDecorationType;
-
 - (void)enableFaceCapture:(int)enable;
 
 - (void)enableHuman3D:(int)enable;

@@ -68,7 +68,7 @@ FULoadingViewDelegate
 	
 	self.currentType = FUCurrentViewTypeNone ;
 	[self.camera startCapture ];
-    [[FUManager shareInstance] enableFaceCapture:1];
+    [[FUManager shareInstance] enableFaceCapture:1 ];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
