@@ -134,6 +134,10 @@ FUHistoryViewControllerDelegate
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
+	
+	if (self.trackBtn.selected)   // 如果当前处于面部追踪状态，则关闭
+	[self trackAction:self.trackBtn];
+	
     [self.camera stopCapture];
     [FUManager shareInstance].isPlayingSpecialAni = NO;
     [[FUManager shareInstance] removeNextSpecialAnimation];
@@ -143,8 +147,8 @@ FUHistoryViewControllerDelegate
     {
         self.appVersionLabel.hidden = NO;
         self.sdkVersionLabel.hidden = NO;
-        
-        self.trackBtn.selected = NO;
+		
+		
         self.preView.hidden = YES;
         
         FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
@@ -332,7 +336,7 @@ CRender * viewRender;
     CVPixelBufferRef buffer = [[FUManager shareInstance] renderP2AItemWithPixelBuffer:mirrored_pixel RenderMode:renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
     CFAbsoluteTime interval = CFAbsoluteTimeGetCurrent() - renderBeforeTime;
 //    NSLog(@"在预览页耗时----::%f s",interval);
-    CGSize size = [UIScreen mainScreen].currentMode.size;
+    CGSize size = [AppManager getSuitablePixelBufferSizeForCurrentDevice];
     
     [self.displayView displayPixelBuffer:buffer withLandmarks:nil count:0 Mirr:NO];
     switch (self.videoRecordState)

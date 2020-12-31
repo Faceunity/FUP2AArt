@@ -24,8 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 + (AppManager *)sharedInstance;
 -(void)checkSavePhotoAuth:(void (^)(PHAuthorizationStatus status))isAuthorizedCompletion;
 -(void)openAppSettingView;
-//-(UIColor *)returnFUGradientSliderColor:(float) progress;
-
+// 以iphone11 作为参照物，来降低高分辨率，解决高分辨率手机卡顿问题
++(CGSize)getSuitablePixelBufferSizeForCurrentDevice;
 @end
 
 NS_ASSUME_NONNULL_END

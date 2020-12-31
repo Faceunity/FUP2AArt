@@ -88,24 +88,19 @@ static AppManager *sharedInstance;
 		
 	}
 }
-
-
-//-(UIColor *)returnFUGradientSliderColor:(float) progress{
-//// 获取颜色区间的位置
-//   double colorIndexDouble = progress / self.colorSliderStep;
-//	int colorIndex = colorIndexDouble;
-//	FUP2AColor * baseColor = [FUManager shareInstance].skinColorArray[colorIndex];
-//	UIColor * newColor;
-//	if (colorIndex >= [FUManager shareInstance].skinColorArray.count - 1) {
-//		newColor = baseColor.color;
-//}else{
-//	FUP2AColor * nextColor = [FUManager shareInstance].skinColorArray[colorIndex + 1];
-//	_RStep = (nextColor.r - baseColor.r);
-//	_GStep = (nextColor.g - baseColor.g);
-//	_BStep = (nextColor.b - baseColor.b);
-//	double colorInterval = colorIndexDouble - colorIndex;
-//	newColor = [UIColor colorWithRed:(baseColor.r + _RStep * colorInterval)/ 255.0 green:(baseColor.g + _GStep * colorInterval)/ 255.0 blue:(baseColor.b + _BStep * colorInterval)/ 255.0 alpha:1];
-//	}
-//	return newColor;
-//}
+// 以iphone11 作为参照物，来降低高分辨率，解决高分辨率手机卡顿问题
++(CGSize)getSuitablePixelBufferSizeForCurrentDevice{
+	int iphone11_w = 750;
+	int iphone11_h = 1624;
+	CGSize size = [UIScreen mainScreen].currentMode.size;
+	CGFloat current_iphone_w = size.width;
+	CGFloat current_iphone_h = size.height;
+	CGFloat scale = [UIScreen mainScreen].scale;
+	if (current_iphone_w * current_iphone_h > iphone11_w * iphone11_h && scale == 3) {   // 以iphone11 作为参照物，来降低高分辨率，解决高分辨率手机卡顿问题
+		CGFloat new_current_iphone_w = size.width / 3 * 2;
+		CGFloat new_current_iphone_h = size.height / 3 * 2;
+		return CGSizeMake(new_current_iphone_w, new_current_iphone_h);
+	}
+	return size;
+}
 @end

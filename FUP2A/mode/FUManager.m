@@ -192,8 +192,9 @@ static FUManager *fuManager = nil;
 {
     if (!renderTarget)
     {
-	   CGSize size = [UIScreen mainScreen].currentMode.size;
-		//CGSize size = CGSizeMake(720, 1280);
+		 CGSize size = [AppManager getSuitablePixelBufferSizeForCurrentDevice];
+		
+		//CGSize size = CGSizeMake(750, 1624);
         renderTarget=[self createEmptyPixelBuffer:size];
     }
     if (!screenShotTarget)
@@ -583,11 +584,11 @@ static int ARFilterID = 0 ;
 {
     fuReleaseAIModel(FUAITYPE_FACEPROCESSOR);
 }
-
 - (void)enableFaceCapture:(int)enable
 {
    fuItemSetParamd(self.defalutQController, "enable_face_processor", enable);
 }
+
 
 #pragma mark ------ 加载道具 ------
 /// 加载道具等信息
@@ -2682,7 +2683,7 @@ static int ARFilterID = 0 ;
  @param avatar 需要删除的 avatar
  */
 - (void)removeRenderAvatar:(FUAvatar *)avatar
-{//gcz
+{
     if (avatar == nil || ![self.currentAvatars containsObject:avatar])
     {
                 return;
@@ -3194,7 +3195,8 @@ static float CenterScale = 0.3;
 
 -(NSString *)appVersion
 {
-    NSString* versionStr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+   // NSString* versionStr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
+	NSString* versionStr = @"1.8.2";    //由于当前版本为 1.8.2 ，为了防止上线 testflight 导致版本号为 1.0 的问题，这里给出固定值
     return [NSString stringWithFormat:@"DigiMe Art v%@",versionStr];
 }
 

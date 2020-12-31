@@ -505,7 +505,7 @@
     double x = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"query_vert_x"];
     double y = [FURenderer getDoubleParamFromItem:items[FUItemTypeController] withName:@"query_vert_y"];
     
-    CGSize size = [UIScreen mainScreen].currentMode.size;
+	CGSize size = [AppManager getSuitablePixelBufferSizeForCurrentDevice];
     
     return CGPointMake((1.0 - x/size.width) * [UIScreen mainScreen].bounds.size.width,(1.0 - y/size.height) * [UIScreen mainScreen].bounds.size.height) ;
 }

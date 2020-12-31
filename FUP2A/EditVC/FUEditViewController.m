@@ -178,7 +178,7 @@ FUFigureViewDelegate
 	CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
 	
 	CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
-	CGSize size = [UIScreen mainScreen].currentMode.size;
+	CGSize size = [AppManager getSuitablePixelBufferSizeForCurrentDevice];
 	
 	self.pixelBufferW = size.width;
 	self.pixelBufferH = size.height;
