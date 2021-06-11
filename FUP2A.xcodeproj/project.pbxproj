@@ -459,8 +459,8 @@
 		4DEA1E1E97520D6F8B129A53 /* Pods-FUP2A.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FUP2A.debug.xcconfig"; path = "Pods/Target Support Files/Pods-FUP2A/Pods-FUP2A.debug.xcconfig"; sourceTree = "<group>"; };
 		507A844823FC278A003F3E5B /* toonfilter.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = toonfilter.png; sourceTree = "<group>"; };
 		57E09EFF74EEF71DBDACB30A /* libPods-FUP2A.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-FUP2A.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		9B02EC76247F6E4000D4C97A /* ani_dance_mid.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_dance_mid.bundle; sourceTree = "<group>"; };
-		9B02EC78247F6E4000D4C97A /* ani_dance_cam.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_dance_cam.bundle; sourceTree = "<group>"; };
+		9B02EC76247F6E4000D4C97A /* ani_dance_mid.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ani_dance_mid.bundle; sourceTree = "<group>"; };
+		9B02EC78247F6E4000D4C97A /* ani_dance_cam.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ani_dance_cam.bundle; sourceTree = "<group>"; };
 		9B07110F253EB7EB00ED184D /* controller.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = controller.bundle; sourceTree = "<group>"; };
 		9B0C57DE246D300700FEC640 /* FUFigureTopCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FUFigureTopCollection.h; sourceTree = "<group>"; };
 		9B0C57DF246D300700FEC640 /* FUFigureTopCollection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FUFigureTopCollection.m; sourceTree = "<group>"; };
@@ -513,7 +513,7 @@
 		9B883DF7246BA1DD0090C280 /* Avatars.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Avatars.json; sourceTree = "<group>"; };
 		9B8CA4022340E7B0009815BF /* FURotation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FURotation.h; sourceTree = "<group>"; };
 		9B8CA4032340E7B0009815BF /* FURotation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FURotation.m; sourceTree = "<group>"; };
-		9B8D77212480BFD2001EB2D3 /* keting_A_mesh.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = keting_A_mesh.bundle; sourceTree = "<group>"; };
+		9B8D77212480BFD2001EB2D3 /* keting_A_mesh.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = keting_A_mesh.bundle; sourceTree = "<group>"; };
 		9BA3CD7E22B87E3C00B09E8E /* FUP2A_PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUP2A_PrefixHeader.pch; sourceTree = "<group>"; };
 		9BA3CD8022B882C700B09E8E /* AppManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppManager.h; sourceTree = "<group>"; };
 		9BA3CD8122B882C700B09E8E /* AppManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppManager.m; sourceTree = "<group>"; };

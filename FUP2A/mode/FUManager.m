@@ -96,7 +96,7 @@ static FUManager *fuManager = nil;
     [[FUP2AHelper shareInstance] setupHelperWithAuthPackage:&g_auth_package authSize:sizeof(g_auth_package)];
 
     [FUP2AHelper shareInstance].saveVideoPath = [NSTemporaryDirectory() stringByAppendingPathComponent:@"fup2a_video.mp4"];
-    [[FUP2AHelper shareInstance] startRecordWithType:FUP2AHelperRecordTypeVoicedVideo];
+   // [[FUP2AHelper shareInstance] startRecordWithType:FUP2AHelperRecordTypeVoicedVideo];
 }
 
 //初始化FaceUnity

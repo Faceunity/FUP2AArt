@@ -65,7 +65,7 @@ typedef enum : NSInteger {
 - (void)reloadData {
     
     self.modelsArray = [FUManager shareInstance].avatarList;
-    self.inputArray = @[@"live",@"album",@"input_1",@"320x240",@"352x288",@"360x270",@"600x400",@"720x400",@"720x480",@"720x576"];
+    self.inputArray = @[@"live",@"album",@"input_1"];
 }
 
 - (UIImage *)getImage:(NSString *)videoURL{
