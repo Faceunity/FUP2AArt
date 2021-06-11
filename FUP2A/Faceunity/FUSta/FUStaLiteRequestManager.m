@@ -9,7 +9,6 @@
 #import "FUStaLiteRequestManager.h"
 #import <FUStaLite/FUStaLite.h>
 #import "authpack.h"
-#import <AFNetworking.h>
 #error 请联系FaceUnity商务获取TTS请求地址      // 注释此行可以解决报错
 static NSString *const  url                  = @"XXXXX";
 
