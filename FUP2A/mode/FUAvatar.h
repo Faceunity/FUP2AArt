@@ -203,14 +203,6 @@ static const int tmpItemsCount  = 100;
 #pragma mark ----- 以下面部追踪模式
 
 /**
- 进入面部追踪模式
- */
-- (void)enterTrackFaceMode;
-/**
- 退出面部追踪模式
- */
-- (void)quitTrackFaceMode;
-/**
  进入身体追踪模式
  */
 - (void)enterTrackBodyMode;

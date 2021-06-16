@@ -1,4 +1,5 @@
-source 'https://mirrors.tuna.tsinghua.edu.cn/git/CocoaPods/Specs.git'
+source 'https://cdn.cocoapods.org/'
+
 
 
 platform :ios,  '8.0'
@@ -7,7 +8,9 @@ install! 'cocoapods',
 
 target 'FUP2A' do
   pod 'SVProgressHUD', '~> 2.0.3'
-  pod 'AFNetworking', '~> 3.2.1', :subspecs => ['Reachability', 'Serialization', 'Security', 'NSURLSession']
-  pod 'SDWebImage'
+	pod 'AFNetworking', '3.1.0', :subspecs => ['Serialization', 'Security', 'NSURLSession', 'Reachability']
+	# 解决 apple Deprecated API Usage - Apple will stop accepting submissions of apps that use UIWebView APIs 上架问题
+  pod 'SDWebImage', '4.4.2'
   pod 'Masonry',  '1.1.0'
+	pod 'Bugly'
 end

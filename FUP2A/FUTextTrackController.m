@@ -163,7 +163,7 @@ static int expSize = 57;
 		
 		if(self.trackBtn.isSelected)
 		{
-			[self.currentAvatar enterTrackFaceMode];
+            [[FUManager shareInstance]enableFaceCapture:1];
 		}
 		[self.camera startCapture];           // 相机继续捕获
 		
@@ -205,14 +205,12 @@ static int expSize = 57;
 	sender.selected = !sender.selected ;
 	renderMode = sender.selected ? FURenderPreviewMode : FURenderCommonMode ;
 	if (sender.selected) {
-		//	[self.currentAvatar disableBlendshape];
 		[self.currentAvatar loadIdleModePose];
-		[self.currentAvatar enterTrackFaceMode];
+		[[FUManager shareInstance]enableFaceCapture:1];
 	}else{
 		
-		[self.currentAvatar quitTrackFaceMode];
+        [[FUManager shareInstance]enableFaceCapture:0];
 		[self.currentAvatar loadIdleModePose];
-		//	[self.currentAvatar enableBlendshape];
 	}
 }
 
@@ -397,7 +395,6 @@ static int frameIndex = 0 ;
 		self.currentAvatar = nil;
 	}else{
 		self.currentAvatar = avatar;
-		[self.currentAvatar enterTrackFaceMode];
 	}
 	loadingBundles = NO;
 }

@@ -267,12 +267,10 @@ FUHistoryViewControllerDelegate
     {
         [[FUManager shareInstance]enableFaceCapture:1];
         [avatar loadIdleModePose];
-        [avatar enterTrackFaceMode];
     }
     else
     {
         [[FUManager shareInstance]enableFaceCapture:0];
-        [avatar quitTrackFaceMode];
         [avatar loadStandbyAnimation];
     }
     self.appVersionLabel.hidden = sender.selected;
@@ -453,7 +451,7 @@ CRender * viewRender;
             break;
         case FURenderPreviewMode:
             [avatar loadIdleModePose];
-            [avatar enterTrackFaceMode];
+            [[FUManager shareInstance]enableFaceCapture:1];
             break;
     }
 }
@@ -489,8 +487,7 @@ CRender * viewRender;
 	FUAvatar *avatar = [FUManager shareInstance].avatarList.firstObject;
 	if (isAR)
 	{     // AR 滤镜
-		[avatar quitTrackFaceMode];
-		//       [self performSegueWithIdentifier:@"PushToARView" sender:nil];
+       // [[FUManager shareInstance]enableFaceCapture:0];
 		[self performSegueWithIdentifier:@"PushToTrackVC" sender:nil];
 	}
 	else

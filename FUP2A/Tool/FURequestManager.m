@@ -7,7 +7,6 @@
 //
 
 
-#import <AFNetworking.h>
 
 NSString * TOKENURL;      // 获取token地址，现在是从json文件获取
 NSString * UPLOADURL;    // 上传图片地址，现在是从json文件获取

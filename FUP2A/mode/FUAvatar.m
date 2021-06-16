@@ -271,21 +271,7 @@
 
 
 
-#pragma mark --- 以下面部追踪模式
 
-/**
- 进入面部追踪模式
- */
-- (void)enterTrackFaceMode {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"enter_track_rotation_mode" value:@(1)];
-}
-
-/**
- 退出面部追踪模式
- */
-- (void)quitTrackFaceMode {
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"quit_track_rotation_mode" value:@(1)];
-}
 #pragma mark --- 以下身体追踪模式
 
 /**

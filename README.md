@@ -1,6 +1,6 @@
 ## PTA 技术对接综述
 
-&emsp;&emsp;PTA 技术对接文档分为：《[PTA Server API](docs/PTA%20Server%20API.pdf)》，《[PTA Client SDK](docs/PTA%20Client%20SDK.md)》，以及《[Controller 说明文档](docs/Contorller 说明文档.md)》3大部分。
+&emsp;&emsp;PTA 技术对接文档分为：《[PTA Server API](docs/PTA%20Server%20API.pdf)》，《[PTA Client SDK](docs/PTA%20Client%20SDK.md)》，以及《[Controller 说明文档](docs/Contorller%20说明文档.md)》3大部分。
 
 ### 1. 内容说明
 
