@@ -1,4 +1,6 @@
 {
+    "midHead_extra_L": 48,
+    "midHead_extra_R": 49,
     "HeadBone_stretch": 50,
     "HeadBone_shrink": 51,
     "HeadBone_wide": 52,
