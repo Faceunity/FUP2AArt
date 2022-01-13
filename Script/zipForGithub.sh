@@ -6,7 +6,7 @@ fuai_a=libfuai.a
 fuai_a_path=${FaceUnity_SDK_iOS}${fuai_a}
 libcnamasdk_a=libCNamaSDK.a
 libcnamasdk_a_path=${FaceUnity_SDK_iOS}${libcnamasdk_a}
-p2a_client_a=libp2a_client.a
+p2a_client_a=libpta_client_lite.a
 p2a_client_a_path=${P2A}${p2a_client_a}
 
 

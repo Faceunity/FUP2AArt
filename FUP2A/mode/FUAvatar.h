@@ -165,6 +165,8 @@ static const int tmpItemsCount  = 100;
  */
 - (void)destroyAvatarResouce;
 
+- (void)destroyItemWith:(FUItemType)itemType;
+
 #pragma mark ----- 以下切换身体配饰
 - (void)loadItemWithtype:(FUItemType)itemType filePath:(NSString *)path;
 /**
@@ -202,27 +204,13 @@ static const int tmpItemsCount  = 100;
 
 #pragma mark ----- 以下面部追踪模式
 
-/**
- 进入身体追踪模式
- */
-- (void)enterTrackBodyMode;
-/**
- 退出身体追踪模式
- */
-- (void)quitTrackBodyMode;
-/**
- 进入身体跟随模式
- */
-- (void)enterFollowBodyMode;
+
 
 /**
- 退出身体跟随模式
+ 是否开启身体驱动
  */
-- (void)quitFollowBodyMode;
-/**
- 设置在身体动画和身体追踪数据之间过渡的时间，默认值为0.5（秒）
- */
-- (void)setHuman3dAnimTransitionTime:(float)time;
+- (void)enableHumanAnimDriver:(BOOL)isEnable;
+
 /**
   去掉脖子
  */

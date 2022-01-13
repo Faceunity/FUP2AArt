@@ -29,10 +29,6 @@ FUHistoryViewControllerDelegate,FUTextTrackViewDelegate,UIImagePickerControllerD
 	CGFloat preScale; // 捏合比例
 	FURenderMode renderMode ;
 	BOOL loadingBundles ;
-	
-	
-	void * _human3dPtr;
-
 }
 
 @property (nonatomic, strong) FUCamera *camera ;       // 相机输入源
@@ -189,15 +185,14 @@ static int expSize = 57;
 	__weak typeof(self)weakSelf = self;
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		[[FUManager shareInstance] reloadFilterWithPath:nil];
-		[weakSelf.currentAvatar quitTrackBodyMode];   // 退出身体追踪模式
-		[FURenderer destroy3DBodyTracker:_human3dPtr];     // 销毁 _human3dPtr 句柄
-		
+        [weakSelf.currentAvatar enableHumanAnimDriver:NO];   // 退出身体追踪模式
+
 		[weakSelf.navigationController popViewControllerAnimated:NO];
 		[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:weakSelf.commonAvatar];     // 以不销毁controller的方式，重新加载avatar
 		[weakSelf.commonAvatar loadStandbyAnimation];
 		[weakSelf.commonAvatar resetScaleToSmallBody_UseCam];
 	});
-	
+    
 }
 
 // track face

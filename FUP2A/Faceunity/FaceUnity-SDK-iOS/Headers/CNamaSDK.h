@@ -43,6 +43,7 @@ typedef enum FUAITYPE {
   FUAITYPE_BACKGROUNDSEGMENTATION = 1 << 1,
   FUAITYPE_HAIRSEGMENTATION = 1 << 2,
   FUAITYPE_HANDGESTURE = 1 << 3,
+  FUAITYPE_HANDPROCESSOR = 1 << 3,
   FUAITYPE_TONGUETRACKING = 1 << 4,
   FUAITYPE_FACELANDMARKS75 = 1 << 5,
   FUAITYPE_FACELANDMARKS209 = 1 << 6,
@@ -54,13 +55,19 @@ typedef enum FUAITYPE {
   FUAITYPE_FACEPROCESSOR_FACECAPTURE_TONGUETRACKING = 1 << 12,
   FUAITYPE_FACEPROCESSOR_HAIRSEGMENTATION = 1 << 13,
   FUAITYPE_FACEPROCESSOR_HEADSEGMENTATION = 1 << 14,
-  FUAITYPE_HUMAN_PROCESSOR = 1 << 15,
-  FUAITYPE_HUMAN_PROCESSOR_DETECT = 1 << 16,
-  FUAITYPE_HUMAN_PROCESSOR_2D_SELFIE = 1 << 17,
-  FUAITYPE_HUMAN_PROCESSOR_2D_DANCE = 1 << 18,
-  FUAITYPE_HUMAN_PROCESSOR_3D_SELFIE = 1 << 19,
-  FUAITYPE_HUMAN_PROCESSOR_3D_DANCE = 1 << 20,
-  FUAITYPE_HUMAN_PROCESSOR_SEGMENTATION = 1 << 21
+  FUAITYPE_FACEPROCESSOR_EXPRESSION_RECOGNIZER = 1 << 15,
+  FUAITYPE_FACEPROCESSOR_EMOTION_RECOGNIZER = 1 << 16,
+  FUAITYPE_FACEPROCESSOR_DISNEYGAN = 1 << 17,
+  FUAITYPE_FACEPROCESSOR_FACEID = 1 << 18,
+  FUAITYPE_HUMAN_PROCESSOR = 1 << 19,
+  FUAITYPE_HUMAN_PROCESSOR_DETECT = 1 << 20,
+  FUAITYPE_HUMAN_PROCESSOR_2D_SELFIE = 1 << 21,
+  FUAITYPE_HUMAN_PROCESSOR_2D_DANCE = 1 << 22,
+  FUAITYPE_HUMAN_PROCESSOR_2D_SLIM = 1 << 23,
+  FUAITYPE_HUMAN_PROCESSOR_3D_SELFIE = 1 << 24,
+  FUAITYPE_HUMAN_PROCESSOR_3D_DANCE = 1 << 25,
+  FUAITYPE_HUMAN_PROCESSOR_SEGMENTATION = 1 << 26,
+  FUAITYPE_FACE_RECOGNIZER = 1 << 27
 } FUAITYPE;
 
 typedef enum FUAIGESTURETYPE {
@@ -98,10 +105,23 @@ typedef enum FULOGLEVEL {
 
 typedef enum FUAIEXPRESSIONTYPE {
   FUAIEXPRESSION_UNKNOWN = 0,
-  FUAIEXPRESSION_SMILE = 1 << 1,
-  FUAIEXPRESSION_MOUTH_OPEN = 1 << 2,
-  FUAIEXPRESSION_EYE_BLINK = 1 << 3,
-  FUAIEXPRESSION_POUT = 1 << 4,
+  FUAIEXPRESSION_BROW_UP = 1 << 1,
+  FUAIEXPRESSION_BROW_FROWN = 1 << 2,
+  FUAIEXPRESSION_LEFT_EYE_CLOSE = 1 << 3,
+  FUAIEXPRESSION_RIGHT_EYE_CLOSE = 1 << 4,
+  FUAIEXPRESSION_EYE_WIDE = 1 << 5,
+  FUAIEXPRESSION_MOUTH_SMILE_LEFT = 1 << 6,
+  FUAIEXPRESSION_MOUTH_SMILE_RIGHT = 1 << 7,
+  FUAIEXPRESSION_MOUTH_FUNNEL = 1 << 8,
+  FUAIEXPRESSION_MOUTH_OPEN = 1 << 9,
+  FUAIEXPRESSION_MOUTH_PUCKER = 1 << 10,
+  FUAIEXPRESSION_MOUTH_ROLL = 1 << 11,
+  FUAIEXPRESSION_MOUTH_PUFF = 1 << 12,
+  FUAIEXPRESSION_MOUTH_SMILE = 1 << 13,
+  FUAIEXPRESSION_MOUTH_FROWN = 1 << 14,
+  FUAIEXPRESSION_HEAD_LEFT = 1 << 15,
+  FUAIEXPRESSION_HEAD_RIGHT = 1 << 16,
+  FUAIEXPRESSION_HEAD_NOD = 1 << 17,
 } FUAIEXPRESSIONTYPE;
 
 typedef enum FUAITONGUETYPE {
@@ -115,6 +135,75 @@ typedef enum FUAITONGUETYPE {
   FUAITONGUE_RIGHT_UP = 1 << 7,
   FUAITONGUE_RIGHT_DOWN = 1 << 8,
 } FUAITONGUETYPE;
+
+typedef enum FUITEMTRIGGERTYPE {
+  FUITEMTRIGGER_UNKNOWN = 0,
+  FUITEMTRIGGER_CAI_DAN = 1,
+} FUITEMTRIGGERTYPE;
+
+typedef enum FUAIEMOTIONTYPE {
+  FUAIEMOTION_UNKNOWN = 0,
+  FUAIEMOTION_HAPPY = 1 << 1,
+  FUAIEMOTION_SAD = 1 << 2,
+  FUAIEMOTION_ANGRY = 1 << 3,
+  FUAIEMOTION_SURPRISE = 1 << 4,
+  FUAIEMOTION_FEAR = 1 << 5,
+  FUAIEMOTION_DISGUST = 1 << 6,
+  FUAIEMOTION_NEUTRAL = 1 << 7,
+  FUAIEMOTION_CONFUSE = 1 << 8,
+} FUAIEMOTIONTYPE;
+
+typedef enum FUAIHUMANSTATE {
+  FUAIHUMAN_NO_BODY = 0,
+  FUAIHUMAN_HALF_LESS_BODY = 1,
+  FUAIHUMAN_HALF_BODY = 2,
+  FUAIHUMAN_HALF_MORE_BODY = 3,
+  FUAIHUMAN_FULL_BODY = 4,
+} FUAIHUMANSTATE;
+
+typedef enum FUAISCENESTATE {
+  FUAISCENE_UNKNOWN = -1,
+  FUAISCENE_SELFIE = 0,
+  FUAISCENE_DANCE = 1,
+  FUAISCENE_SLIM = 2,
+} FUAISCENESTATE;
+
+typedef enum FUAIHUMANFOLLOWMODE {
+  FUAIHUMAN_FOLLOW_MODE_UNKNOWN = -1,
+  FUAIHUMAN_FOLLOW_MODE_FIX = 0,
+  FUAIHUMAN_FOLLOW_MODE_ALIGN = 1,
+  FUAIHUMAN_FOLLOW_MODE_STAGE = 2
+} FUAIHUMANFOLLOWMODE;
+
+typedef enum TRANSFORM_MATRIX {
+  /*
+   * 8 base orientation cases, first do counter-clockwise rotation in degree,
+   * then do flip
+   */
+  DEFAULT = 0,             // no rotation, no flip
+  CCROT0 = DEFAULT,        // no rotation, no flip
+  CCROT90,                 // counter-clockwise rotate 90 degree
+  CCROT180,                // counter-clockwise rotate 180 degree
+  CCROT270,                // counter-clockwise rotate 270 degree
+  CCROT0_FLIPVERTICAL,     // vertical flip
+  CCROT0_FLIPHORIZONTAL,   // horizontal flip
+  CCROT90_FLIPVERTICAL,    // first counter-clockwise rotate 90 degree，then
+                           // vertical flip
+  CCROT90_FLIPHORIZONTAL,  // first counter-clockwise rotate 90 degree，then
+                           // horizontal flip
+  /*
+   * enums below is alias to above enums, there are only 8 orientation cases
+   */
+  CCROT0_FLIPVERTICAL_FLIPHORIZONTAL = CCROT180,
+  CCROT90_FLIPVERTICAL_FLIPHORIZONTAL = CCROT270,
+  CCROT180_FLIPVERTICAL = CCROT0_FLIPHORIZONTAL,
+  CCROT180_FLIPHORIZONTAL = CCROT0_FLIPVERTICAL,
+  CCROT180_FLIPVERTICAL_FLIPHORIZONTAL = DEFAULT,
+  CCROT270_FLIPVERTICAL = CCROT90_FLIPHORIZONTAL,
+  CCROT270_FLIPHORIZONTAL = CCROT90_FLIPVERTICAL,
+  CCROT270_FLIPVERTICAL_FLIPHORIZONTAL = CCROT90,
+} TRANSFORM_MATRIX;
+
 #define FU_ROTATION_MODE_0 0
 #define FU_ROTATION_MODE_90 1
 #define FU_ROTATION_MODE_180 2
@@ -164,6 +253,10 @@ typedef struct {
 #define FU_ADM_FLAG_I420_TEXTURE 8
 /*\brief Indicate that the input buffer is a packed IYUV420 buffer */
 #define FU_ADM_FLAG_I420_BUFFER 16
+/*\brief Indicate that the input texture is a packed NV12 texture */
+#define FU_ADM_FLAG_NV12_TEXTURE 0x400000
+/*\brief Indicate that the input buffer is a packed NV12 buffer */
+#define FU_ADM_FLAG_NV12_BUFFER 0x800000
 
 #define FU_ADM_FLAG_RGBA_BUFFER 128
 
@@ -289,10 +382,39 @@ FUNAMA_API int fuOpenFileLog(const char* file_pullname, int max_file_size,
 FUNAMA_API int fuSetLogLevel(FULOGLEVEL level);
 
 /**
+ \brief set log prefix
+ \param prefix, log prefix
+ */
+FUNAMA_API void fuSetLogPrefix(const char* prefix);
+
+/**
  \brief Get current log level
  \return ref to FULOGLEVEL
 */
 FUNAMA_API FULOGLEVEL fuGetLogLevel();
+
+/**
+  \brief init gl context, which managed by SDK
+  \param sharedContext ptr of shared context, can be null.
+  \return non null for success.
+  \warning experimental API
+*/
+FUNAMA_API void* fuInitGLContext(void* sharedContext);
+
+/**
+  \brief destroy the managed gl context, created by fuInitGLContext.
+  \return true for success, vice versa.
+  \warning experimental API
+*/
+FUNAMA_API bool fuDestroyGLContext();
+
+/**
+  \brief make the managed gl context current, context that created by
+  fuInitGLContext.
+  \return true for success, vice versa.
+  \warning experimental API
+*/
+FUNAMA_API bool fuMakeGLContextCurrent();
 
 /**
  \brief Initialize and authenticate your SDK instance to the FaceUnity server,
@@ -337,6 +459,78 @@ FUNAMA_API int fuSetupLocal(float* v3data, int sz_v3data, float* ardata,
                             void* authdata, int sz_authdata,
                             void** offline_bundle_ptr, int* offline_bundle_sz);
 
+FUNAMA_API int fuSetupLocal2(float* v3data, int sz_v3data, float* ardata,
+                             void* authdata, int sz_authdata,
+                             void* offline_input_bundle_ptr,
+                             int offline_input_bundle_sz,
+                             void** offline_output_bundle_ptr,
+                             int* offline_output_bundle_sz);
+
+/**
+ \brief Initialize and authenticate your SDK instance with internal check,
+ must be called exactly once before all other functions. The buffers should
+ NEVER be freed while the other functions are still being called. You can call
+ this function multiple times to "switch pointers".
+ \param v3data should point to contents of the "v3.bin" we provide
+ \param sz_v3data should point to num-of-bytes of the "v3.bin" we provide
+ \param ardata should be NULL
+ \param authdata is the pointer to the authentication data pack we provide. You
+ must avoid storing the data in a file. Normally you can just `#include
+ "authpack.h"` and put `g_auth_package` here.
+ \param sz_authdata is the authentication data size, we use plain int to avoid
+ cross-language compilation issues. Normally you can just `#include
+ "authpack.h"` and put `sizeof(g_auth_package)` here.
+ \return non-zero for success, zero for failure
+*/
+FUNAMA_API int fuSetupInternalCheck(float* sdk_data, int sz_sdk_data,
+                                    float* ardata, void* authdata,
+                                    int sz_authdata);
+
+/**
+ \brief Initialize and authenticate your SDK instance with internal check,
+ must be called exactly once before all other functions. The buffers should
+ NEVER be freed while the other functions are still being called. You can call
+ this function multiple times to "switch pointers".
+ \param v3data should point to contents of the "v3.bin" we provide
+ \param sz_v3data should point to num-of-bytes of the "v3.bin" we provide
+ \param ardata should be NULL
+ \param authdata is the pointer to the authentication data pack we provide. You
+ must avoid storing the data in a file. Normally you can just `#include
+ "authpack.h"` and put `g_auth_package` here.
+ \param sz_authdata is the authentication data size, we use plain int to avoid
+ cross-language compilation issues. Normally you can just `#include
+ "authpack.h"` and put `sizeof(g_auth_package)` here.
+ \param auth_info_data is the pointer to the encrypted authentication
+ information data. You must avoid storing the data in a file, compute at runtime
+ instead.
+ \param sz_auth_info_data is the encrypted authentication information
+ data size,
+ \return non-zero for success, zero for failure
+*/
+FUNAMA_API int fuSetupInternalCheckEx(float* sdk_data, int sz_sdk_data,
+                                      float* ardata, void* authdata,
+                                      int sz_authdata, void* auto_info_data,
+                                      int sz_auto_info_data);
+/**
+ \brief Initialize and authenticate your SDK instance with internal check,
+ must be called exactly once before all other functions. The buffers should
+ NEVER be freed while the other functions are still being called. You can call
+ this function multiple times to "switch pointers".
+ \param v3data should point to contents of the "v3.bin" we provide
+ \param sz_v3data should point to num-of-bytes of the "v3.bin" we provide
+ \param ardata should be NULL
+ \param authdata is the pointer to the authentication data pack we provide. You
+ must avoid storing the data in a file. Normally you can just `#include
+ "authpack.h"` and put `g_auth_package` here.
+ \param sz_authdata is the authentication data size, we use plain int to avoid
+ cross-language compilation issues. Normally you can just `#include
+ "authpack.h"` and put `sizeof(g_auth_package)` here.
+ \return non-zero for success, zero for failure
+*/
+FUNAMA_API int fuSetupInternalCheckPackageBind(float* sdk_data, int sz_sdk_data,
+                                               float* ardata, void* authdata,
+                                               int sz_authdata);
+
 /**
  \brief if opengl is supported return 1, else return 0
         call after fuSetup
@@ -371,6 +565,10 @@ FUNAMA_API int fuRenderItemsEx2(int out_format, void* out_ptr, int in_format,
                                 int* p_items, int n_items, int func_flag,
                                 void* p_item_masks);
 
+FUNAMA_API int fuRender(int out_format, void* out_ptr, int in_format,
+                        void* in_ptr, int w, int h, int frame_id, int* p_items,
+                        int n_items, int func_flag, void* p_item_masks);
+
 FUNAMA_API int fuRenderBundles(int out_format, void* out_ptr, int in_format,
                                void* in_ptr, int w, int h, int frame_id,
                                int* p_items, int n_items);
@@ -391,14 +589,73 @@ FUNAMA_API int fuRotateImage(void* in_ptr, int in_format, int in_w, int in_h,
                              int rotate_mode, int flip_x, int flip_y,
                              void* out_ptr1, void* out_ptr2);
 /**
+ this api will be deprecated. use
+ fuSetInputCameraTextureMatrix/fuSetInputCameraBufferMatrix
  \brief input description for fuRenderBundles api, use to rotate or flip input
  texture to portrait mode.
  \param flip_x, flip input texture horizontally
  \param flip_y, flip input texture vertically
- \param rotate_mode w.r.t to rotation the the input texture, 0=0^deg,
- 1=90^deg,2=180^deg, 3=270^deg
+ \param rotate_mode w.r.t to rotation the the input texture counterclockwise,
+ 0=0^deg, 1=90^deg,2=180^deg, 3=270^deg
  */
 FUNAMA_API void fuSetInputCameraMatrix(int flip_x, int flip_y, int rotate_mode);
+
+/**
+ \brief input description for fuRender api, use to transform the input gpu
+ texture to portrait mode(head-up). then the final output will portrait mode.
+ the outter user present render pass should use identity matrix to present the
+ result.
+ \param tex_trans_mat, the transform matrix use to transform the input
+ texture to portrait mode.
+ \note when your input is cpu buffer only don't use
+ this api, fuSetInputCameraBufferMatrix will handle all case.
+ */
+FUNAMA_API void fuSetInputCameraTextureMatrix(TRANSFORM_MATRIX tex_trans_mat);
+
+/**
+ \brief input description for fuRender api, use to transform the input cpu
+ buffer to portrait mode(head-up). then the final output will portrait mode. the
+ outter user present render pass should use identity matrix to present the
+ result.
+ \param buf_trans_mat, the transform matrix use to transform the input
+ cpu buffer to portrait mode.
+ \note when your input is gpu texture only don't
+ use this api, fuSetInputCameraTextureMatrix will handle all case.
+ */
+FUNAMA_API void fuSetInputCameraBufferMatrix(TRANSFORM_MATRIX buf_trans_mat);
+
+/**
+ \brief set input camera texture transform matrix state, turn on or turn off
+ */
+
+FUNAMA_API void fuSetInputCameraTextureMatrixState(bool isEnable);
+
+/**
+ \brief set input camera buffer transform matrix state, turn on or turn off
+ */
+FUNAMA_API void fuSetInputCameraBufferMatrixState(bool isEnable);
+/**
+ \brief add optional transform for final result, when use
+ fuSetInputCameraTextureMatrix/fuSetInputCameraBufferMatrix, we means the output
+ is in portrait mode(head-up), and the outter user present render pass should
+ use identity matrix to present the result. but in some rare case, user would
+ like to use a diffent orientation output. in this case,use
+ fuSetInputCameraTextureMatrix/fuSetInputCameraBufferMatrix(portrait mode), then
+ use the additional fuSetOutputMatrix to transform the final result to perfer
+ orientation.
+ \note Don't use this api unless you have to!
+ */
+FUNAMA_API void fuSetOutputMatrix(TRANSFORM_MATRIX out_trans_mat);
+
+/**
+ \brief set additional transform matrix state, turn on or turn off
+ */
+FUNAMA_API void fuSetOutputMatrixState(bool isEnable);
+
+/**
+ \brief set internal render target cache state, it is turn off by default.
+ */
+FUNAMA_API void fuSetRttCacheState(bool isEnable);
 
 /**
  \brief control output resolution for fuRenderBundles.
@@ -524,6 +781,22 @@ FUNAMA_API void fuOnDeviceLostSafe();
 call.
 */
 FUNAMA_API void fuOnDeviceLost();
+
+/**
+\brief Call this function when the GLES context has been lost and recreated.
+        That isn't a normal thing, so this function could leak resources on
+each. This function only releses all gl resource compared to fuOnDeviceLost
+call.
+*/
+FUNAMA_API void fuReleaseGLResources();
+
+/**
+\brief Call this function when the GLES context has been lost and recreated.
+        This function won't do gl resource release, it only reset cpu flags.
+        This function only releses all gl resource compared to
+fuOnDeviceLostSafe call.
+*/
+FUNAMA_API void fuReleaseGLResourcesSafe();
 
 /**
 \brief Call this function to reset the face tracker on camera switches
@@ -759,6 +1032,18 @@ FUNAMA_API int fuSetDeviceOrientation(int deviceOrientation);
 FUNAMA_API int fuSetMaxFaces(int n_max_faces);
 
 /**
+ \brief Set detect face every how number of frame when no face
+ \param n is the number of frame
+*/
+FUNAMA_API void fuSetFaceProcessorDetectEveryNFramesWhenNoFace(int n_frames);
+
+/**
+ \brief Set detect face every how number of frame when having face
+ \param n is the number of frame
+*/
+FUNAMA_API void fuSetFaceProcessorDetectEveryNFramesWhenFace(int n_frames);
+
+/**
  \brief Get the unique identifier for each face during current tracking
         Lost face tracking will change the identifier, even for a quick retrack
  \param face_id is the id of face, index is smaller than which is set in
@@ -799,6 +1084,17 @@ the console
 FUNAMA_API int fuGetFaceInfo(int face_id, const char* name, void* pret,
                              int num);
 
+/*
+  result is rotated and fliped according to fuSetInputCameraBufferMatrix
+*/
+FUNAMA_API int fuGetFaceInfoRotated(int face_id, const char* name, void* pret,
+                                    int num);
+
+FUNAMA_API int fuGetAIInfo(int index, const char* name, void* pret, int num);
+FUNAMA_API int fuGetAIInfoRotated(int index, const char* name, void* pret,
+                                  int num);
+
+FUNAMA_API void* fuGetFaceProcessorResult();
 /**
  \warning deprecated api
  \brief Set the quality-performance tradeoff.
@@ -1041,6 +1337,120 @@ failure, one for success
 FUNAMA_API int fuSetCropFreePixel(int x0, int y0, int x1, int y1);
 
 /**
+\brief Count API calls.
+\param name is the API name
+*/
+FUNAMA_API int fuAuthCountWithAPIName(char* name);
+
+FUNAMA_API void fuHexagonInitWithPath(const char* lib_directory_path);
+FUNAMA_API void fuHexagonTearDown();
+
+/**
+ \brief set if use pixel buffer to speed up reading pixel from buffer.
+ \param use,set use or not use.
+*/
+FUNAMA_API int fuSetUsePbo(bool use);
+
+/**
+ \brief set Set texture loading quality
+ \param quality, 0:high 1:medium 2.low
+*/
+FUNAMA_API int fuSetLoadQuality(int quality);
+
+/**
+ \brief set if use the output texture for async reading, when use spcified
+ framebuffer for output. \param use,set 1 for use or 0 for not use, not use by
+ default for performance.
+*/
+FUNAMA_API int fuSetUseTexAsync(bool use);
+
+/**
+ \brief set if force use gl 2.
+ \param use,set 1 for use or 0 for not use.
+*/
+FUNAMA_API int fuSetForceUseGL2(int use);
+
+/**
+ * \brief HandGestureCallBack,callback with first handgesture type.
+ * \param type, ref to FUAIGESTURETYPE
+ */
+typedef void (*HandGestureCallBack)(int type);
+
+/**
+ * \brief set callback for handgesture detection.
+ * \param onHandGestureListener,
+ * callback. will override the older one, null for reset callback.
+ * \note this callback will be called with the first hand's type, you should
+ * use fuHandDetectorGetResultNumHands and fuHandDetectorGetResultGestureType
+ * for all info.
+ * \note this callback will be called when calling Render* interface. when use
+ * fuTrackFace*, you should use fuHandDetectorGetResultNumHands and
+ * fuHandDetectorGetResultGestureType for all info.
+ */
+FUNAMA_API void fuSetHandGestureCallBack(HandGestureCallBack cb);
+
+/**
+ * \brief ItemCallBack,callback.
+ * \param handle, ref to handle for triggered item.
+ * \param type, ref to FUITEMTRIGGERTYPE.
+ */
+typedef void (*ItemCallBack)(int handle, int type);
+
+/**
+ * \brief set callback for item.
+ * \param item,
+ * handle for time
+ * \param cb,
+ * callback. will override the older one, null for reset callback.
+ * \note this callback will be called when calling Render* interface.
+ */
+FUNAMA_API int fuSetItemCallBack(int handle, ItemCallBack cb);
+
+/**
+ * \brief prepare GL resource for a list of items in advance
+ *        This function needs a GLES 2.0+ context.
+ * \param p_items, points to the list of items
+ * \param n_items, is the number of items
+ */
+FUNAMA_API void fuPrepareGLResource(int* p_items, int n_items);
+
+/**
+ \brief check prepare gl resource is ready.
+        This function needs a GLES 2.0+ context.
+ \param output, 1 for ready prepared, 0 false, -1 load program binary failed
+*/
+FUNAMA_API int fuIsGLPrepared(int* p_items, int n_items);
+
+FUNAMA_API int fuGetFaceTransferTexID();
+
+/**
+ * \brief set use async ai inference.
+ * \param use_async,
+ * ture or false.
+ */
+FUNAMA_API int fuSetUseAsyncAIInference(int use_async);
+
+/**
+ * \brief set use multi buffer.
+ * \param use_multi_gpu_textuer,
+ * ture or false.
+ * \param use_multi_cpu_buffer,
+ * ture or false.
+ */
+FUNAMA_API int fuSetUseMultiBuffer(int use_multi_gpu_textuer,
+                                   int use_multi_cpu_buffer);
+
+/**
+ \brief check gl error
+ \return OpenGL error information, 0 for no error
+*/
+FUNAMA_API int fuCheckGLError();
+
+/**
+ FaceProcessor related api
+*/
+
+/**
  \brief Set tracking fov for ai model FaceProcessor.
  */
 FUNAMA_API int fuSetFaceProcessorFov(float fov);
@@ -1059,240 +1469,74 @@ FUNAMA_API float fuGetFaceProcessorFov();
 FUNAMA_API int fuSetFaceProcessorDetectMode(int mode);
 
 /**
-\brief Count API calls.
-\param name is the API name
-*/
-FUNAMA_API int fuAuthCountWithAPIName(char* name);
-
-/**
-\brief Create a 3D human tracker
-\param data the binary bundle data
-\param sz bytes of data
-\return the pointer of the created tracker
-*/
-FUNAMA_API void* fu3DBodyTrackerCreate(void* data, int sz);
-
-/**
-\brief Destroy a 3D human tracker
-\param model_ptr the pointer of the created tracker
-*/
-FUNAMA_API void fu3DBodyTrackerDestroy(void* model_ptr);
-
-/**
-\brief Run a 3D human tracker
-\param model_ptr the pointer of the created tracker
-\param human_handle a specified human, related to resource management
-\param img input image pointer, data type must be byte
-\param w input image width
-\param h input image height
-\param fu_image_format FU_FORMAT_*_BUFFER
-\param rotation_mode w.r.t to rotation the the camera view, 0=0^deg, 1=90^deg,
-2=180^deg, 3=270^deg \return internal status
-*/
-FUNAMA_API int fu3DBodyTrackerRun(void* model_ptr, int human_handle, void* img,
-                                  int w, int h, int fu_image_format,
-                                  int rotation_mode);
-
-/**
-\brief Create a face capture manager
-\param data the binary bundle data
-\param sz bytes of data
-\return the pointer of the created capture manager
-*/
-FUNAMA_API void* fuFaceCaptureCreate(void* data, int sz);
-;
-
-/**
-\brief Destroy a face capture manager
-\param model_ptr the pointer of the created capture manager
-*/
-FUNAMA_API int fuFaceCaptureDestory(void* model_ptr);
-
-/**
-\brief set scene for face capture manager
-\param model_ptr the pointer of the created capture manager
-*/
-FUNAMA_API int fuFaceCaptureSetScene(void* model_ptr, int scene_type);
-
-/**
-\brief set box of face for face capture manager
-\param model_ptr the pointer of the created capture manager
-*/
-FUNAMA_API int fuFaceCaptureSetBBOX(void* model_ptr, int cx, int cy, int sx,
-                                    int sy);
-
-/**
-\brief Reset Tracking
-\param model_ptr the pointer of the created capture manager
-*/
-FUNAMA_API int fuFaceCaptureReset(void* model_ptr);
-
-/**
-\brief Run face capturing
-\param manager_ptr_addr the pointer of the capture manager
-\param img input image pointer, data type must be byte
-\param w input image width
-\param h input image height
-\param fu_image_format FU_FORMAT_*_BUFFER
-\param rotation_mode w.r.t to rotation the the camera view, 0=0^deg, 1=90^deg,
-2=180^deg, 3=270^deg \return whether the current frame is valid for tracking
-*/
-FUNAMA_API int fuFaceCaptureProcessFrame(void* manager_ptr_addr,
-                                         void* image_data, int image_w,
-                                         int image_h, int fu_image_format,
-                                         int rotate_mode);
-
-/**
-\brief get landmarks result
-\param manager_ptr_addr the pointer of the capture manager
-\param face_n  the index of captured face
-\param size_n  the size of result
-*/
-FUNAMA_API const float* fuFaceCaptureGetResultLandmarks(void* manager_ptr_addr,
-                                                        int face_n,
-                                                        int* size_n);
-
-/**
-\brief get identity result
-\param manager_ptr_addr the pointer of the capture manager
-\param face_n  the index of captured face
-\param size_n  the size of result
-*/
-FUNAMA_API const float* fuFaceCaptureGetResultIdentity(void* manager_ptr_addr,
-                                                       int face_n, int* size_n);
-
-/**
-\brief get expression result
-\param manager_ptr_addr the pointer of the capture manager
-\param face_n  the index of captured face
-\param size_n  the size of result
-*/
-FUNAMA_API const float* fuFaceCaptureGetResultExpression(void* manager_ptr_addr,
-                                                         int face_n,
-                                                         int* size_n);
-
-/**
-\brief get rotation result
-\param manager_ptr_addr the pointer of the capture manager
-\param face_n  the index of captured face
-\param size_n  the size of result
-*/
-FUNAMA_API const float* fuFaceCaptureGetResultRotation(void* manager_ptr_addr,
-                                                       int face_n, int* size_n);
-
-/**
-\brief get face bbox result
-\param manager_ptr_addr the pointer of the capture manager
-\param face_n  the index of captured face
-\param size_n  the size of result
-*/
-FUNAMA_API const float* fuFaceCaptureGetResultFaceBbox(void* manager_ptr_addr,
-                                                       int face_n, int* size_n);
-
-/**
-\brief get eyes' rotation result
-\param manager_ptr_addr the pointer of the capture manager
-\param face_n  the index of captured face
-\param size_n  the size of result
-*/
-FUNAMA_API const float* fuFaceCaptureGetResultEyesRotation(
-    void* manager_ptr_addr, int face_n, int* size_n);
-
-/**
-\brief get translation result
-\param manager_ptr_addr the pointer of the capture manager
-\param face_n  the index of captured face
-\param size_n  the size of result
-*/
-FUNAMA_API const float* fuFaceCaptureGetResultTranslation(
-    void* manager_ptr_addr, int face_n, int* size_n);
-
-/**
-\brief get is face result
-\param manager_ptr_addr the pointer of the capture manager
-\param face_n  the index of captured face
-\param size_n  the size of result
-*/
-FUNAMA_API int fuFaceCaptureGetResultIsFace(void* manager_ptr_addr, int face_n);
-
-/**
-\brief get face id result
-\param manager_ptr_addr the pointer of the capture manager
-\param face_n  the index of captured face
-\param output_data  the space to save result
-*/
-FUNAMA_API int fuFaceCaptureGetResultFaceID(void* manager_ptr_addr, int face_n);
-
-/**
-\brief get focal length result
-\param manager_ptr_addr the pointer of the capture manager
-\param face_n  the index of captured face
-\param output_data  the space to save result
-*/
-FUNAMA_API float fuFaceCaptureGetResultFocalLength(void* manager_ptr_addr);
-
-/**
-\brief get face num result
-\param manager_ptr_addr the pointer of the capture manager
-\param face_n  the index of captured face
-\param output_data  the space to save result
-*/
-FUNAMA_API int fuFaceCaptureGetResultFaceNum(void* manager_ptr_addr);
-
-/**
-\brief get tongue score
-\param manager_ptr_addr the pointer of the capture manager
-\param face_n  the index of captured face
-\param output_data  the space to save result
-*/
-FUNAMA_API float fuFaceCaptureGetResultTongueScore(void* manager_ptr_addr,
-                                                   int face_n);
-
-/**
-\brief get face score
-\param manager_ptr_addr the pointer of the capture manager
-\param face_n  the index of captured face
-\param output_data  the space to save result
-*/
-FUNAMA_API float fuFaceCaptureGetResultFaceScore(void* manager_ptr_addr,
-                                                 int face_n);
-
-/**
-\brief get tongue class
-\param manager_ptr_addr the pointer of the capture manager
-\param face_n  the index of captured face
-\param output_data  the space to save result
-*/
-FUNAMA_API int fuFaceCaptureGetResultTongueClass(void* manager_ptr_addr,
-                                                 int face_n);
-
-/**
-\brief get tongue expression result
-\param manager_ptr_addr the pointer of the capture manager
-\param face_n  the index of captured face
-\param size_n  the size of result
-*/
-FUNAMA_API const float* fuFaceCaptureGetResultTongueExp(void* manager_ptr_addr,
-                                                        int face_n,
-                                                        int* size_n);
-
-FUNAMA_API void fuHexagonInitWithPath(const char* lib_directory_path);
-FUNAMA_API void fuHexagonTearDown();
-
-/**
- \brief internal api for profile
+ \brief set ai model FaceProcessor's minium track face size.
+ \param ratio, ratio with min(w,h).
  */
-FUNAMA_API int fuProfileGetNumTimers();
-FUNAMA_API const char* fuProfileGetTimerName(int index);
-FUNAMA_API long long fuProfileGetTimerAverage(int index);
-FUNAMA_API long long fuProfileGetTimerCount(int index);
-FUNAMA_API long long fuProfileGetTimerMin(int index);
-FUNAMA_API long long fuProfileGetTimerMax(int index);
-FUNAMA_API int fuProfileResetAllTimers();
+FUNAMA_API void fuFaceProcessorSetMinFaceRatio(float ratio);
+
+/**
+ \brief set ai model FaceProcessor's landmark quality.
+ \param quality, landmark quality, 0 for low quality, 1 for mediem, 2 for high
+ quality. 1 by default.
+ */
+FUNAMA_API void fuFaceProcessorSetFaceLandmarkQuality(int quality);
+
+/**
+ \brief set ai model FaceProcessor's detector mode.
+ \param use , 0 for disable detect small face, 1 for enable detect small face
+ quality. 0 by default.
+ */
+FUNAMA_API void fuFaceProcessorSetDetectSamllFace(int use);
+
+/**
+ \brief get ai model FaceProcessor's tracking hair mask with index.
+ \param index, index of fuFaceProcessorGetNumResults.
+ \param mask_width,  width of return.
+ \param mask_height,  height of return.
+ \return mask data.
+ */
+FUNAMA_API const float* fuFaceProcessorGetResultHairMask(int index,
+                                                         int* mask_width,
+                                                         int* mask_height);
+
+/**
+ \brief get ai model FaceProcessor's tracking head mask with index.
+ \param index, index of fuFaceProcessorGetNumResults.
+ \param mask_width,  width of return.
+ \param mask_height,  height of return.
+ \return mask data.
+ */
+FUNAMA_API const float* fuFaceProcessorGetResultHeadMask(int index,
+                                                         int* mask_width,
+                                                         int* mask_height);
+
+/**
+ \brief get ai model FaceProcessor's tracking face occlusion.
+ \param index, index of fuFaceProcessorGetNumResults.
+ \return zero for no occlusion, one for occlusion, minus one for no tracked face
+ */
+FUNAMA_API int fuFaceProcessorGetResultFaceOcclusion(int index);
+
+/**
+ \brief get ai model FaceProcessor's face detection confidence score.
+ \param index, index of fuFaceProcessorGetNumResults.
+ \return face detection confidence score.
+ */
+FUNAMA_API float fuFaceProcessorGetConfidenceScore(int index);
+
+/**
+ \brief get ai model FaceProcessor's tracking face count.
+ \return  num of faces.
+ */
+FUNAMA_API int fuFaceProcessorGetNumResults();
+
+/**
+ HumanProcessor related api
+*/
 
 /**
  \brief Reset ai model HumanProcessor's tracking state.
- */
+*/
 FUNAMA_API void fuHumanProcessorReset();
 
 /**
@@ -1301,19 +1545,75 @@ FUNAMA_API void fuHumanProcessorReset();
 FUNAMA_API void fuHumanProcessorSetMaxHumans(int max_humans);
 
 /**
+\param n_buffer_frames(default 5 and > 0): filter buffer frames.
+\param pos_w(default 0.05 and >= 0): root position filter weight, less pos_w
+-> smoother.
+\param angle_w(default 1.2 and >= 0): joint angle filter weight, less angle_w ->
+smoother.
+ */
+FUNAMA_API void fuHumanProcessorSetAvatarAnimFilterParams(int n_buffer_frames,
+                                                          float pos_w,
+                                                          float angle_w);
+
+/**
+ \brief set ai model HumanProcessor's tracking fov, use to 3d joint projection.
+ \param fov.
+ */
+FUNAMA_API void fuHumanProcessorSetFov(float fov);
+
+/**
+ \brief get ai model HumanProcessor's tracking fov, use to 3d joint projection.
+ \return fov
+ */
+FUNAMA_API float fuHumanProcessorGetFov();
+
+/**
  \brief get ai model HumanProcessor's tracking result.
+ \return tracked people number
  */
 FUNAMA_API int fuHumanProcessorGetNumResults();
 
 /**
  \brief get ai model HumanProcessor's tracking id.
  \param index, index of fuHumanProcessorGetNumResults
+ \return tracking id
  */
 FUNAMA_API int fuHumanProcessorGetResultTrackId(int index);
 
 /**
+ \brief get ai model HumanProcessor's tracking human state with id.
+ \param index is index of fuHumanProcessorGetNumResults
+ \return state, enum of FUAIHUMANSTATE
+ */
+FUNAMA_API int fuHumanProcessorGetHumanState(int index);
+
+/**
+ \brief get ai model HumanProcessor's tracking gesture types with id.
+ \param index is index of fuHumanProcessorGetNumResults
+ \param size, size of return data.
+ \return gesture types array, [left hand gesture, right hand gesture], enum of
+ FUAIGESTURETYPE
+ */
+FUNAMA_API const int* fuHumanProcessorGetGestureTypes(int index, int* size);
+
+/**
+ \brief get ai model HumanProcessor's action type with index.
+ \param index, index of fuHumanProcessorGetNumResults
+ \return action type
+ */
+FUNAMA_API int fuHumanProcessorGetResultActionType(int index);
+
+/**
+ \brief get ai model HumanProcessor's action score with index.
+ \param index, index of fuHumanProcessorGetNumResults
+ \return score
+ */
+FUNAMA_API float fuHumanProcessorGetResultActionScore(int index);
+
+/**
  \brief get ai model HumanProcessor's tracking rect with index.
  \param index, index of fuHumanProcessorGetNumResults
+ \return rect array
  */
 FUNAMA_API const float* fuHumanProcessorGetResultRect(int index);
 
@@ -1325,16 +1625,6 @@ FUNAMA_API const float* fuHumanProcessorGetResultRect(int index);
 FUNAMA_API const float* fuHumanProcessorGetResultJoint2ds(int index, int* size);
 
 /**
- \brief get ai model HumanProcessor's tracking fov, use to 3d joint projection.
- */
-FUNAMA_API float fuHumanProcessorGetFov();
-
-/**
- \brief set ai model HumanProcessor's tracking fov, use to 3d joint projection.
- */
-FUNAMA_API void fuHumanProcessorSetFov(float fov);
-
-/**
  \brief get ai model HumanProcessor's tracking 3d joint with index.
  \param index, index of fuHumanProcessorGetNumResults
  \param size,  size of return data.
@@ -1342,27 +1632,19 @@ FUNAMA_API void fuHumanProcessorSetFov(float fov);
 FUNAMA_API const float* fuHumanProcessorGetResultJoint3ds(int index, int* size);
 
 /**
- \brief set ai model HumanProcessor's 3d skeleton hierarchy.
- \param data, json file description of skeleton hierarchy. ref to boneMap.json.
- \param size, size of data in bytes.
- */
-FUNAMA_API void fuHumanProcessorSetBonemap(const char* data, const int size);
-
-/**
- \brief get ai model HumanProcessor's 3d joint transform, rotation only.
+ \brief get ai model HumanProcessor's  pof2d joint with index. (The joint2ds generated by human driver).
  \param index, index of fuHumanProcessorGetNumResults
  \param size,  size of return data.
  */
-FUNAMA_API const float* fuHumanProcessorGetResultTransformArray(int index,
+FUNAMA_API const float* fuHumanProcessorGetResultPofJoint2ds(int index, int* size);
+
+/**
+ \brief get ai model HumanProcessor's pof2d joint scores with index. (The joint2ds generated by human driver).
+ \param index, index of fuHumanProcessorGetNumResults
+ \param size,  size of return data.
+ */
+FUNAMA_API const float* fuHumanProcessorGetResultPofJointScores(int index,
                                                                 int* size);
-
-/**
- \brief get ai model HumanProcessor's 3d root joint's transform.
- \param index, index of fuHumanProcessorGetNumResults
- \param size,  size of return data.
- */
-FUNAMA_API const float* fuHumanProcessorGetResultModelMatrix(int index,
-                                                             int* size);
 
 /**
  \brief get ai model HumanProcessor's tracking full body mask with index.
@@ -1375,45 +1657,6 @@ FUNAMA_API const float* fuHumanProcessorGetResultHumanMask(int index,
                                                            int* mask_width,
                                                            int* mask_height);
 
-/**
- \brief get ai model HumanProcessor's action type with index.
- \param index, index of fuHumanProcessorGetNumResults
- */
-FUNAMA_API int fuHumanProcessorGetResultActionType(int index);
-
-/**
- \brief get ai model HumanProcessor's action score with index.
- \param index, index of fuHumanProcessorGetNumResults
- */
-FUNAMA_API float fuHumanProcessorGetResultActionScore(int index);
-
-/**
- \brief get ai model HumanProcessor's tracking hair mask with index.
- \param index, index of fuHumanProcessorGetNumResults.
- \param mask_width,  width of return.
- \param mask_height,  height of return.
- \return mask data.
- */
-FUNAMA_API const float* fuFaceProcessorGetResultHairMask(int index,
-                                                         int* mask_width,
-                                                         int* mask_height);
-
-/**
- \brief set ai model HumanProcessor's minium track face size.
- \param ratio, ratio with min(w,h).
- */
-FUNAMA_API void fuFaceProcessorSetMinFaceRatio(float ratio);
-
-/**
- \brief get ai model HumanProcessor's tracking head mask with index.
- \param index, index of fuHumanProcessorGetNumResults.
- \param mask_width,  width of return.
- \param mask_height,  height of return.
- \return mask data.
- */
-FUNAMA_API const float* fuFaceProcessorGetResultHeadMask(int index,
-                                                         int* mask_width,
-                                                         int* mask_height);
 /**
  \brief calculate action distance.
  \return score of distance, range [0,1], 1 for fully match.
@@ -1448,30 +1691,43 @@ FUNAMA_API FUAIGESTURETYPE fuHandDetectorGetResultGestureType(int index);
 */
 FUNAMA_API float fuHandDetectorGetResultHandScore(int index);
 
-/**
- \brief set if use pixel buffer to speed up reading pixel from buffer.
- \param use,set use or not use.
-*/
-FUNAMA_API int fuSetUsePbo(bool use);
+FUNAMA_API void fuSetOutputImageSize(int w, int h);
+
+FUNAMA_API void fuSetCacheDirectory(const char* dir);
 
 /**
- \brief set Set texture loading quality
- \param quality, 0:high 1:medium 2.low
+ \brief cache data manually.
 */
-FUNAMA_API int fuSetLoadQuality(int quality);
+FUNAMA_API void fuRunCache();
 
 /**
- \brief set if use the output texture for async reading, when use spcified
- framebuffer for output. \param use,set 1 for use or 0 for not use, not use by
- default for performance.
+ \brief record current memory usage. this interface works on android for now.
+ The device must root and run corrspond monitor process.
+ \return zero for failure, one for success
 */
-FUNAMA_API int fuSetUseTexAsync(bool use);
+FUNAMA_API int fuRecordMemoryUsage(const char* tag);
 
 /**
- \brief set if force use gl 2.
- \param use,set 1 for use or 0 for not use.
-*/
-FUNAMA_API int fuSetForceUseGL2(int use);
+ \brief when application pause calling fuRender,  call
+ fuSetRenderPauseState(true) to pause the internal physis update.
+ \param pause ,pause state, if true SDK will pause physis update, and will be
+ turn on in next fuRender call automatically.
+ */
+FUNAMA_API void fuSetRenderPauseState(bool pause);
+
+/**
+ \brief internal api for profile
+ */
+FUNAMA_API int fuProfileGetNumTimers();
+FUNAMA_API const char* fuProfileGetTimerName(int index);
+FUNAMA_API long long fuProfileGetTimerAverage(int index);
+FUNAMA_API long long fuProfileGetTimerCount(int index);
+FUNAMA_API long long fuProfileGetTimerMin(int index);
+FUNAMA_API long long fuProfileGetTimerMax(int index);
+FUNAMA_API int fuProfileResetAllTimers();
+
+FUNAMA_API void fuSetForcePortraitMode(int mode);
+
 #ifdef __cplusplus
 }
 #endif

@@ -56,10 +56,8 @@
 
 - (void)loadDefaultDataWithStyle:(FUAvatarStyle)style
 {
-    [[FUManager shareInstance] setAvatarStyle:style];
-    
-    [[FUManager shareInstance] loadClientDataWithFirstSetup:YES];
-    
+
+    [[FUManager shareInstance]initFu];
     __weak typeof(self)weakSelf = self ;
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         

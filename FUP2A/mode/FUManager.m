@@ -34,37 +34,55 @@ static FUManager *fuManager = nil;
     self = [super init];
     if (self)
     {
-        [self initFaceUnity];
-        [self initLibrary];
-        // 生成空buffer
-        [self initPixelBuffer];
-        
-        [self initProperty];
-        [self initDefaultItem];
-        
-        self.rotatedImageManager = [[FURotatedImage alloc]init];
-        
-        [self initFaceCapture];
-        [self initHuman3D];
-        // 关闭nama的打印
-        [FURenderer itemSetParam:self.defalutQController withName:@"FUAI_VLogSetLevel" value:@(0)];
-        // 绑定全局的 human3d.bundle
 
-        // 美妆类型数组
-		self.makeupTypeArray = @[TAG_FU_ITEM_EYELASH,TAG_FU_ITEM_EYELINER,TAG_FU_ITEM_EYESHADOW,TAG_FU_ITEM_EYEBROW,
-		TAG_FU_ITEM_PUPIL,TAG_FU_ITEM_LIPGLOSS,TAG_FU_ITEM_FACEMAKEUP];
-        // 配饰类型数组
-		self.decorationTypeArray = @[TAG_FU_ITEM_DECORATION_SHOU,TAG_FU_ITEM_DECORATION_JIAO,TAG_FU_ITEM_DECORATION_XIANGLIAN,
-		TAG_FU_ITEM_DECORATION_ERHUAN,TAG_FU_ITEM_DECORATION_TOUSHI];
-		// 设置相机动画过渡时间
-		[self SetCameraTransitionTime:0];
 		
     }
     return self;
 }
 
 
+///初始化相芯库资源
+- (void)initFu {
+    [self initFaceUnity];
+    [self initLibrary];
+    // 生成空buffer
+    [self initPixelBuffer];
+    
+    [self initProperty];
+    [self initDefaultItem];
+    
+    self.rotatedImageManager = [[FURotatedImage alloc]init];
+    
+    [self initFaceCapture];
+    [self initHuman3D];
+    // 关闭nama的打印
+    [FURenderer itemSetParam:self.defalutQController withName:@"FUAI_VLogSetLevel" value:@(0)];
+    // 绑定全局的 human3d.bundle
 
+    // 美妆类型数组
+    self.makeupTypeArray = @[TAG_FU_ITEM_EYELASH,TAG_FU_ITEM_EYELINER,TAG_FU_ITEM_EYESHADOW,TAG_FU_ITEM_EYEBROW,
+    TAG_FU_ITEM_PUPIL,TAG_FU_ITEM_LIPGLOSS,TAG_FU_ITEM_FACEMAKEUP];
+    // 配饰类型数组
+    self.decorationTypeArray = @[TAG_FU_ITEM_DECORATION_SHOU,TAG_FU_ITEM_DECORATION_JIAO,TAG_FU_ITEM_DECORATION_XIANGLIAN,
+    TAG_FU_ITEM_DECORATION_ERHUAN,TAG_FU_ITEM_DECORATION_TOUSHI];
+    // 设置相机动画过渡时间
+    [self SetCameraTransitionTime:0];
+    
+    [self setAvatarStyle:FUAvatarStyleQ];
+    
+    [self loadClientDataWithFirstSetup:YES];
+}
+
+///释放相芯库资源
++ (void)clearFu {
+    [FURenderer namaLibDestroy];   // 内部已经调用  fuDestroyAllItems();
+    [[FUManager shareInstance]destroyFaceCapture];
+    [[FUManager shareInstance]destoryHuman3D];
+    
+    [fuPTAClientLite releaseData];
+    
+    NSLog(@"clearFu==============");
+}
 - (void)enableHuman3D:(int)enable
 {
     fuItemSetParamd(self.defalutQController, "enable_human_processor", enable);
@@ -134,34 +152,20 @@ static FUManager *fuManager = nil;
 - (void)loadClientDataWithFirstSetup:(BOOL)firstSetup
 {
     NSString *qPath;
-    switch (self.avatarStyle)
+    if (![[NSFileManager defaultManager] fileExistsAtPath:AvatarQPath])
     {
-        case FUAvatarStyleNormal:
-        {
-            if (![[NSFileManager defaultManager] fileExistsAtPath:AvatarListPath])
-            {
-                [[NSFileManager defaultManager] createDirectoryAtPath:AvatarListPath withIntermediateDirectories:YES attributes:nil error:nil];
-            }
-            qPath =[[NSBundle mainBundle] pathForResource:@"p2a_client_q" ofType:@"bin"];
-        }
-            break;
-        case FUAvatarStyleQ:
-        {
-            if (![[NSFileManager defaultManager] fileExistsAtPath:AvatarQPath])
-            {
-                [[NSFileManager defaultManager] createDirectoryAtPath:AvatarQPath withIntermediateDirectories:YES attributes:nil error:nil];
-            }
-            qPath =[[NSBundle mainBundle] pathForResource:@"p2a_client_q1" ofType:@"bin"];
-        }
-            break;
+        [[NSFileManager defaultManager] createDirectoryAtPath:AvatarQPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
+    qPath =[[NSBundle mainBundle] pathForResource:@"pta_client_q1_lite" ofType:@"bin"];
+    
     // p2a bin
     if (firstSetup)
     {
-        NSString *corePath = [[NSBundle mainBundle] pathForResource:@"p2a_client_core" ofType:@"bin"];
-        [[fuPTAClient shareInstance] setupCore:corePath authPackage:&g_auth_package authSize:sizeof(g_auth_package)];
+        NSString *corePath = [[NSBundle mainBundle] pathForResource:@"pta_core_log_all" ofType:@"bin"];
+        [fuPTAClientLite setAuth:&g_auth_package authSize:sizeof(g_auth_package)];
+        [fuPTAClientLite setData:corePath];
     }
-    [[fuPTAClient shareInstance] setupCustomData:qPath];
+    [fuPTAClientLite setData:qPath];
 }
 
 #pragma mark ------ 图像 ------
@@ -474,7 +478,7 @@ static int ARFilterID = 0 ;
  @param landmarksLength 脸部点位数组的长度
  @return            处理之后的图像数据
  */
-- (CVPixelBufferRef)renderBodyTrackAdjustAssginOutputSizeWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength
+- (CVPixelBufferRef)renderBodyTrackAdjustAssginOutputSizeWithBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength
 {
     dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER);
     
@@ -505,7 +509,7 @@ static int ARFilterID = 0 ;
     return bodyTrackBuffer;
 }
  
-- (CVPixelBufferRef)renderBodyTrackWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength
+- (CVPixelBufferRef)renderBodyTrackWithBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength
 {
     dispatch_semaphore_wait(self.signal, DISPATCH_TIME_FOREVER);
      
@@ -570,7 +574,7 @@ static int ARFilterID = 0 ;
 /// 初始化脸部识别
 - (void)initFaceCapture
 {
-    NSData *data = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ai_face_processor.bundle" ofType:nil]];
+    NSData *data = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ai_face_processor_e46_s1.bundle" ofType:nil]];
 //    fuLoadAIModelFromPackage((void *)data.bytes , (int) data.length, FUAITYPE_FACEPROCESSOR);
     [FURenderer loadAIModelFromPackage:(void *)data.bytes size:(int) data.length aitype:FUAITYPE_FACEPROCESSOR];
 }
@@ -578,7 +582,8 @@ static int ARFilterID = 0 ;
 - (void)initHuman3D
 {
     NSData *human3dData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"ai_human_processor.bundle" ofType:nil]];
-    [FURenderer loadAIModelFromPackage:(void *)human3dData.bytes size:(int)human3dData.length aitype:FUAITYPE_HUMAN_PROCESSOR];
+    fuLoadAIModelFromPackage((void*)human3dData.bytes, (int)human3dData.length, FUAITYPE_HUMAN_PROCESSOR);
+    [self setHumanProcessorType:0];
 }
 - (void)destroyFaceCapture
 {
@@ -589,6 +594,12 @@ static int ARFilterID = 0 ;
    fuItemSetParamd(self.defalutQController, "enable_face_processor", enable);
 }
 
+-(void)setHumanProcessorType:(int)type
+{
+    // Set the human dirver's animation source
+    // human_processor_type: 0 is from the AI human processor, 1 is from bvhinput processor
+    fuItemSetParamd(self.defalutQController, "set_human_processor_type", type);
+}
 
 #pragma mark ------ 加载道具 ------
 /// 加载道具等信息
@@ -1316,9 +1327,8 @@ static int ARFilterID = 0 ;
         }
         else
         {
-            [[FUShapeParamsMode shareInstance]getOrignalParamsWithAvatar:self.currentAvatars.firstObject];
             [avatar configFacepupParamWithDict:model.shapeDict];
-			//[[FUShapeParamsMode shareInstance]getCurrentParamsWithAvatar:self.currentAvatars.firstObject];
+            [[FUShapeParamsMode shareInstance]getOrignalParamsWithAvatar:self.currentAvatars.firstObject];
         }
     }
     else if ([model.type isEqualToString:TAG_FU_ITEM_MOUTH])
@@ -1336,7 +1346,6 @@ static int ARFilterID = 0 ;
         {
             [[FUShapeParamsMode shareInstance]getOrignalParamsWithAvatar:self.currentAvatars.firstObject];
             [avatar configFacepupParamWithDict:model.shapeDict];
-           // [[FUShapeParamsMode shareInstance]getCurrentParamsWithAvatar:self.currentAvatars.firstObject];
         }
     }
     else if ([model.type isEqualToString:TAG_FU_ITEM_EYE])
@@ -1354,7 +1363,6 @@ static int ARFilterID = 0 ;
         {
             [[FUShapeParamsMode shareInstance]getOrignalParamsWithAvatar:self.currentAvatars.firstObject];
             [avatar configFacepupParamWithDict:model.shapeDict];
-           // [[FUShapeParamsMode shareInstance]getCurrentParamsWithAvatar:self.currentAvatars.firstObject];
         }
     }
     else if ([model.type isEqualToString:TAG_FU_ITEM_NOSE])
@@ -1372,7 +1380,6 @@ static int ARFilterID = 0 ;
         {
             [[FUShapeParamsMode shareInstance]getOrignalParamsWithAvatar:self.currentAvatars.firstObject];
             [avatar configFacepupParamWithDict:model.shapeDict];
-          //  [[FUShapeParamsMode shareInstance]getCurrentParamsWithAvatar:self.currentAvatars.firstObject];
         }
     }
     else if ([model.type isEqualToString:TAG_FU_ITEM_CLOTH])
@@ -2050,7 +2057,10 @@ static int ARFilterID = 0 ;
 			coeffi[i] = [params[i] floatValue];
 		}
 		//重新生成head.bundle
-		headData = [[fuPTAClient shareInstance] deformHeadWithHeadData:headData deformParams:coeffi paramsSize:100 withExprOnly:NO withLowp:NO].bundle;
+        int handle = [fuPTAClientLite setBundle:headData];
+        [fuPTAClientLite facepup:handle deformParams:coeffi paramsSize:100];
+        headData = [fuPTAClientLite getHeadBundle:handle lessBS:NO lowp:NO];
+        [fuPTAClientLite releaseHandle:handle];
 	}
 	[headData writeToFile:[filePath stringByAppendingPathComponent:@"/head.bundle"] atomically:YES];
 	
@@ -2429,22 +2439,16 @@ static int ARFilterID = 0 ;
     
     
     [data writeToFile:[[avatar filePath] stringByAppendingPathComponent:FU_HEAD_BUNDLE] atomically:YES];
-    [[fuPTAClient shareInstance] setHeadData:data];
+
+    int handle = [fuPTAClientLite setBundle:data];
     // 头发
-    int hairLabel = [[fuPTAClient shareInstance] getInt:@"hair_label"];
+    int hairLabel = [fuPTAClientLite infoGetInt:handle key:@"hair_label"];
     avatar.hairLabel = hairLabel;
     FUItemModel *defaultHairModel = [self gethairNameWithNum:hairLabel andGender:gender];
     avatar.hair = defaultHairModel;
     
-    NSString *baseHairPath = [defaultHairModel getBundlePath];
-    NSData *baseHairData = [NSData dataWithContentsOfFile:baseHairPath];
-    NSData *defaultHairData = [[fuPTAClient shareInstance] createHairWithHeadData:data defaultHairData:baseHairData];
-    NSString *defaultHairPath = [[avatar filePath] stringByAppendingPathComponent:avatar.hair.name];
-    
-    [defaultHairData writeToFile:defaultHairPath atomically:YES];
-    [[fuPTAClient shareInstance] setHeadData:data];
     // 眼镜
-    int hasGlass = [[fuPTAClient shareInstance] getInt:@"has_glasses"];
+    int hasGlass = [fuPTAClientLite infoGetInt:handle key:@"has_glasses"];
     //    avatar.glasses = hasGlass == 0 ? @"glasses-noitem" : (gender == FUGenderMale ? @"male_glass_1" : @"female_glass_1");
     if (hasGlass == 0)
     {
@@ -2452,8 +2456,8 @@ static int ARFilterID = 0 ;
     }
     else
     {
-        int shapeGlasses = [[fuPTAClient shareInstance] getInt:@"shape_glasses"];
-        int rimGlasses = [[fuPTAClient shareInstance] getInt:@"rim_glasses"];
+        int shapeGlasses = [fuPTAClientLite infoGetInt:handle key:@"shape_glasses"];
+        int rimGlasses = [fuPTAClientLite infoGetInt:handle key:@"rim_glasses"];
         if (avatar.isQType)
         {
                         avatar.glasses = [self getQGlassesNameWithShape:shapeGlasses rim:rimGlasses male:gender == FUGenderMale];
@@ -2488,7 +2492,7 @@ static int ARFilterID = 0 ;
      avatar.dress_2d = self.itemsDict[TAG_FU_ITEM_DRESS_2D][1];
     // 胡子
     
-    int beardLabel = [[fuPTAClient shareInstance] getInt:@"beard_label"];
+    int beardLabel = [fuPTAClientLite infoGetInt:handle key:@"beard_label"];
     avatar.bearLabel = beardLabel;
     avatar.beard = [self getBeardNameWithNum:beardLabel Qtype:avatar.isQType male:avatar.gender == FUGenderMale];
 
@@ -2527,7 +2531,8 @@ static int ARFilterID = 0 ;
     [avatarInfoData writeToFile:avatarInfoPath atomically:YES];
     appManager.localizeHairBundlesSuccess = false;
     
-    [[fuPTAClient shareInstance] releaseHeadData];
+    
+    [fuPTAClientLite releaseHandle:handle];
     
     FUAvatar *newAvatar = [self getAvatarWithInfoDic:avatarInfo];
     [self createAndCopyHairBundlesWithAvatar:newAvatar withHairModel:avatar.hair];
@@ -2549,14 +2554,15 @@ static int ARFilterID = 0 ;
     
     NSString *hairPath = [model getBundlePath];
     NSData *hairData = [NSData dataWithContentsOfFile:hairPath];
-    
+    int handle = [fuPTAClientLite setBundle:headData];
     if (hairData != nil)
     {
-        NSData *newHairData = [[fuPTAClient shareInstance]createHairWithHeadData:headData defaultHairData:hairData];
+        NSData *newHairData = [fuPTAClientLite deformMesh:handle bundle:hairData];
         NSString *newHairPath = [filePath stringByAppendingPathComponent:model.name];
         
         [newHairData writeToFile:newHairPath atomically:YES];
     }
+    [fuPTAClientLite releaseHandle:handle];
 }
 
 /// 生成并复制头发到形象目录
@@ -2575,14 +2581,15 @@ static int ARFilterID = 0 ;
             FUItemModel *enumModel = (FUItemModel *)obj;
             NSString *hairPath = [enumModel getBundlePath];
             NSData *hairData = [NSData dataWithContentsOfFile:hairPath];
-            
+            int handle = [fuPTAClientLite setBundle:headData];
             if (hairData != nil)
             {
-                NSData *newHairData = [[fuPTAClient shareInstance]createHairWithHeadData:headData defaultHairData:hairData];
+                NSData *newHairData = [fuPTAClientLite deformMesh:handle bundle:hairData];
                 NSString *newHairPath = [filePath stringByAppendingPathComponent:enumModel.name];
                 
                 [newHairData writeToFile:newHairPath atomically:YES];
             }
+            [fuPTAClientLite releaseHandle:handle];
         }];
     });
 }
@@ -2600,13 +2607,15 @@ static int ARFilterID = 0 ;
     NSString *hairPath = [model getBundlePath];
     NSData *hairData = [NSData dataWithContentsOfFile:hairPath];
     
+    int handle = [fuPTAClientLite setBundle:headData];
     if (hairData != nil)
     {
-        NSData *newHairData = [[fuPTAClient shareInstance]createHairWithHeadData:headData defaultHairData:hairData];
+        NSData *newHairData = [fuPTAClientLite deformMesh:handle bundle:hairData];
         NSString *newHairPath = [filePath stringByAppendingPathComponent:model.name];
         
         [newHairData writeToFile:newHairPath atomically:YES];
     }
+    [fuPTAClientLite releaseHandle:handle];
 }
 
 #pragma mark ------ 加载形象 ------
@@ -3202,8 +3211,8 @@ static float CenterScale = 0.3;
 
 -(NSString *)sdkVersion
 {
-    NSString *version = [[fuPTAClient shareInstance] getVersion];
-    return [NSString stringWithFormat:@"SDK v%@", version];
+    NSString *version = [fuPTAClientLite getVersion];
+    return [NSString stringWithFormat:@"SDK v%@", version] ;
 }
 
 /// 设置instanceId

@@ -86,6 +86,20 @@
     [FURenderer destroyItem:items[FUItemTypeController]];
     items[FUItemTypeController] = 0 ;
 }
+
+/**
+ 销毁此模型,只包括avatar资源
+ -- 包括 , head, body, hair, clothes, glasses, beard, hat, animatiom, arfilter.
+ */
+- (void)destroyItemWith:(FUItemType)itemType {
+    
+    // 先解绑
+    fuUnbindItems(items[FUItemTypeController], &items[itemType], 1) ;
+    // 再销毁
+    [FURenderer destroyItem:items[itemType]];
+    items[itemType] = 0 ;
+}
+
 /**
  销毁此模型,只包括avatar资源
  -- 包括 , head, body, hair, clothes, glasses, beard, hat, animatiom, arfilter.
@@ -95,7 +109,6 @@
     // 先销毁普通道具
     for (int i = 1 ; i < sizeof(items)/sizeof(int); i ++) {
         if (items[i] != 0) {
-            
             // 先解绑
             fuUnbindItems(items[FUItemTypeController], &items[i], 1) ;
             // 再销毁
@@ -275,37 +288,15 @@
 #pragma mark --- 以下身体追踪模式
 
 /**
- 进入身体追踪模式
+ 是否开启身体驱动
  */
-- (void)enterTrackBodyMode {
-//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"enable_human_processor" value:@(1)];
+- (void)enableHumanAnimDriver:(BOOL)isEnable {
+    // Enable the human driver(身体驱动) ability of the animtaion system.
+    // If you use human driver, you must enable it after enable human_processor or bvhinput_processor.
+    fuItemSetParamd([FUManager shareInstance].defalutQController, "enable_human_anim_driver", isEnable ? 1.0:0.0);
 }
 
-/**
- 退出身体追踪模式
- */
-- (void)quitTrackBodyMode {
-//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"enable_human_processor" value:@(0)];
-}
-/**
- 进入身体跟随模式
- */
-- (void)enterFollowBodyMode {
-//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"human_3d_track_is_follow" value:@(1)];
-}
 
-/**
- 退出身体跟随模式
- */
-- (void)quitFollowBodyMode {
-//    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"human_3d_track_is_follow" value:@(0)];
-}
-/**
- 设置在身体动画和身体追踪数据之间过渡的时间，默认值为0.5（秒）
- */
-- (void)setHuman3dAnimTransitionTime:(float)time{
-    [FURenderer itemSetParam:items[FUItemTypeController] withName:@"anim_transition_max_time_human_3d_track" value:@(time)];
-}
 
 /**
  进入DDE追踪模式
@@ -515,19 +506,16 @@
     double xR = realScreenWidth / pixelBufferW;
     double yR = realScreenHeight / pixelBufferH;
     
-    if (xR < yR){
+    if (xR > yR){
         x = x * xR;
-        y = y*xR;// - (pixelBufferH*xR - realScreenHeight)/2;
+        y = y*xR - (pixelBufferH*xR - realScreenHeight)/2;
     } else {
         
         //x = x*yR - (x*xR - size.width) / 2;
         //x =  x * yR + (size.width / 2.0 - pixelBufferW * yR) / 2.0;
-        x = x* yR;// - (pixelBufferW * yR - realScreenWidth) / 2;
+        x = x* yR - (pixelBufferW * yR - realScreenWidth) / 2;
         y = y * yR;
     }
-    
-    
-    
     //return.wCGPointMake((1.0 - x*xR/size.width) * [UIScreen mainScreen].bounds.size.width,(1.0 - y*yR/size.height) * [UIScreen mainScreen].bounds.size.height) ;
     return CGPointMake( x , y);
 }
@@ -1325,6 +1313,7 @@
     NSString *headPath = [self.filePath stringByAppendingPathComponent:FU_HEAD_BUNDLE];
     [self bindItemWithType:FUItemTypeHead filePath:headPath];
 
+
     if (self.skinColorProgress == -1)
     {
         NSString * paramDicStr = [NSString stringWithFormat:@"skin_color_index"];
@@ -1453,6 +1442,7 @@
 		
 		[[NSNotificationCenter defaultCenter] postNotificationName:FUCreatingHairBundleNot object:nil userInfo:@{@"show":@(1)}];
 		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            if(![model.name containsString:@"noitem"])
 			[[FUManager shareInstance]createAndCopyHairBundlesWithAvatar:self withHairModel:model];
 			[[NSNotificationCenter defaultCenter] postNotificationName:FUCreatingHairBundleNot object:nil userInfo:@{@"show":@(0)}];
 			
@@ -1650,6 +1640,7 @@
 		
 		[[NSNotificationCenter defaultCenter] postNotificationName:FUCreatingHairHatBundleNot object:nil userInfo:@{@"show":@(1)}];
 		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            if(![model.name containsString:@"noitem"])
 			[[FUManager shareInstance]createAndCopyHairHatBundlesWithAvatar:self withHairHatModel:model];
 			[[NSNotificationCenter defaultCenter] postNotificationName:FUCreatingHairHatBundleNot object:nil userInfo:@{@"show":@(0)}];
 			

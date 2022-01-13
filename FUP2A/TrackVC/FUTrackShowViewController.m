@@ -11,9 +11,6 @@
 #define FU_SCREEN_WIDTH [UIScreen mainScreen].bounds.size.width
 
 @interface FUTrackShowViewController ()
-{
-    void * _human3dPtr;
-}
 //@property (nonatomic, strong) FUCamera *camera;
 @property (strong, nonatomic) FUOpenGLView *renderView;
 @property (nonatomic, strong) FUAvatar *currentAvatar;    // 当前选择的AR追踪 Avatar
@@ -30,10 +27,8 @@
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
     // Do any additional setup after loading the view.
-    NSData *human3dData = [NSData dataWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"human3d.bundle" ofType:nil]];
     
     frameIndex = 0;
-    _human3dPtr = [FURenderer create3DBodyTracker:(void*)human3dData.bytes size:(int)human3dData.length];
     
     self.renderView = [[FUOpenGLView alloc]initWithFrame:self.view.frame];
     [self.view addSubview:self.renderView];
@@ -48,11 +43,10 @@
     BOOL followSwitch = [[[NSUserDefaults standardUserDefaults]valueForKey:@"followSwitch"] boolValue];
     
     [self.currentAvatar closeHairAnimation];
-    [self.currentAvatar enterTrackBodyMode];
+    [self.currentAvatar enableHumanAnimDriver:YES];
     self.renderMode = faceSwitch?FURenderPreviewMode:FURenderCommonMode;
     bodySwitch?[self.currentAvatar loadFullAvatar]:[self.currentAvatar loadHalfAvatar];
     bodySwitch?[self.currentAvatar resetScaleToImportTrackBody]:[self.currentAvatar resetScaleToHalfBodyInput];
-    followSwitch?[self.currentAvatar enterFollowBodyMode]:@"";
 }
 
 - (void)setIsLandscape:(BOOL)isLandscape
@@ -134,7 +128,7 @@
 
 - (void)touchUpInsideBtnBack
 {
-    [self.currentAvatar quitTrackBodyMode];
+    [self.currentAvatar enableHumanAnimDriver:NO];
     [self.mReader cancelReading];
     [self destroyDisplayLink];
     [self forceOrientationPortrait];
@@ -143,7 +137,7 @@
 
 - (void)touchUpInsideBtnCancel
 {
-    [self.currentAvatar quitTrackBodyMode];
+    [self.currentAvatar enableHumanAnimDriver:NO];
     [self.mReader cancelReading];
     [self destroyDisplayLink];
     [self forceOrientationPortrait];
@@ -246,7 +240,7 @@ static int frameIndex = 0 ;
     }
     pixelBuffer =  CMSampleBufferGetImageBuffer(sampleBuffer) ;
 
-    CVPixelBufferRef buffer = [[FUManager shareInstance]    renderARFilterItemWithBuffer:pixelBuffer ptr:_human3dPtr RenderMode:self.renderMode landscape:self.isLandscape view0ratio:0.5f resolution:1.0f];
+    CVPixelBufferRef buffer = [[FUManager shareInstance] renderARFilterItemWithBuffer:pixelBuffer RenderMode:self.renderMode landscape:self.isLandscape view0ratio:0.5f resolution:1.0f];
 
     if (self.isLandscape) {
        // 画出 18 ： 16

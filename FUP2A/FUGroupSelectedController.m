@@ -123,7 +123,6 @@ UINavigationControllerDelegate
     if (self.animationModel.animationBG)
     {
         NSString *bgPath = [[NSBundle mainBundle] pathForResource:self.animationModel.animationBG ofType:@"bundle"];
-	  //  NSString *bgPath = [[NSBundle mainBundle] pathForResource:@"Resource/QItems/background/dress_2d/mid/keting_mesh" ofType:@"bundle"];
 		// 多人合影，需要设置背景的instanceId，否则无法解绑
 		[[FUManager shareInstance] setBackgroundInstanceId];
         [[FUManager shareInstance]reloadBackGroundAndBindToController:bgPath];
@@ -374,6 +373,7 @@ UINavigationControllerDelegate
             FUAvatar *avatar = [FUManager shareInstance].currentAvatars.firstObject;
             [avatar setCurrentAvatarIndex:avatar.currentInstanceId];
             float progress = [avatar getAnimateProgress];   // 获取动画的播放进度
+            NSLog(@"progress----::%f",progress);
             if (progress > 1) {   // 如果动画的播放进度 大于 1，表示动画一个循环录制完成，获取录制的视频文件路径
                 renderMode = GroupSelectedRunModeCommon ;
                 __weak typeof(self)weakSelf = self ;
@@ -748,7 +748,7 @@ UINavigationControllerDelegate
                 [[FUManager shareInstance] reloadCamItemWithPath:camPath];
                 [avatar enableCameraAnimation];
                 [avatar loopCameraAnimation];
-                
+               
                 self->animationFrameCount = [avatar getAnimationFrameCount];
                 dispatch_async(dispatch_get_main_queue(), ^{
                     self.tipLabel.text = @"完美" ;
@@ -758,6 +758,8 @@ UINavigationControllerDelegate
                 [[FUP2AHelper shareInstance] startRecordWithType:FUP2AHelperRecordTypeVideo];
                 
                 self->renderMode = GroupSelectedRunModeVideoRecord ;
+                // 解决部分动画不是从 进度 0 开始 播放的问题
+                [avatar restartAnimation];
             }
                 break;
         }

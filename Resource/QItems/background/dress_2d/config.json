@@ -5,16 +5,16 @@
             "icon": "none",
         },
         {
-            "bundle": "mid/keting_A_mesh.bundle",
-            "icon": "mid/keting_A_mesh",
+            "bundle": "mid/keting_a.bundle",
+            "icon": "mid/keting_a",
         },
         {
-            "bundle": "mid/keting_mesh.bundle",
-            "icon": "mid/keting_mesh",
+            "bundle": "mid/keting_b.bundle",
+            "icon": "mid/keting_b",
         },
         {
-            "bundle": "mid/wuguan_mesh.bundle",
-            "icon": "mid/wuguan_mesh",
+            "bundle": "mid/wuguan.bundle",
+            "icon": "mid/wuguan",
         }
     ]
 }
