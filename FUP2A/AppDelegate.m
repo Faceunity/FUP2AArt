@@ -16,8 +16,9 @@
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    [self qstyleSelected];
+   // [self qstyleSelected];
     [SVProgressHUD setMinimumDismissTimeInterval:2.0];
+	
     return YES; 
 }
 - (void)qstyleSelected

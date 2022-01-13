@@ -178,7 +178,6 @@ FUARFilterViewDelegate
 	}
     else
     {
-		[[FURenderer shareRenderer] setInputCameraMatrix:0 flip_y:0 rotate_mode:0];
 		CFAbsoluteTime renderBeforeTime = CFAbsoluteTimeGetCurrent();
 		[[FUManager shareInstance] renderARFilterItemWithBuffer:pixelBuffer rotationMode:self.rotationMode];
 		CFAbsoluteTime interval = CFAbsoluteTimeGetCurrent() - renderBeforeTime;

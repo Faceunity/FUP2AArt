@@ -7,8 +7,9 @@
 #import "authpack.h"
 #import "FUAvatarEditManager.h"
 #import "FUShapeParamsMode.h"
-#import "fuPTAClient.h"
+#import "fuPTAClientLite.h"
 #import "FUEditTypeModel.h"
+#import "CNamaSDKScene.h"
 
 #import "FUAvatar.h"
 #import "FUFigureTopCollection.h"

@@ -567,6 +567,19 @@ CRender * viewRender;
     [self.loadingImage stopAnimating];
 }
 
+// 退出并销毁 PTA
+- (IBAction)destroyPTA:(id)sender {
+    [self.camera stopCapture];
+    
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+
+-(void)dealloc{
+    NSLog(@"ViewController-------::销毁了!!!");
+    [FUManager clearFu];
+}
+
 #pragma mark --- Observer
 - (void)addObserver
 {

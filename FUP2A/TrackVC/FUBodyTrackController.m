@@ -114,10 +114,11 @@ FUPhotoListViewControllerDelegate
 
 - (void)PoseTrackViewDidSelectedAvatar:(FUAvatar *)avatar
 {
+
 	[[FUManager shareInstance] reloadAvatarToControllerWithAvatar:avatar :NO];
+
 	self.currentAvatar = avatar;
-	// 当前avatar 进入AR模式，用于身体追踪和ARFilter
-	[self.currentAvatar enterTrackBodyMode];
+    [self.currentAvatar enableHumanAnimDriver:YES];
 	if (!self.bodySwitch.on)
 	{
 		[self.currentAvatar loadHalfAvatar];
@@ -140,13 +141,7 @@ FUPhotoListViewControllerDelegate
 {
     [super viewWillAppear:animated];
     //[self.camera startCapture];
-    
-    [self.currentAvatar enterTrackBodyMode];
-    
-    if (self.followSwitch.on)
-    {
-        [self.currentAvatar enterFollowBodyMode];
-    }
+        
     
     if (!self.isFirstLoad)
     {
@@ -257,11 +252,9 @@ FUPhotoListViewControllerDelegate
     {
         if (on)
         {
-            [self.currentAvatar enterFollowBodyMode];
         }
         else
         {
-            [self.currentAvatar quitFollowBodyMode];
             [self resetCam];
         }
     }
@@ -288,11 +281,10 @@ FUPhotoListViewControllerDelegate
         // 5.向nama设置enter_ar_mode为1，进入AR滤镜模式
       //  [self.currentAvatar closeHairAnimation];
         // 当前avatar 进入AR模式，用于身体追踪和ARFilter
-        [self.currentAvatar enterTrackBodyMode];
-         
+        [self.currentAvatar enableHumanAnimDriver:YES];
+
         if (self.followSwitch.on)
         {
-            [self.currentAvatar enterFollowBodyMode];
         }
 
 		[self setRenderMode:self.faceSwitch.on ? FURenderPreviewMode : FURenderCommonMode];
@@ -367,11 +359,11 @@ FUPhotoListViewControllerDelegate
 	if (self.camera.isFrontCamera)
 	{
 		CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
-		[[FUManager shareInstance]renderBodyTrackWithBuffer:mirrored_pixel ptr:nil RenderMode:self.renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
+		[[FUManager shareInstance]renderBodyTrackWithBuffer:mirrored_pixel RenderMode:self.renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
 		[self.renderView displayPixelBuffer:mirrored_pixel withLandmarks:nil count:0 Mirr:NO];
 		CVPixelBufferRelease(mirrored_pixel);
 	}else{
-		[[FUManager shareInstance]renderBodyTrackWithBuffer:pixelBuffer ptr:nil RenderMode:self.renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
+		[[FUManager shareInstance]renderBodyTrackWithBuffer:pixelBuffer RenderMode:self.renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
 		[self.renderView displayPixelBuffer:pixelBuffer withLandmarks:nil count:0 Mirr:NO];
 	}
 	
@@ -394,8 +386,6 @@ FUPhotoListViewControllerDelegate
 		[self.poseTrackView freshInputIndex:1];
 		// 本地视频加载成功后，关闭之前的输入方式
 		[self.camera stopCapture];
-		[self.currentAvatar quitTrackBodyMode];
-		[self.currentAvatar quitFollowBodyMode];
 		[self.mReader cancelReading];
 		[self destroyDisplayLink];
 		__weak FUBodyTrackController * weakSelf = self;
@@ -566,10 +556,10 @@ static int frameIndex = 0 ;
 	if (0)
 	{
 		CVPixelBufferRef mirrored_pixel = [[FUManager shareInstance] dealTheFrontCameraPixelBuffer:pixelBuffer];
-		buffer = [[FUManager shareInstance]renderBodyTrackAdjustAssginOutputSizeWithBuffer:mirrored_pixel ptr:[FUManager shareInstance]->_human3dPtr RenderMode:self.renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
+		buffer = [[FUManager shareInstance]renderBodyTrackAdjustAssginOutputSizeWithBuffer:mirrored_pixel RenderMode:self.renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
 		CVPixelBufferRelease(mirrored_pixel);
 	}else{
-		buffer = [[FUManager shareInstance]renderBodyTrackAdjustAssginOutputSizeWithBuffer:pixelBuffer ptr:[FUManager shareInstance]->_human3dPtr RenderMode:self.renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
+		buffer = [[FUManager shareInstance]renderBodyTrackAdjustAssginOutputSizeWithBuffer:pixelBuffer RenderMode:self.renderMode Landmarks:landmarks LandmarksLength:landmarks_cnt];
 	}
 	[weakSelf.renderView displayPixelBuffer:buffer withLandmarks:nil count:landmarks_cnt Mirr:NO];
 	// ShouldSpreadScreen:NO 代表不铺满全屏，根据视频尺寸不同，可能或显示黑边
@@ -616,11 +606,9 @@ static int frameIndex = 0 ;
     [self.camera stopCapture];
     [self.mReader cancelReading];
     [self destroyDisplayLink];
-    // 销毁hum3d.bundle句柄
-   // [FURenderer destroy3DBodyTracker:_human3dPtr];     // 销毁 _human3dPtr 句柄
-    [self.currentAvatar quitTrackBodyMode];
+
+    [self.currentAvatar enableHumanAnimDriver:NO];
     [self.currentAvatar quitARMode];
-    [self.currentAvatar quitFollowBodyMode];
     [[FUManager shareInstance]enableFaceCapture:0];
     [[FUManager shareInstance]enableHuman3D:0];
     [[FUManager shareInstance] reloadAvatarToControllerWithAvatar:self.originalAvatar];

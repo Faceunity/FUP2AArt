@@ -54,8 +54,6 @@
 		0B4FDC3E2183442C00705F4A /* FUHistoryViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0B4FDC312183442B00705F4A /* FUHistoryViewController.xib */; };
 		0B4FDC402183442C00705F4A /* FUARFilterView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B4FDC332183442B00705F4A /* FUARFilterView.m */; };
 		0B61F01F20C1551400D4AB3C /* FUManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B61F01E20C1551400D4AB3C /* FUManager.m */; };
-		0B729AD7224A18C100DA7D9D /* p2a_client_core.bin in Resources */ = {isa = PBXBuildFile; fileRef = 0B729ACE224A18C000DA7D9D /* p2a_client_core.bin */; };
-		0B729ADC224A1EC700DA7D9D /* p2a_client_q1.bin in Resources */ = {isa = PBXBuildFile; fileRef = 0B729ADB224A1EC700DA7D9D /* p2a_client_q1.bin */; };
 		0B757786229FCE98004954D3 /* tongue.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B757783229FCE98004954D3 /* tongue.bundle */; };
 		0B757787229FCE98004954D3 /* v3.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B757784229FCE98004954D3 /* v3.bundle */; };
 		0B757788229FCE98004954D3 /* fxaa.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0B757785229FCE98004954D3 /* fxaa.bundle */; };
@@ -88,7 +86,11 @@
 		0BCFC91022672EE10095E305 /* FUFigureBottomCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BCFC90822672EE10095E305 /* FUFigureBottomCollection.m */; };
 		0BEB3A75222FA7CD003F6C04 /* FUShapeParamsMode.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BEB3A74222FA7CD003F6C04 /* FUShapeParamsMode.m */; };
 		0BF77B69211D6DCF00682938 /* FUARFilterController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BF77B68211D6DCF00682938 /* FUARFilterController.m */; };
+		3D0031792696F3CA006C3F89 /* ai_face_processor_e46_s1.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 3D0031782696F3CA006C3F89 /* ai_face_processor_e46_s1.bundle */; };
 		3D127D1B246A7E9700907622 /* prefabricateVoice in Resources */ = {isa = PBXBuildFile; fileRef = 3D127D1A246A7E9700907622 /* prefabricateVoice */; };
+		3DDC43DD26957BF000D043C3 /* libpta_client_lite.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DDC43DC26957BF000D043C3 /* libpta_client_lite.a */; };
+		3DDC43E026957C7600D043C3 /* pta_core_log_all.bin in Resources */ = {isa = PBXBuildFile; fileRef = 3DDC43DE26957C7600D043C3 /* pta_core_log_all.bin */; };
+		3DDC43E126957C7600D043C3 /* pta_client_q1_lite.bin in Resources */ = {isa = PBXBuildFile; fileRef = 3DDC43DF26957C7600D043C3 /* pta_client_q1_lite.bin */; };
 		4105209D23D042CD004734E9 /* color_q.json in Resources */ = {isa = PBXBuildFile; fileRef = 41051C0C23D042C5004734E9 /* color_q.json */; };
 		4105209E23D042CD004734E9 /* config.json in Resources */ = {isa = PBXBuildFile; fileRef = 41051C0E23D042C5004734E9 /* config.json */; };
 		4105209F23D042CD004734E9 /* midBody_male4.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 41051C1023D042C5004734E9 /* midBody_male4.bundle */; };
@@ -113,8 +115,6 @@
 		410520B923D042CD004734E9 /* LRPP_shanzi.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 41051C3223D042C5004734E9 /* LRPP_shanzi.bundle */; };
 		410520BA23D042CD004734E9 /* ani_danshoubixin_mid.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 41051C3423D042C5004734E9 /* ani_danshoubixin_mid.bundle */; };
 		410520BC23D042CD004734E9 /* ani_rock_mid.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 41051C3723D042C5004734E9 /* ani_rock_mid.bundle */; };
-		410520BD23D042CD004734E9 /* ani_dance_cam.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 41051C3923D042C5004734E9 /* ani_dance_cam.bundle */; };
-		410520BE23D042CD004734E9 /* ani_dance_mid.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 41051C3A23D042C5004734E9 /* ani_dance_mid.bundle */; };
 		410520BF23D042CD004734E9 /* ani_guzhang_mid.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 41051C3C23D042C5004734E9 /* ani_guzhang_mid.bundle */; };
 		410520C023D042CD004734E9 /* ani_hi_mid.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 41051C3E23D042C5004734E9 /* ani_hi_mid.bundle */; };
 		410520C123D042CD004734E9 /* ani_idle.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 41051C3F23D042C5004734E9 /* ani_idle.bundle */; };
@@ -128,7 +128,6 @@
 		411998882448933C0083883C /* light.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 411998872448933C0083883C /* light.bundle */; };
 		411F71AB23D06D5F00DF65D6 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 411F71AA23D06D5600DF65D6 /* libc++.tbd */; };
 		413AC7252436E945007D1F52 /* FUSwitch.m in Sources */ = {isa = PBXBuildFile; fileRef = 413AC7242436E945007D1F52 /* FUSwitch.m */; };
-		413B08C52410E795004D2CB4 /* wuguan_mesh.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 413B08C42410E795004D2CB4 /* wuguan_mesh.bundle */; };
 		415C5EFA241A489900088BEA /* FUEditTypeModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 415C5EF9241A489900088BEA /* FUEditTypeModel.m */; };
 		415E38D324165501009AF2C3 /* ani_pose_danren_01_cam.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 415E38CD24165501009AF2C3 /* ani_pose_danren_01_cam.bundle */; };
 		415E38D424165501009AF2C3 /* ani_pose_danren_01.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 415E38CE24165501009AF2C3 /* ani_pose_danren_01.bundle */; };
@@ -164,7 +163,6 @@
 		41DC3E402445B999003A560F /* anim_hold.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 41DC3E302445B999003A560F /* anim_hold.bundle */; };
 		41DC3E422445BBEF003A560F /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 41DC3E412445BBEF003A560F /* CoreMotion.framework */; };
 		41DDD2F9241F6820009B8DED /* ani_start_02.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 41DDD2F8241F6820009B8DED /* ani_start_02.bundle */; };
-		41F43A4124C96874001E4F47 /* ai_face_processor.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 41F43A3F24C96874001E4F47 /* ai_face_processor.bundle */; };
 		41F43A4224C96874001E4F47 /* ai_human_processor.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 41F43A4024C96874001E4F47 /* ai_human_processor.bundle */; };
 		507A844A23FC278B003F3E5B /* toonfilter.png in Resources */ = {isa = PBXBuildFile; fileRef = 507A844823FC278A003F3E5B /* toonfilter.png */; };
 		9B02EC79247F6E4000D4C97A /* ani_dance_mid.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B02EC76247F6E4000D4C97A /* ani_dance_mid.bundle */; };
@@ -183,7 +181,6 @@
 		9B445F5C235071F100050138 /* fustalite_tta.bin in Resources */ = {isa = PBXBuildFile; fileRef = 9B445F57235071F100050138 /* fustalite_tta.bin */; };
 		9B445F5F2350720200050138 /* FUStaLite.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B445F58235071F100050138 /* FUStaLite.framework */; };
 		9B445F602350720200050138 /* FUStaLite.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9B445F58235071F100050138 /* FUStaLite.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		9B446537237946C50086B8D4 /* libp2a_client.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B446536237946C50086B8D4 /* libp2a_client.a */; };
 		9B45EC3622FAA970004B7818 /* FUStack.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B45EC3522FAA970004B7818 /* FUStack.m */; };
 		9B45EC3922FAD00D004B7818 /* FUAvatarEditManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B45EC3822FAD00D004B7818 /* FUAvatarEditManager.m */; };
 		9B47FAEF246E31DA00D2145F /* toonfilter.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B47FAEE246E31DA00D2145F /* toonfilter.bundle */; };
@@ -204,12 +201,13 @@
 		9B883DF1246BA0990090C280 /* controller_config.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B883DEF246BA0990090C280 /* controller_config.bundle */; };
 		9B883DF8246BA1DD0090C280 /* Avatars.json in Resources */ = {isa = PBXBuildFile; fileRef = 9B883DF7246BA1DD0090C280 /* Avatars.json */; };
 		9B8CA4042340E7B0009815BF /* FURotation.m in Sources */ = {isa = PBXBuildFile; fileRef = 9B8CA4032340E7B0009815BF /* FURotation.m */; };
-		9B8D77222480BFD2001EB2D3 /* keting_A_mesh.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9B8D77212480BFD2001EB2D3 /* keting_A_mesh.bundle */; };
 		9BA3CD8222B882C700B09E8E /* AppManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BA3CD8122B882C700B09E8E /* AppManager.m */; };
 		9BA7A873234F27ED00CBCE24 /* FUTextTrackController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BA7A872234F27ED00CBCE24 /* FUTextTrackController.m */; };
 		9BA916AA23447FCA001DE69A /* hair_mask.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BA916A923447FCA001DE69A /* hair_mask.bundle */; };
 		9BAA363E23517562004FACFE /* FUMusicPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BAA363D23517562004FACFE /* FUMusicPlayer.m */; };
 		9BAA3641235178B9004FACFE /* FUStaLiteRequestManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9BAA3640235178B9004FACFE /* FUStaLiteRequestManager.m */; };
+		9BC03F86278E86790022CD42 /* keting_a.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BC03F85278E86790022CD42 /* keting_a.bundle */; };
+		9BC03F89278E86850022CD42 /* wuguan.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BC03F88278E86850022CD42 /* wuguan.bundle */; };
 		9BC232802350B58F00E1A6CA /* sta_bs_blend_weight.json in Resources */ = {isa = PBXBuildFile; fileRef = 9BC2327F2350B58F00E1A6CA /* sta_bs_blend_weight.json */; };
 		9BDE5C70247BA88C00F444E1 /* zuojiao_plane_shadow.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BDE5C6E247BA88C00F444E1 /* zuojiao_plane_shadow.bundle */; };
 		9BDE5C71247BA88C00F444E1 /* youjiao_plane_shadow.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 9BDE5C6F247BA88C00F444E1 /* youjiao_plane_shadow.bundle */; };
@@ -312,8 +310,6 @@
 		0B61F01D20C1551400D4AB3C /* FUManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUManager.h; sourceTree = "<group>"; };
 		0B61F01E20C1551400D4AB3C /* FUManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUManager.m; sourceTree = "<group>"; };
 		0B61F02420C155C500D4AB3C /* FUP2ADefine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUP2ADefine.h; sourceTree = "<group>"; };
-		0B729ACE224A18C000DA7D9D /* p2a_client_core.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = p2a_client_core.bin; sourceTree = "<group>"; };
-		0B729ADB224A1EC700DA7D9D /* p2a_client_q1.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = p2a_client_q1.bin; sourceTree = "<group>"; };
 		0B757783229FCE98004954D3 /* tongue.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = tongue.bundle; sourceTree = "<group>"; };
 		0B757784229FCE98004954D3 /* v3.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = v3.bundle; sourceTree = "<group>"; };
 		0B757785229FCE98004954D3 /* fxaa.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = fxaa.bundle; sourceTree = "<group>"; };
@@ -370,7 +366,12 @@
 		0BEB3A74222FA7CD003F6C04 /* FUShapeParamsMode.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUShapeParamsMode.m; sourceTree = "<group>"; };
 		0BF77B67211D6DCF00682938 /* FUARFilterController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUARFilterController.h; sourceTree = "<group>"; };
 		0BF77B68211D6DCF00682938 /* FUARFilterController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUARFilterController.m; sourceTree = "<group>"; };
+		3D0031782696F3CA006C3F89 /* ai_face_processor_e46_s1.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ai_face_processor_e46_s1.bundle; sourceTree = "<group>"; };
 		3D127D1A246A7E9700907622 /* prefabricateVoice */ = {isa = PBXFileReference; lastKnownFileType = folder; path = prefabricateVoice; sourceTree = "<group>"; };
+		3DDC43DC26957BF000D043C3 /* libpta_client_lite.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libpta_client_lite.a; sourceTree = "<group>"; };
+		3DDC43DE26957C7600D043C3 /* pta_core_log_all.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = pta_core_log_all.bin; sourceTree = "<group>"; };
+		3DDC43DF26957C7600D043C3 /* pta_client_q1_lite.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = pta_client_q1_lite.bin; sourceTree = "<group>"; };
+		3DDC43E326957DC900D043C3 /* fuPTAClientLite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fuPTAClientLite.h; sourceTree = "<group>"; };
 		41051C0C23D042C5004734E9 /* color_q.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = color_q.json; sourceTree = "<group>"; };
 		41051C0E23D042C5004734E9 /* config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = config.json; sourceTree = "<group>"; };
 		41051C1023D042C5004734E9 /* midBody_male4.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = midBody_male4.bundle; sourceTree = "<group>"; };
@@ -395,8 +396,6 @@
 		41051C3223D042C5004734E9 /* LRPP_shanzi.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = LRPP_shanzi.bundle; sourceTree = "<group>"; };
 		41051C3423D042C5004734E9 /* ani_danshoubixin_mid.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ani_danshoubixin_mid.bundle; sourceTree = "<group>"; };
 		41051C3723D042C5004734E9 /* ani_rock_mid.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ani_rock_mid.bundle; sourceTree = "<group>"; };
-		41051C3923D042C5004734E9 /* ani_dance_cam.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ani_dance_cam.bundle; sourceTree = "<group>"; };
-		41051C3A23D042C5004734E9 /* ani_dance_mid.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ani_dance_mid.bundle; sourceTree = "<group>"; };
 		41051C3C23D042C5004734E9 /* ani_guzhang_mid.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ani_guzhang_mid.bundle; sourceTree = "<group>"; };
 		41051C3E23D042C5004734E9 /* ani_hi_mid.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ani_hi_mid.bundle; sourceTree = "<group>"; };
 		41051C3F23D042C5004734E9 /* ani_idle.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ani_idle.bundle; sourceTree = "<group>"; };
@@ -412,7 +411,6 @@
 		411F71AA23D06D5600DF65D6 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		413AC7232436E945007D1F52 /* FUSwitch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUSwitch.h; sourceTree = "<group>"; };
 		413AC7242436E945007D1F52 /* FUSwitch.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUSwitch.m; sourceTree = "<group>"; };
-		413B08C42410E795004D2CB4 /* wuguan_mesh.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = wuguan_mesh.bundle; sourceTree = "<group>"; };
 		415C5EF8241A489900088BEA /* FUEditTypeModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUEditTypeModel.h; sourceTree = "<group>"; };
 		415C5EF9241A489900088BEA /* FUEditTypeModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUEditTypeModel.m; sourceTree = "<group>"; };
 		415E38CD24165501009AF2C3 /* ani_pose_danren_01_cam.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ani_pose_danren_01_cam.bundle; sourceTree = "<group>"; };
@@ -454,7 +452,6 @@
 		41DC3E302445B999003A560F /* anim_hold.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = anim_hold.bundle; sourceTree = "<group>"; };
 		41DC3E412445BBEF003A560F /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		41DDD2F8241F6820009B8DED /* ani_start_02.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = ani_start_02.bundle; sourceTree = "<group>"; };
-		41F43A3F24C96874001E4F47 /* ai_face_processor.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ai_face_processor.bundle; sourceTree = "<group>"; };
 		41F43A4024C96874001E4F47 /* ai_human_processor.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ai_human_processor.bundle; sourceTree = "<group>"; };
 		4DEA1E1E97520D6F8B129A53 /* Pods-FUP2A.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FUP2A.debug.xcconfig"; path = "Pods/Target Support Files/Pods-FUP2A/Pods-FUP2A.debug.xcconfig"; sourceTree = "<group>"; };
 		507A844823FC278A003F3E5B /* toonfilter.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = toonfilter.png; sourceTree = "<group>"; };
@@ -478,12 +475,11 @@
 		9B445F2C2350242D00050138 /* FUP2AHelper.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FUP2AHelper.framework; path = FUP2A/Tool/FUP2AHelper/FUP2AHelper.framework; sourceTree = "<group>"; };
 		9B445F57235071F100050138 /* fustalite_tta.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = fustalite_tta.bin; sourceTree = "<group>"; };
 		9B445F58235071F100050138 /* FUStaLite.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = FUStaLite.framework; sourceTree = "<group>"; };
-		9B446535237946C40086B8D4 /* fuPTAClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fuPTAClient.h; sourceTree = "<group>"; };
-		9B446536237946C50086B8D4 /* libp2a_client.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libp2a_client.a; sourceTree = "<group>"; };
 		9B45EC3422FAA970004B7818 /* FUStack.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUStack.h; sourceTree = "<group>"; };
 		9B45EC3522FAA970004B7818 /* FUStack.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUStack.m; sourceTree = "<group>"; };
 		9B45EC3722FAD00D004B7818 /* FUAvatarEditManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUAvatarEditManager.h; sourceTree = "<group>"; };
 		9B45EC3822FAD00D004B7818 /* FUAvatarEditManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FUAvatarEditManager.m; sourceTree = "<group>"; };
+		9B471925278D53030074EC32 /* CNamaSDKScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CNamaSDKScene.h; sourceTree = "<group>"; };
 		9B47FAEE246E31DA00D2145F /* toonfilter.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = toonfilter.bundle; sourceTree = "<group>"; };
 		9B4DDC60239E1F6400D3F5EA /* netconfig.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = netconfig.json; sourceTree = "<group>"; };
 		9B4FE0DE23293E180071954D /* FUFigureViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUFigureViewController.h; sourceTree = "<group>"; };
@@ -513,7 +509,6 @@
 		9B883DF7246BA1DD0090C280 /* Avatars.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Avatars.json; sourceTree = "<group>"; };
 		9B8CA4022340E7B0009815BF /* FURotation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FURotation.h; sourceTree = "<group>"; };
 		9B8CA4032340E7B0009815BF /* FURotation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FURotation.m; sourceTree = "<group>"; };
-		9B8D77212480BFD2001EB2D3 /* keting_A_mesh.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = keting_A_mesh.bundle; sourceTree = "<group>"; };
 		9BA3CD7E22B87E3C00B09E8E /* FUP2A_PrefixHeader.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FUP2A_PrefixHeader.pch; sourceTree = "<group>"; };
 		9BA3CD8022B882C700B09E8E /* AppManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppManager.h; sourceTree = "<group>"; };
 		9BA3CD8122B882C700B09E8E /* AppManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppManager.m; sourceTree = "<group>"; };
@@ -525,6 +520,8 @@
 		9BAA363D23517562004FACFE /* FUMusicPlayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FUMusicPlayer.m; sourceTree = "<group>"; };
 		9BAA363F235178B9004FACFE /* FUStaLiteRequestManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FUStaLiteRequestManager.h; sourceTree = "<group>"; };
 		9BAA3640235178B9004FACFE /* FUStaLiteRequestManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FUStaLiteRequestManager.m; sourceTree = "<group>"; };
+		9BC03F85278E86790022CD42 /* keting_a.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = keting_a.bundle; sourceTree = "<group>"; };
+		9BC03F88278E86850022CD42 /* wuguan.bundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = wuguan.bundle; sourceTree = "<group>"; };
 		9BC2327F2350B58F00E1A6CA /* sta_bs_blend_weight.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = sta_bs_blend_weight.json; sourceTree = "<group>"; };
 		9BDE5C6E247BA88C00F444E1 /* zuojiao_plane_shadow.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = zuojiao_plane_shadow.bundle; sourceTree = "<group>"; };
 		9BDE5C6F247BA88C00F444E1 /* youjiao_plane_shadow.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = youjiao_plane_shadow.bundle; sourceTree = "<group>"; };
@@ -561,7 +558,7 @@
 				9B6E4C6A235E977100B2E695 /* libfuai.a in Frameworks */,
 				9B445F2D2350242D00050138 /* FUP2AHelper.framework in Frameworks */,
 				411F71AB23D06D5F00DF65D6 /* libc++.tbd in Frameworks */,
-				9B446537237946C50086B8D4 /* libp2a_client.a in Frameworks */,
+				3DDC43DD26957BF000D043C3 /* libpta_client_lite.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -644,10 +641,10 @@
 		0B69D6042119899E00D6622D /* P2A */ = {
 			isa = PBXGroup;
 			children = (
-				9B446535237946C40086B8D4 /* fuPTAClient.h */,
-				9B446536237946C50086B8D4 /* libp2a_client.a */,
-				0B729ACE224A18C000DA7D9D /* p2a_client_core.bin */,
-				0B729ADB224A1EC700DA7D9D /* p2a_client_q1.bin */,
+				3DDC43E326957DC900D043C3 /* fuPTAClientLite.h */,
+				3DDC43DF26957C7600D043C3 /* pta_client_q1_lite.bin */,
+				3DDC43DE26957C7600D043C3 /* pta_core_log_all.bin */,
+				3DDC43DC26957BF000D043C3 /* libpta_client_lite.a */,
 			);
 			path = P2A;
 			sourceTree = "<group>";
@@ -726,6 +723,7 @@
 		0B8DE88120C5255000E21A8B /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				9B471925278D53030074EC32 /* CNamaSDKScene.h */,
 				9B7FAD30249A4E0F00A1F012 /* CNamaSDK.h */,
 				0B8DE88320C5255000E21A8B /* FURenderer.h */,
 			);
@@ -735,9 +733,9 @@
 		0B8DE88620C5255000E21A8B /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				3D0031782696F3CA006C3F89 /* ai_face_processor_e46_s1.bundle */,
 				9B07110F253EB7EB00ED184D /* controller.bundle */,
 				9B10A2B32536E8A800E2A37B /* controller_cpp.bundle */,
-				41F43A3F24C96874001E4F47 /* ai_face_processor.bundle */,
 				41F43A4024C96874001E4F47 /* ai_human_processor.bundle */,
 				9BDE5C6F247BA88C00F444E1 /* youjiao_plane_shadow.bundle */,
 				9BDE5C6E247BA88C00F444E1 /* zuojiao_plane_shadow.bundle */,
@@ -1026,9 +1024,9 @@
 		41051C2923D042C5004734E9 /* SJG */ = {
 			isa = PBXGroup;
 			children = (
+				9BC03F88278E86850022CD42 /* wuguan.bundle */,
 				41051C2A23D042C5004734E9 /* ani_SJG_cam.bundle */,
 				41051C2B23D042C5004734E9 /* ani_SJG_mid.bundle */,
-				413B08C42410E795004D2CB4 /* wuguan_mesh.bundle */,
 				41051C2C23D042C5004734E9 /* SJG_shaungjiegun.bundle */,
 				41051C2D23D042C5004734E9 /* ani_SJG_shaungjiegun.bundle */,
 			);
@@ -1065,11 +1063,9 @@
 		41051C3823D042C5004734E9 /* dance */ = {
 			isa = PBXGroup;
 			children = (
-				9B8D77212480BFD2001EB2D3 /* keting_A_mesh.bundle */,
+				9BC03F85278E86790022CD42 /* keting_a.bundle */,
 				9B02EC78247F6E4000D4C97A /* ani_dance_cam.bundle */,
 				9B02EC76247F6E4000D4C97A /* ani_dance_mid.bundle */,
-				41051C3923D042C5004734E9 /* ani_dance_cam.bundle */,
-				41051C3A23D042C5004734E9 /* ani_dance_mid.bundle */,
 			);
 			path = dance;
 			sourceTree = "<group>";
@@ -1368,6 +1364,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				415E38D624165501009AF2C3 /* ani_pose_shuangren_03_cam.bundle in Resources */,
+				9BC03F86278E86790022CD42 /* keting_a.bundle in Resources */,
 				9B883DF1246BA0990090C280 /* controller_config.bundle in Resources */,
 				410520D423D042CD004734E9 /* ani_cam.bundle in Resources */,
 				0B0A8AB32122758100A09AB2 /* loading1.png in Resources */,
@@ -1399,7 +1396,6 @@
 				0B0A8AA42122758100A09AB2 /* loading21.png in Resources */,
 				410520A223D042CD004734E9 /* midBody_male3.bundle in Resources */,
 				0B0A8AA92122758100A09AB2 /* loading12.png in Resources */,
-				0B729ADC224A1EC700DA7D9D /* p2a_client_q1.bin in Resources */,
 				0B0A8AAA2122758100A09AB2 /* loading13.png in Resources */,
 				0B0A8AA22122758100A09AB2 /* loading4.png in Resources */,
 				410520BF23D042CD004734E9 /* ani_guzhang_mid.bundle in Resources */,
@@ -1407,7 +1403,6 @@
 				9B6F9827235854CB00D12585 /* ani_mg.bundle in Resources */,
 				4105209E23D042CD004734E9 /* config.json in Resources */,
 				41DC3E332445B999003A560F /* anim_korheart.bundle in Resources */,
-				413B08C52410E795004D2CB4 /* wuguan_mesh.bundle in Resources */,
 				9B0C57E2246D396500FEC640 /* FUFigureTopCell.xib in Resources */,
 				41DC3E3E2445B999003A560F /* anim_one.bundle in Resources */,
 				0B0A8AAC2122758100A09AB2 /* loading28.png in Resources */,
@@ -1416,12 +1411,12 @@
 				410520A623D042CD004734E9 /* midBody_female4.bundle in Resources */,
 				9B02EC79247F6E4000D4C97A /* ani_dance_mid.bundle in Resources */,
 				41DC3E392445B999003A560F /* anim_fist.bundle in Resources */,
+				9BC03F89278E86850022CD42 /* wuguan.bundle in Resources */,
 				0B0A8AA02122758100A09AB2 /* loading18.png in Resources */,
 				9B445F5C235071F100050138 /* fustalite_tta.bin in Resources */,
 				9B10A2B42536E8A800E2A37B /* controller_cpp.bundle in Resources */,
 				0B0A8A992122758100A09AB2 /* loading27.png in Resources */,
 				9BF550D52329E8D900CFAD93 /* FUFigureBottomCell.xib in Resources */,
-				410520BE23D042CD004734E9 /* ani_dance_mid.bundle in Resources */,
 				0B0A8AB12122758100A09AB2 /* loading24.png in Resources */,
 				9BDE5C71247BA88C00F444E1 /* youjiao_plane_shadow.bundle in Resources */,
 				0B0A8AA62122758100A09AB2 /* loading25.png in Resources */,
@@ -1437,8 +1432,10 @@
 				0B757787229FCE98004954D3 /* v3.bundle in Resources */,
 				9BDE5C70247BA88C00F444E1 /* zuojiao_plane_shadow.bundle in Resources */,
 				0B757786229FCE98004954D3 /* tongue.bundle in Resources */,
+				3DDC43E026957C7600D043C3 /* pta_core_log_all.bin in Resources */,
 				41DB5D2B2411FA510087BD72 /* ani_szw_cam.bundle in Resources */,
 				41C36E1423D57F25004D2F07 /* FUQItems.plist in Resources */,
+				3D0031792696F3CA006C3F89 /* ai_face_processor_e46_s1.bundle in Resources */,
 				41DC3E402445B999003A560F /* anim_hold.bundle in Resources */,
 				0B0A8AB02122758100A09AB2 /* loading23.png in Resources */,
 				4105209F23D042CD004734E9 /* midBody_male4.bundle in Resources */,
@@ -1464,10 +1461,8 @@
 				410520BA23D042CD004734E9 /* ani_danshoubixin_mid.bundle in Resources */,
 				410520B323D042CD004734E9 /* ani_SJG_mid.bundle in Resources */,
 				0B0A8AAF2122758100A09AB2 /* loading20.png in Resources */,
-				9B8D77222480BFD2001EB2D3 /* keting_A_mesh.bundle in Resources */,
 				41DC3E3B2445B999003A560F /* anim_two.bundle in Resources */,
 				9B02EC7B247F6E4000D4C97A /* ani_dance_cam.bundle in Resources */,
-				0B729AD7224A18C100DA7D9D /* p2a_client_core.bin in Resources */,
 				415E38DD24165539009AF2C3 /* facepup.json in Resources */,
 				0B0A8AAB2122758100A09AB2 /* loading10.png in Resources */,
 				41DC3E312445B999003A560F /* anim_six.bundle in Resources */,
@@ -1475,6 +1470,7 @@
 				0B0A8AA32122758100A09AB2 /* loading3.png in Resources */,
 				0B0A8A962122758100A09AB2 /* loading9.png in Resources */,
 				41F43A4224C96874001E4F47 /* ai_human_processor.bundle in Resources */,
+				3DDC43E126957C7600D043C3 /* pta_client_q1_lite.bin in Resources */,
 				410520BC23D042CD004734E9 /* ani_rock_mid.bundle in Resources */,
 				41DC3E382445B999003A560F /* anim_unknown.bundle in Resources */,
 				0B04B19F226429A200E68446 /* Resource in Resources */,
@@ -1483,7 +1479,6 @@
 				410520B623D042CD004734E9 /* ani_LRPP_shanzi.bundle in Resources */,
 				9B47FAEF246E31DA00D2145F /* toonfilter.bundle in Resources */,
 				9B4DDC61239E1F6400D3F5EA /* netconfig.json in Resources */,
-				41F43A4124C96874001E4F47 /* ai_face_processor.bundle in Resources */,
 				41DC3E322445B999003A560F /* anim_gun.bundle in Resources */,
 				9BF550D92329E9DE00CFAD93 /* FUFigureHorizCollectionCell.xib in Resources */,
 				41DC3E372445B999003A560F /* anim_ok.bundle in Resources */,
@@ -1492,7 +1487,6 @@
 				4179BEE2240FAF9700054D09 /* data_decoder.bin in Resources */,
 				0B8ED6D820C0DC380011221E /* Assets.xcassets in Resources */,
 				41DC3E3F2445B999003A560F /* anim_palm.bundle in Resources */,
-				410520BD23D042CD004734E9 /* ani_dance_cam.bundle in Resources */,
 				4112F062240F9187007AB9E4 /* ani_change_01.bundle in Resources */,
 				0B0A8A972122758100A09AB2 /* loading11.png in Resources */,
 				0BAAF085224B0F570016EF9D /* AvatarAnimations.plist in Resources */,
@@ -1567,7 +1561,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its # Type a script or drag a script file from your workspace to insert its path.\n#!/bin/sh\ncd FUP2A/Faceunity/FaceUnity-SDK-iOS\nfilename=libCNamaSDK.a\nzipname=libCNamaSDK.zip\nmdcode=$(md5 $filename)\n\necho \"1111111111\"\n#libCNamaSDK.zip存在,则直接解压\nif [ -f \"$zipname\" ];\nthen\nrm -f $filename\nunzip $zipname\nmdcode=$(md5 $filename)\nrm -f $zipname\nfi\n\nfilename=libfuai.a\nzipname=libfuai.zip\nmdcode=$(md5 $filename)\n\n#libnama.zip存在,则直接解压\nif [ -f \"$zipname\" ];\nthen\nrm -f $filename\nunzip $zipname\nmdcode=$(md5 $filename)\nrm -f $zipname\nfi\n\n\ncd ../P2A\nfilename=libp2a_client.a\nzipname=libp2a_client.zip\nmdcode=$(md5 $filename)\n\n#libnama.zip存在,则直接解压\nif [ -f \"$zipname\" ];\nthen\nrm -f $filename\nunzip $zipname\nmdcode=$(md5 $filename)\nrm -f $zipname\nfi\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its # Type a script or drag a script file from your workspace to insert its path.\n#!/bin/sh\ncd FUP2A/Faceunity/FaceUnity-SDK-iOS\nfilename=libCNamaSDK.a\nzipname=libCNamaSDK.zip\nmdcode=$(md5 $filename)\n\necho \"1111111111\"\n#libCNamaSDK.zip存在,则直接解压\nif [ -f \"$zipname\" ];\nthen\nrm -f $filename\nunzip $zipname\nmdcode=$(md5 $filename)\nrm -f $zipname\nfi\n\nfilename=libfuai.a\nzipname=libfuai.zip\nmdcode=$(md5 $filename)\n\n#libnama.zip存在,则直接解压\nif [ -f \"$zipname\" ];\nthen\nrm -f $filename\nunzip $zipname\nmdcode=$(md5 $filename)\nrm -f $zipname\nfi\n\n\ncd ../P2A\nfilename=libpta_client_lite.a\nzipname=libpta_client_lite.zip\nmdcode=$(md5 $filename)\n\n#libnama.zip存在,则直接解压\nif [ -f \"$zipname\" ];\nthen\nrm -f $filename\nunzip $zipname\nmdcode=$(md5 $filename)\nrm -f $zipname\nfi\n";
 		};
 		F8D504C6692074CACAD10CD2 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1818,6 +1812,8 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 52;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 35A6KD62ZJ;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1872,6 +1868,8 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 52;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 35A6KD62ZJ;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (

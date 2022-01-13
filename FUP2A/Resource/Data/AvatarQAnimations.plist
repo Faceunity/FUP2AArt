@@ -43,7 +43,7 @@
 	<array>
 		<dict>
 			<key>bg</key>
-			<string>keting_A_mesh</string>
+			<string>keting_a</string>
 			<key>gender</key>
 			<string>0</string>
 			<key>animation</key>
@@ -70,7 +70,7 @@
 		</dict>
 		<dict>
 			<key>bg</key>
-			<string>wuguan_mesh</string>
+			<string>wuguan</string>
 			<key>otherAnimations</key>
 			<array>
 				<string>ani_SJG_shaungjiegun</string>

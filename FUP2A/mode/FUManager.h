@@ -20,7 +20,6 @@
     
     // ar模式下 render 句柄
     int arItems[2] ;
-    @public void * _human3dPtr;
     // 输出 buffer
     CVPixelBufferRef renderTarget;
     // 截图
@@ -104,7 +103,12 @@
 
 /// 获取实例
 + (instancetype)shareInstance;
-- (CVPixelBufferRef)renderBodyTrackWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength;
+
+///初始化相芯库资源
+- (void)initFu;
+///释放相芯库资源
++ (void)clearFu;
+- (CVPixelBufferRef)renderBodyTrackWithBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength;
 /**
  AR 滤镜处理接口
  
@@ -116,7 +120,7 @@
  @param landmarksLength 脸部点位数组的长度
  @return            处理之后的图像数据
  */
-- (CVPixelBufferRef)renderBodyTrackAdjustAssginOutputSizeWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength;
+- (CVPixelBufferRef)renderBodyTrackAdjustAssginOutputSizeWithBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode Landmarks:(float *)landmarks LandmarksLength:(int)landmarksLength;
 /**
  加载 client date
  b
@@ -206,7 +210,7 @@
  @param isLandscape 是否输出横屏视频
  @return            处理之后的图像数据
  */
-- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer ptr:(void *)human3dPtr RenderMode:(FURenderMode)renderMode landscape:(BOOL)isLandscape view0ratio:(CGFloat)view0ratio resolution:(double)resolution;
+- (CVPixelBufferRef)renderARFilterItemWithBuffer:(CVPixelBufferRef)pixelBuffer RenderMode:(FURenderMode)renderMode landscape:(BOOL)isLandscape view0ratio:(CGFloat)view0ratio resolution:(double)resolution;
 
 #pragma mark ------ 设置颜色 ------
 /// 设置颜色
